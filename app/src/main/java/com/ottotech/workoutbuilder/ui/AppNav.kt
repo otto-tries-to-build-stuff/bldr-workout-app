@@ -19,6 +19,7 @@ import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
+import com.ottotech.workoutbuilder.ui.library.FiltersSheet
 import com.ottotech.workoutbuilder.ui.library.LibraryScreen
 import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
 
@@ -77,13 +78,18 @@ fun AppNav() {
                 viewModelStoreOwner = nav.getBackStackEntry(Routes.LIBRARY),
                 factory = LibraryViewModel.Factory,
             )
+            var showFilters by rememberSaveable { mutableStateOf(false) }
+
             AppScaffold(tab = Tab.LIBRARY, onSelectTab = { if (it == Tab.HOME) nav.switchTab(Routes.HOME) }) {
                 LibraryScreen(
                     viewModel = libraryVm,
                     onOpenCategory = { nav.navigate(Routes.category(it)) },
-                    // Wired in Task 8.
-                    onOpenFilters = { },
+                    onOpenFilters = { showFilters = true },
                 )
+            }
+
+            if (showFilters) {
+                FiltersSheet(viewModel = libraryVm, onDismiss = { showFilters = false })
             }
         }
 
