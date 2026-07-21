@@ -1,6 +1,7 @@
 package com.ottotech.workoutbuilder.data
 
 import com.ottotech.workoutbuilder.data.db.WorkoutDao
+import com.ottotech.workoutbuilder.data.db.WorkoutEntity
 import com.ottotech.workoutbuilder.data.seed.WorkoutSeed
 import com.ottotech.workoutbuilder.domain.Workout
 import kotlinx.coroutines.flow.Flow
@@ -21,12 +22,16 @@ class WorkoutRepository(private val dao: WorkoutDao) {
      * [save] always writes the workout row too, so every edit that matters trips it.
      */
     fun observeAll(): Flow<List<Workout>> =
-        dao.observeWorkouts().map { rows -> rows.mapNotNull { load(it.id) } }
+        // hydrate, not load: observeWorkouts already handed us the rows, so re-querying
+        // each one by id would be a wasted round trip per workout per emission.
+        dao.observeWorkouts().map { rows -> rows.map { hydrate(it) } }
 
     /** Fully hydrated, ready for SegmentCompiler. */
-    suspend fun load(id: String): Workout? {
-        val workout = dao.getWorkout(id) ?: return null
-        val sections = dao.getSections(id)
+    suspend fun load(id: String): Workout? =
+        dao.getWorkout(id)?.let { hydrate(it) }
+
+    private suspend fun hydrate(workout: WorkoutEntity): Workout {
+        val sections = dao.getSections(workout.id)
         val itemsBySection = dao.getItems(sections.map { it.id }).groupBy { it.sectionId }
         return workout.toDomain(
             sections.map { section ->

@@ -23,11 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ottotech.workoutbuilder.domain.Facet
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
+import com.ottotech.workoutbuilder.ui.components.ScreenHeader
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
 import com.ottotech.workoutbuilder.ui.demoIntent
 import com.ottotech.workoutbuilder.ui.theme.AppType
@@ -88,10 +88,10 @@ fun ExerciseDetailScreen(
                 // Primary muscle first and selected — it is the exercise's home category,
                 // not one tag among many. No onClick: these are labels, not controls.
                 Chip(exercise.primaryMuscle.label, selected = true)
-                Facet.entries.forEach { facet ->
-                    exercise.tags.filter { it.facet == facet }.map { it.value }.sorted()
-                        .forEach { value -> Chip(value, selected = false) }
-                }
+                // Grouped by facet, alphabetical within each, in one pass.
+                exercise.tags
+                    .sortedWith(compareBy({ it.facet.ordinal }, { it.value }))
+                    .forEach { tag -> Chip(tag.value, selected = false) }
             }
 
             Spacer(Modifier.height(22.dp))

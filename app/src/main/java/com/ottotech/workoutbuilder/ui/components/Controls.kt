@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -49,7 +50,11 @@ fun HairlineCard(
 /**
  * The app's primary action: a filled block on `surfaceInverse` with `onSurfaceInverse`
  * text. Under the mono accent rule this *is* the accent — maximum contrast against the
- * page — so there is no separate accent colour to pass in.
+ * page.
+ *
+ * [container] and [content] default to that pairing but can be swapped, which is what a
+ * button sitting *on* an inverse surface needs: inside the hero card the accent flips back
+ * to `onSurfaceInverse`, so the same component covers both without a second copy of it.
  */
 @Composable
 fun InverseButton(
@@ -58,23 +63,24 @@ fun InverseButton(
     height: Dp = Dimens.buildButtonHeight,
     leadingGlyph: String? = null,
     style: TextStyle = AppType.buildButton,
+    container: Color = LocalAppColors.current.surfaceInverse,
+    content: Color = LocalAppColors.current.onSurfaceInverse,
     onClick: () -> Unit,
 ) {
-    val colors = LocalAppColors.current
     Row(
         modifier = modifier
             .height(height)
             .clip(RoundedCornerShape(Dimens.radiusButton))
-            .background(colors.surfaceInverse)
+            .background(container)
             .clickable(onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leadingGlyph != null) {
-            Text(leadingGlyph, style = style, color = colors.onSurfaceInverse)
+            Text(leadingGlyph, style = style, color = content)
             Spacer(Modifier.width(7.dp))
         }
-        Text(text, style = style, color = colors.onSurfaceInverse)
+        Text(text, style = style, color = content)
     }
 }
 
@@ -155,5 +161,33 @@ fun AppTextField(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+}
+
+/**
+ * Back affordance and title for the screens that sit outside the bottom nav.
+ *
+ * Shared by the category list and the exercise detail, so it lives here rather than in
+ * whichever screen happened to need it first.
+ */
+@Composable
+fun ScreenHeader(title: String, onBack: () -> Unit) {
+    val colors = LocalAppColors.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.screenPadding)
+            .padding(top = 10.dp, bottom = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        // heroName rather than a title style: a 30sp chevron overwhelms the word beside it.
+        Text(
+            text = "‹",
+            style = AppType.heroName,
+            color = colors.onBackground,
+            modifier = Modifier.clickable(onClick = onBack),
+        )
+        Text(title.uppercase(), style = AppType.screenTitle, color = colors.onBackground)
     }
 }

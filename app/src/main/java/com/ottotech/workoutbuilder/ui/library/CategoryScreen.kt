@@ -1,11 +1,9 @@
 package com.ottotech.workoutbuilder.ui.library
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,6 +22,7 @@ import com.ottotech.workoutbuilder.domain.Exercise
 import com.ottotech.workoutbuilder.domain.Facet
 import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
+import com.ottotech.workoutbuilder.ui.components.ScreenHeader
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -68,9 +66,6 @@ fun CategoryScreen(
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
             }
-            items(matches, key = { it.id }) { exercise ->
-                ExerciseRow(exercise) { onOpenExercise(exercise.id) }
-            }
             if (matches.isEmpty()) {
                 item {
                     Text(
@@ -79,31 +74,12 @@ fun CategoryScreen(
                         color = colors.textMuted,
                     )
                 }
+            } else {
+                items(matches, key = { it.id }) { exercise ->
+                    ExerciseRow(exercise) { onOpenExercise(exercise.id) }
+                }
             }
         }
-    }
-}
-
-/** Back affordance and title for the screens that sit outside the bottom nav. */
-@Composable
-fun ScreenHeader(title: String, onBack: () -> Unit) {
-    val colors = LocalAppColors.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Dimens.screenPadding)
-            .padding(top = 10.dp, bottom = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        // heroName rather than a title style: a 30sp chevron overwhelms the word beside it.
-        Text(
-            text = "‹",
-            style = AppType.heroName,
-            color = colors.onBackground,
-            modifier = Modifier.clickable(onClick = onBack),
-        )
-        Text(title.uppercase(), style = AppType.screenTitle, color = colors.onBackground)
     }
 }
 

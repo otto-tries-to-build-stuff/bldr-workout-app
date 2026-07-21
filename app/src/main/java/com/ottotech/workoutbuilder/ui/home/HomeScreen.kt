@@ -1,10 +1,10 @@
 package com.ottotech.workoutbuilder.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -99,8 +99,13 @@ private fun Header() {
     }
 }
 
+/**
+ * The inverted card at the top of Home. Spec §6.1 gives the empty state this same
+ * treatment so a fresh install looks designed rather than broken, so both states are one
+ * component with one label and different bodies — they cannot drift apart.
+ */
 @Composable
-private fun UpNextHero(summary: WorkoutSummary, onStart: () -> Unit) {
+private fun HeroCard(label: String, body: @Composable ColumnScope.() -> Unit) {
     val colors = LocalAppColors.current
     Column(
         modifier = Modifier
@@ -110,43 +115,37 @@ private fun UpNextHero(summary: WorkoutSummary, onStart: () -> Unit) {
             .padding(Dimens.heroPadding),
     ) {
         // Mono accent: on an inverse surface the accent is onSurfaceInverse.
-        Text("UP NEXT", style = AppType.heroLabel, color = colors.onSurfaceInverse)
+        Text(label, style = AppType.heroLabel, color = colors.onSurfaceInverse)
         Spacer(Modifier.height(8.dp))
+        body()
+    }
+}
+
+@Composable
+private fun UpNextHero(summary: WorkoutSummary, onStart: () -> Unit) {
+    val colors = LocalAppColors.current
+    HeroCard(label = "UP NEXT") {
         Text(summary.name, style = AppType.heroName, color = colors.onSurfaceInverse)
         Spacer(Modifier.height(4.dp))
         Text(summary.metaLine, style = AppType.heroMeta, color = colors.textMuted)
         Spacer(Modifier.height(14.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Dimens.primaryButtonHeight)
-                .clip(RoundedCornerShape(Dimens.radiusButton))
-                .background(colors.onSurfaceInverse)
-                .clickable(onClick = onStart),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Start workout ›", style = AppType.primaryButton, color = colors.surfaceInverse)
-        }
+        InverseButton(
+            text = "Start workout ›",
+            height = Dimens.primaryButtonHeight,
+            style = AppType.primaryButton,
+            // Inside the hero the surfaces are swapped, so the accent swaps with them.
+            container = colors.onSurfaceInverse,
+            content = colors.surfaceInverse,
+            onClick = onStart,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
-/**
- * Spec §6.1: the empty state uses the hero treatment so a fresh install looks designed
- * rather than broken.
- */
 @Composable
 private fun EmptyHero() {
     val colors = LocalAppColors.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(Dimens.radiusHero))
-            .background(colors.surfaceInverse)
-            .padding(Dimens.heroPadding),
-    ) {
-        Text("NOTHING YET", style = AppType.heroLabel, color = colors.onSurfaceInverse)
-        Spacer(Modifier.height(8.dp))
+    HeroCard(label = "NOTHING YET") {
         Text(
             "Nothing here yet. Build one from the library, or let the Coach draft one.",
             style = AppType.heroMeta,

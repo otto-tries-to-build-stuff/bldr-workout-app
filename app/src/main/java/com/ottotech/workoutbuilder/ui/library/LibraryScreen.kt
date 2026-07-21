@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -32,6 +32,7 @@ import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.domain.TagVocabulary
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
+import com.ottotech.workoutbuilder.ui.components.InverseButton
 import com.ottotech.workoutbuilder.ui.components.SearchGlyph
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
 import com.ottotech.workoutbuilder.ui.theme.AppType
@@ -156,14 +157,12 @@ private fun EmptyGrid(onClear: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Nothing matches those filters.", style = AppType.cardMeta, color = colors.textMuted)
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(Dimens.radiusChip))
-                .background(colors.surfaceInverse)
-                .clickable(onClick = onClear)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-        ) {
-            Text("Clear filters", style = AppType.chip, color = colors.onSurfaceInverse)
-        }
+        InverseButton(
+            text = "Clear filters",
+            height = Dimens.primaryButtonHeight,
+            style = AppType.chip,
+            onClick = onClear,
+            modifier = Modifier.width(160.dp),
+        )
     }
 }
