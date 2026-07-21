@@ -21,7 +21,10 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+# kotlin-test-junit, not plain kotlin-test: without the Kotlin Gradle plugin applied
+# (AGP 9 uses built-in Kotlin) the multiplatform variant resolution that picks the JVM
+# artifact does not run, and `kotlin.test.Test` fails to resolve.
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
