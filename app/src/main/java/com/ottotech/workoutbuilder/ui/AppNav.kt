@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
+import com.ottotech.workoutbuilder.ui.home.HomeScreen
 
 object Routes {
     const val HOME = "home"
@@ -41,7 +42,12 @@ fun AppNav() {
 
         composable(Routes.HOME) {
             AppScaffold(tab = Tab.HOME, onSelectTab = { if (it == Tab.LIBRARY) nav.switchTab(Routes.LIBRARY) }) {
-                Text("Home")
+                HomeScreen(
+                    // TODO(Plan 1D): route to the execution screen.
+                    onStartWorkout = { },
+                    // TODO(Plan 1C): raise the Build sheet. Wired in Task 5.
+                    onBuild = { },
+                )
             }
         }
 
