@@ -13,11 +13,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
+import com.ottotech.workoutbuilder.ui.library.LibraryScreen
+import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
 
 object Routes {
     const val HOME = "home"
@@ -70,8 +73,17 @@ fun AppNav() {
         }
 
         composable(Routes.LIBRARY) {
+            val libraryVm: LibraryViewModel = viewModel(
+                viewModelStoreOwner = nav.getBackStackEntry(Routes.LIBRARY),
+                factory = LibraryViewModel.Factory,
+            )
             AppScaffold(tab = Tab.LIBRARY, onSelectTab = { if (it == Tab.HOME) nav.switchTab(Routes.HOME) }) {
-                Text("Library")
+                LibraryScreen(
+                    viewModel = libraryVm,
+                    onOpenCategory = { nav.navigate(Routes.category(it)) },
+                    // Wired in Task 8.
+                    onOpenFilters = { },
+                )
             }
         }
 
