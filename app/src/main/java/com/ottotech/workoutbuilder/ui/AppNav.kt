@@ -19,6 +19,7 @@ import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
+import com.ottotech.workoutbuilder.ui.library.CategoryScreen
 import com.ottotech.workoutbuilder.ui.library.FiltersSheet
 import com.ottotech.workoutbuilder.ui.library.LibraryScreen
 import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
@@ -98,7 +99,17 @@ fun AppNav() {
             arguments = listOf(navArgument("muscle") { type = NavType.StringType }),
         ) { entry ->
             val muscle = Muscle.valueOf(entry.arguments?.getString("muscle") ?: Muscle.CHEST.name)
-            Text(muscle.label)
+            // Scoped to the Library entry so the filter set on the grid is still in force.
+            val libraryVm: LibraryViewModel = viewModel(
+                viewModelStoreOwner = nav.getBackStackEntry(Routes.LIBRARY),
+                factory = LibraryViewModel.Factory,
+            )
+            CategoryScreen(
+                muscle = muscle,
+                viewModel = libraryVm,
+                onBack = { nav.popBackStack() },
+                onOpenExercise = { nav.navigate(Routes.exercise(it)) },
+            )
         }
 
         composable(
