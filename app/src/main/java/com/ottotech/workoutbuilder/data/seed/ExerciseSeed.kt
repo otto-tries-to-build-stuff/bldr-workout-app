@@ -148,6 +148,7 @@ object ExerciseSeed {
         e("sprint", "Sprint", Muscle.CARDIO, H, listOf("Bodyweight"), listOf(Muscle.LEGS)),
         e("shuttle-run", "Shuttle Run", Muscle.CARDIO, H, listOf("Bodyweight"), listOf(Muscle.LEGS), listOf("Plyometric")),
         e("bear-crawl", "Bear Crawl", Muscle.CARDIO, H, listOf("Bodyweight"), listOf(Muscle.CORE, Muscle.SHOULDERS), listOf("Carry")),
+        e("flyer", "Flyer", Muscle.CARDIO, H, listOf("Bodyweight"), listOf(Muscle.LEGS)),
 
         // ─────────── MOBILITY ───────────
         e("leg-swings", "Leg Swings", Muscle.MOBILITY, M, listOf("Bodyweight"), listOf(Muscle.LEGS), url = "https://www.youtube.com/shorts/3l31E2cMGMk"),

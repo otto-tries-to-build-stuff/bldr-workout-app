@@ -32,7 +32,11 @@ class MainActivity : ComponentActivity() {
         // "Nothing here yet" empty state for one frame before the seed lands.
         var ready by mutableStateOf(false)
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) { app.exercises.seedIfNeeded() }
+            withContext(Dispatchers.IO) {
+                // Order matters: the sample workout references seeded exercise ids.
+                app.exercises.seedIfNeeded()
+                app.workouts.seedSampleIfNeeded(app.prefs)
+            }
             ready = true
         }
 
