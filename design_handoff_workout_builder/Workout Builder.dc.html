@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body{margin:0;background:#e9e7e2;font-family:'Helvetica Neue',Arial,sans-serif}
+  a{color:#1a1a1a}
+  a:hover{color:#000}
+  .dv-turn{padding:44px 48px 36px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+  .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+  .dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+  .dv-tname{font:600 13px/1.2 'Helvetica Neue',Arial,sans-serif;color:#1a1a1a}
+  .dv-intro{max-width:640px;margin:0 0 30px;font:400 13px/1.6 'Helvetica Neue',Arial,sans-serif;color:rgba(0,0,0,.62)}
+  .dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+  .dv-opt{flex:none;display:flex;flex-direction:column;gap:16px;scroll-margin-top:16px}
+  .dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+  .dv-olabel{display:flex;align-items:center;gap:10px;font:600 14px/1.3 'Helvetica Neue',Arial,sans-serif;color:#1a1a1a}
+  .dv-olabel .sub{font-weight:400;color:rgba(0,0,0,.5)}
+  .dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+  .dv-row{display:flex;gap:26px;align-items:flex-start}
+  .dv-col{display:flex;flex-direction:column;gap:11px;align-items:center}
+  .dv-cap{font:600 10px/1 'Helvetica Neue',Arial,sans-serif;color:rgba(0,0,0,.45);letter-spacing:.09em;text-transform:uppercase}
+  .dv-next{margin:26px 0 0;font:13px/1.6 'Helvetica Neue',Arial,sans-serif;color:rgba(0,0,0,.5)}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Colour explorations on <a class="dv-oid" href="#1c">1c</a></span></div>
+  <p class="dv-intro">Same bold-contrast layout as <a class="dv-oid" href="#1c">1c</a>, swapping the single accent. Home + timed Workout per colour — that's where the accent does the work (up-next label, primary button, timer ring, demo icon, skip). <a class="dv-oid" href="#2e">2e</a> drops colour entirely for the pure black &amp; white take.</p>
+  <div class="dv-opts">
+
+    <div class="dv-opt" id="2a">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Ember <span class="sub">— warm orange</span></div>
+      <div class="dv-row">
+
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#111"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 16px 0">
+              <div style="font-size:11px;color:#9a9a9a;font-weight:600;letter-spacing:.02em">TUE · JUL 21</div>
+              <div style="font-size:27px;font-weight:800;color:#0b0b0d;letter-spacing:-.035em;line-height:1.02;margin:3px 0 14px">YOUR<br>WORKOUTS</div>
+              <div style="background:#0b0b0d;border-radius:18px;padding:15px 16px;margin-bottom:11px;overflow:hidden">
+                <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ff6a2b;margin-bottom:7px">Up next</div>
+                <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-.02em">Push Day</div>
+                <div style="font-size:11px;color:#9a9a9a;margin-top:5px">6 exercises · 45 min · Strength</div>
+                <div style="margin-top:13px;height:38px;border-radius:10px;background:#ff6a2b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">Start workout ›</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">20</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">20-Min Burner</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">5 rounds · HIIT</div></div></div>
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">18</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">Morning Mobility</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">9 moves · Mobility</div></div></div>
+              </div>
+            </div>
+            <div style="padding:9px 16px 11px"><div style="height:46px;border-radius:13px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700"><span style="font-size:17px;line-height:1;color:#ff6a2b">+</span> BUILD A WORKOUT</div></div>
+            <div style="display:flex;justify-content:center;padding:2px 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#0b0b0d;border:1px solid rgba(0,0,0,.4);box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#fff"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #fff;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:11px 18px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div style="font-size:11px;font-weight:600;color:#9a9a9a">20-MIN BURNER · 2/5</div><div style="font-size:19px;color:#fff;line-height:1">×</div></div>
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:12px 0 2px;text-align:center">Mountain<br>Climbers</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#ff6a2b;margin-bottom:12px">Full body</div>
+              <div style="position:relative;width:158px;height:158px;margin-bottom:14px">
+                <svg width="158" height="158" viewBox="0 0 158 158"><circle cx="79" cy="79" r="72" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="79" cy="79" r="72" fill="none" stroke="#ff6a2b" stroke-width="10" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="135" transform="rotate(-90 79 79)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">0:24</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-top:2px">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;background:#18181c;border-radius:13px;margin-bottom:10px"><div style="width:26px;height:26px;border-radius:8px;background:#ff6a2b;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:7px solid #fff;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff">Watch demo</div><div style="font-size:10px;color:#9a9a9a">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:11px 13px"><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px">Up next</div><div style="font-size:13px;font-weight:700;color:#fff">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:9px;padding:11px 18px 12px"><div style="flex:1;height:46px;border-radius:13px;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;color:#fff"><span style="display:flex;gap:3px"><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span></span>Pause</div><div style="width:52px;height:46px;border-radius:13px;background:#ff6a2b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="2b">
+      <div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Cobalt <span class="sub">— electric blue</span></div>
+      <div class="dv-row">
+
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#111"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 16px 0">
+              <div style="font-size:11px;color:#9a9a9a;font-weight:600;letter-spacing:.02em">TUE · JUL 21</div>
+              <div style="font-size:27px;font-weight:800;color:#0b0b0d;letter-spacing:-.035em;line-height:1.02;margin:3px 0 14px">YOUR<br>WORKOUTS</div>
+              <div style="background:#0b0b0d;border-radius:18px;padding:15px 16px;margin-bottom:11px;overflow:hidden">
+                <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#3f74ff;margin-bottom:7px">Up next</div>
+                <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-.02em">Push Day</div>
+                <div style="font-size:11px;color:#9a9a9a;margin-top:5px">6 exercises · 45 min · Strength</div>
+                <div style="margin-top:13px;height:38px;border-radius:10px;background:#3f74ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">Start workout ›</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">20</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">20-Min Burner</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">5 rounds · HIIT</div></div></div>
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">18</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">Morning Mobility</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">9 moves · Mobility</div></div></div>
+              </div>
+            </div>
+            <div style="padding:9px 16px 11px"><div style="height:46px;border-radius:13px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700"><span style="font-size:17px;line-height:1;color:#3f74ff">+</span> BUILD A WORKOUT</div></div>
+            <div style="display:flex;justify-content:center;padding:2px 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#0b0b0d;border:1px solid rgba(0,0,0,.4);box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#fff"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #fff;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:11px 18px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div style="font-size:11px;font-weight:600;color:#9a9a9a">20-MIN BURNER · 2/5</div><div style="font-size:19px;color:#fff;line-height:1">×</div></div>
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:12px 0 2px;text-align:center">Mountain<br>Climbers</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#3f74ff;margin-bottom:12px">Full body</div>
+              <div style="position:relative;width:158px;height:158px;margin-bottom:14px">
+                <svg width="158" height="158" viewBox="0 0 158 158"><circle cx="79" cy="79" r="72" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="79" cy="79" r="72" fill="none" stroke="#3f74ff" stroke-width="10" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="135" transform="rotate(-90 79 79)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">0:24</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-top:2px">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;background:#18181c;border-radius:13px;margin-bottom:10px"><div style="width:26px;height:26px;border-radius:8px;background:#3f74ff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:7px solid #fff;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff">Watch demo</div><div style="font-size:10px;color:#9a9a9a">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:11px 13px"><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px">Up next</div><div style="font-size:13px;font-weight:700;color:#fff">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:9px;padding:11px 18px 12px"><div style="flex:1;height:46px;border-radius:13px;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;color:#fff"><span style="display:flex;gap:3px"><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span></span>Pause</div><div style="width:52px;height:46px;border-radius:13px;background:#3f74ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="2c">
+      <div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Coral <span class="sub">— red-pink</span></div>
+      <div class="dv-row">
+
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#111"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 16px 0">
+              <div style="font-size:11px;color:#9a9a9a;font-weight:600;letter-spacing:.02em">TUE · JUL 21</div>
+              <div style="font-size:27px;font-weight:800;color:#0b0b0d;letter-spacing:-.035em;line-height:1.02;margin:3px 0 14px">YOUR<br>WORKOUTS</div>
+              <div style="background:#0b0b0d;border-radius:18px;padding:15px 16px;margin-bottom:11px;overflow:hidden">
+                <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ff4d5e;margin-bottom:7px">Up next</div>
+                <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-.02em">Push Day</div>
+                <div style="font-size:11px;color:#9a9a9a;margin-top:5px">6 exercises · 45 min · Strength</div>
+                <div style="margin-top:13px;height:38px;border-radius:10px;background:#ff4d5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">Start workout ›</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">20</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">20-Min Burner</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">5 rounds · HIIT</div></div></div>
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">18</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">Morning Mobility</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">9 moves · Mobility</div></div></div>
+              </div>
+            </div>
+            <div style="padding:9px 16px 11px"><div style="height:46px;border-radius:13px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700"><span style="font-size:17px;line-height:1;color:#ff4d5e">+</span> BUILD A WORKOUT</div></div>
+            <div style="display:flex;justify-content:center;padding:2px 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#0b0b0d;border:1px solid rgba(0,0,0,.4);box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#fff"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #fff;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:11px 18px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div style="font-size:11px;font-weight:600;color:#9a9a9a">20-MIN BURNER · 2/5</div><div style="font-size:19px;color:#fff;line-height:1">×</div></div>
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:12px 0 2px;text-align:center">Mountain<br>Climbers</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#ff4d5e;margin-bottom:12px">Full body</div>
+              <div style="position:relative;width:158px;height:158px;margin-bottom:14px">
+                <svg width="158" height="158" viewBox="0 0 158 158"><circle cx="79" cy="79" r="72" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="79" cy="79" r="72" fill="none" stroke="#ff4d5e" stroke-width="10" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="135" transform="rotate(-90 79 79)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">0:24</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-top:2px">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;background:#18181c;border-radius:13px;margin-bottom:10px"><div style="width:26px;height:26px;border-radius:8px;background:#ff4d5e;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:7px solid #fff;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff">Watch demo</div><div style="font-size:10px;color:#9a9a9a">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:11px 13px"><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px">Up next</div><div style="font-size:13px;font-weight:700;color:#fff">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:9px;padding:11px 18px 12px"><div style="flex:1;height:46px;border-radius:13px;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;color:#fff"><span style="display:flex;gap:3px"><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span></span>Pause</div><div style="width:52px;height:46px;border-radius:13px;background:#ff4d5e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="2d">
+      <div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Violet <span class="sub">— soft purple</span></div>
+      <div class="dv-row">
+
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#111"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 16px 0">
+              <div style="font-size:11px;color:#9a9a9a;font-weight:600;letter-spacing:.02em">TUE · JUL 21</div>
+              <div style="font-size:27px;font-weight:800;color:#0b0b0d;letter-spacing:-.035em;line-height:1.02;margin:3px 0 14px">YOUR<br>WORKOUTS</div>
+              <div style="background:#0b0b0d;border-radius:18px;padding:15px 16px;margin-bottom:11px;overflow:hidden">
+                <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a7bff;margin-bottom:7px">Up next</div>
+                <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-.02em">Push Day</div>
+                <div style="font-size:11px;color:#9a9a9a;margin-top:5px">6 exercises · 45 min · Strength</div>
+                <div style="margin-top:13px;height:38px;border-radius:10px;background:#9a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">Start workout ›</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">20</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">20-Min Burner</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">5 rounds · HIIT</div></div></div>
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">18</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">Morning Mobility</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">9 moves · Mobility</div></div></div>
+              </div>
+            </div>
+            <div style="padding:9px 16px 11px"><div style="height:46px;border-radius:13px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700"><span style="font-size:17px;line-height:1;color:#9a7bff">+</span> BUILD A WORKOUT</div></div>
+            <div style="display:flex;justify-content:center;padding:2px 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#0b0b0d;border:1px solid rgba(0,0,0,.4);box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#fff"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #fff;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:11px 18px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div style="font-size:11px;font-weight:600;color:#9a9a9a">20-MIN BURNER · 2/5</div><div style="font-size:19px;color:#fff;line-height:1">×</div></div>
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:12px 0 2px;text-align:center">Mountain<br>Climbers</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#9a7bff;margin-bottom:12px">Full body</div>
+              <div style="position:relative;width:158px;height:158px;margin-bottom:14px">
+                <svg width="158" height="158" viewBox="0 0 158 158"><circle cx="79" cy="79" r="72" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="79" cy="79" r="72" fill="none" stroke="#9a7bff" stroke-width="10" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="135" transform="rotate(-90 79 79)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">0:24</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-top:2px">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;background:#18181c;border-radius:13px;margin-bottom:10px"><div style="width:26px;height:26px;border-radius:8px;background:#9a7bff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:7px solid #fff;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff">Watch demo</div><div style="font-size:10px;color:#9a9a9a">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:11px 13px"><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px">Up next</div><div style="font-size:13px;font-weight:700;color:#fff">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:9px;padding:11px 18px 12px"><div style="flex:1;height:46px;border-radius:13px;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;color:#fff"><span style="display:flex;gap:3px"><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span></span>Pause</div><div style="width:52px;height:46px;border-radius:13px;background:#9a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="2e">
+      <div class="dv-olabel"><a class="dv-oid" href="#2e">2e</a>Mono <span class="sub">— no colour, pure black &amp; white</span></div>
+      <div class="dv-row">
+
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#111"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 16px 0">
+              <div style="font-size:11px;color:#9a9a9a;font-weight:600;letter-spacing:.02em">TUE · JUL 21</div>
+              <div style="font-size:27px;font-weight:800;color:#0b0b0d;letter-spacing:-.035em;line-height:1.02;margin:3px 0 14px">YOUR<br>WORKOUTS</div>
+              <div style="background:#0b0b0d;border-radius:18px;padding:15px 16px;margin-bottom:11px;overflow:hidden">
+                <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-bottom:7px">Up next</div>
+                <div style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-.02em">Push Day</div>
+                <div style="font-size:11px;color:#9a9a9a;margin-top:5px">6 exercises · 45 min · Strength</div>
+                <div style="margin-top:13px;height:38px;border-radius:10px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">Start workout ›</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">20</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">20-Min Burner</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">5 rounds · HIIT</div></div></div>
+                <div style="display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.13);border-radius:14px;padding:12px 14px"><div style="width:36px;height:36px;border-radius:10px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#0b0b0d">18</div><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0b0b0d">Morning Mobility</div><div style="font-size:10px;color:#9a9a9a;margin-top:2px">9 moves · Mobility</div></div></div>
+              </div>
+            </div>
+            <div style="padding:9px 16px 11px"><div style="height:46px;border-radius:13px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700"><span style="font-size:17px;line-height:1;color:#fff">+</span> BUILD A WORKOUT</div></div>
+            <div style="display:flex;justify-content:center;padding:2px 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:264px;height:554px;border-radius:32px;background:#0b0b0d;border:1px solid rgba(0,0,0,.4);box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10px;font-weight:600;color:#fff"><span>9:41</span><span style="width:14px;height:8px;border:1.4px solid #fff;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:11px 18px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div style="font-size:11px;font-weight:600;color:#9a9a9a">20-MIN BURNER · 2/5</div><div style="font-size:19px;color:#fff;line-height:1">×</div></div>
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:12px 0 2px;text-align:center">Mountain<br>Climbers</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#fff;margin-bottom:12px">Full body</div>
+              <div style="position:relative;width:158px;height:158px;margin-bottom:14px">
+                <svg width="158" height="158" viewBox="0 0 158 158"><circle cx="79" cy="79" r="72" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="79" cy="79" r="72" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="135" transform="rotate(-90 79 79)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">0:24</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-top:2px">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;background:#18181c;border-radius:13px;margin-bottom:10px"><div style="width:26px;height:26px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:7px solid #0b0b0d;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff">Watch demo</div><div style="font-size:10px;color:#9a9a9a">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:11px 13px"><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px">Up next</div><div style="font-size:13px;font-weight:700;color:#fff">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:9px;padding:11px 18px 12px"><div style="flex:1;height:46px;border-radius:13px;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;color:#fff"><span style="display:flex;gap:3px"><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span><span style="width:3px;height:12px;background:#fff;border-radius:1px"></span></span>Pause</div><div style="width:52px;height:46px;border-radius:13px;background:#fff;color:#0b0b0d;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:96px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="dv-next">Try next: "go with <a class="dv-oid" href="#2b">2b</a>" · "try a deep green or teal accent" · "show <a class="dv-oid" href="#2a">2a</a> on the Library screen too" · "make the chosen colour a full interactive prototype"</p>
+</section>
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Workout builder — three visual directions</span></div>
+  <p class="dv-intro">Android, minimal & clean. Each direction shows the three core screens: <b>Home</b> (workouts you've built), <b>Library</b> (browse by muscle/type), and <b>Workout</b> (execution). Execution adapts to the workout — <a class="dv-oid" href="#1a">1a</a> shows the rep-based checklist mode, <a class="dv-oid" href="#1b">1b</a> and <a class="dv-oid" href="#1c">1c</a> show the timed mode. Every workout links to a demo video.</p>
+  <div class="dv-opts">
+
+    <!-- ============================ 1a  MONO ============================ -->
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Mono <span class="sub">— pure black &amp; white, hairline, editorial</span></div>
+      <div class="dv-row">
+
+        <!-- 1a HOME -->
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 24px 60px rgba(0,0,0,.14);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#111"><span>9:41</span><div style="display:flex;gap:4px;align-items:center"><span style="width:15px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 20px 0">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <div><div style="font-size:12px;color:#8a8a8a;font-weight:500">Tuesday, Jul 21</div><div style="font-size:26px;font-weight:700;color:#0a0a0a;letter-spacing:-.02em;margin-top:2px">Your workouts</div></div>
+              </div>
+              <div style="font-size:12px;color:#8a8a8a;margin:2px 0 18px">3 built · ready to train</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:16px;padding:15px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:16px;font-weight:600;color:#0a0a0a">Push Day</div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;border:1px solid rgba(0,0,0,.16);padding:3px 7px;border-radius:6px">Strength</div></div>
+                  <div style="font-size:12px;color:#8a8a8a;margin-top:8px">6 exercises · 45 min</div>
+                </div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:16px;padding:15px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:16px;font-weight:600;color:#0a0a0a">20-Min Burner</div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;border:1px solid rgba(0,0,0,.16);padding:3px 7px;border-radius:6px">HIIT</div></div>
+                  <div style="font-size:12px;color:#8a8a8a;margin-top:8px">5 rounds · 20 min</div>
+                </div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:16px;padding:15px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:16px;font-weight:600;color:#0a0a0a">Morning Mobility</div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;border:1px solid rgba(0,0,0,.16);padding:3px 7px;border-radius:6px">Mobility</div></div>
+                  <div style="font-size:12px;color:#8a8a8a;margin-top:8px">9 moves · 18 min</div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:0 20px 12px"><div style="height:50px;border-radius:14px;background:#0a0a0a;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600"><span style="font-size:18px;line-height:1">+</span> Build a workout</div></div>
+            <div style="display:flex;border-top:1px solid rgba(0,0,0,.08)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;border:2px solid #0a0a0a;border-radius:5px"></div><span style="font-size:10px;font-weight:600;color:#0a0a0a">Home</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="height:2px;background:#b3b3b3;border-radius:2px"></span><span style="height:2px;background:#b3b3b3;border-radius:2px"></span><span style="height:2px;background:#b3b3b3;border-radius:2px"></span></div><span style="font-size:10px;font-weight:500;color:#b3b3b3">Library</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:6px 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <!-- 1a LIBRARY -->
+        <div class="dv-col"><div class="dv-cap">Library</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 24px 60px rgba(0,0,0,.14);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#111"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 20px 0">
+              <div style="font-size:26px;font-weight:700;color:#0a0a0a;letter-spacing:-.02em;margin-bottom:14px">Library</div>
+              <div style="display:flex;align-items:center;gap:9px;height:42px;border-radius:21px;border:1px solid rgba(0,0,0,.14);padding:0 15px;margin-bottom:14px"><div style="width:13px;height:13px;border:2px solid #b0b0b0;border-radius:50%"></div><span style="font-size:13px;color:#a6a6a6">Search exercises</span></div>
+              <div style="display:flex;gap:7px;margin-bottom:16px;overflow:hidden"><div style="font-size:11px;font-weight:600;color:#fff;background:#0a0a0a;padding:6px 12px;border-radius:16px">All</div><div style="font-size:11px;font-weight:500;color:#5a5a5a;border:1px solid rgba(0,0,0,.14);padding:6px 12px;border-radius:16px">Strength</div><div style="font-size:11px;font-weight:500;color:#5a5a5a;border:1px solid rgba(0,0,0,.14);padding:6px 12px;border-radius:16px">HIIT</div><div style="font-size:11px;font-weight:500;color:#5a5a5a;border:1px solid rgba(0,0,0,.14);padding:6px 12px;border-radius:16px">Yoga</div></div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8a8a8a;margin-bottom:11px">Browse by muscle</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:13px;padding:13px"><div style="font-size:14px;font-weight:600;color:#0a0a0a">Chest</div><div style="font-size:11px;color:#8a8a8a;margin-top:3px">12 exercises</div></div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:13px;padding:13px"><div style="font-size:14px;font-weight:600;color:#0a0a0a">Back</div><div style="font-size:11px;color:#8a8a8a;margin-top:3px">14 exercises</div></div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:13px;padding:13px"><div style="font-size:14px;font-weight:600;color:#0a0a0a">Legs</div><div style="font-size:11px;color:#8a8a8a;margin-top:3px">18 exercises</div></div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:13px;padding:13px"><div style="font-size:14px;font-weight:600;color:#0a0a0a">Shoulders</div><div style="font-size:11px;color:#8a8a8a;margin-top:3px">10 exercises</div></div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:13px;padding:13px"><div style="font-size:14px;font-weight:600;color:#0a0a0a">Core</div><div style="font-size:11px;color:#8a8a8a;margin-top:3px">11 exercises</div></div>
+                <div style="border:1px solid rgba(0,0,0,.13);border-radius:13px;padding:13px"><div style="font-size:14px;font-weight:600;color:#0a0a0a">Cardio</div><div style="font-size:11px;color:#8a8a8a;margin-top:3px">8 exercises</div></div>
+              </div>
+            </div>
+            <div style="display:flex;border-top:1px solid rgba(0,0,0,.08)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;border:2px solid #b3b3b3;border-radius:5px"></div><span style="font-size:10px;font-weight:500;color:#b3b3b3">Home</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="height:2px;background:#0a0a0a;border-radius:2px"></span><span style="height:2px;background:#0a0a0a;border-radius:2px"></span><span style="height:2px;background:#0a0a0a;border-radius:2px"></span></div><span style="font-size:10px;font-weight:600;color:#0a0a0a">Library</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:6px 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <!-- 1a WORKOUT (checklist) -->
+        <div class="dv-col"><div class="dv-cap">Workout · reps</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 24px 60px rgba(0,0,0,.14);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#111"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 20px 0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:#8a8a8a">Push Day · 2 of 6</div><div style="font-size:20px;color:#0a0a0a;line-height:1">×</div></div>
+              <div style="display:flex;gap:4px;margin-bottom:20px"><span style="flex:1;height:3px;border-radius:2px;background:#0a0a0a"></span><span style="flex:1;height:3px;border-radius:2px;background:#0a0a0a"></span><span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span><span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span><span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span><span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span></div>
+              <div style="font-size:28px;font-weight:700;color:#0a0a0a;letter-spacing:-.02em;line-height:1.1">Bench Press</div>
+              <div style="font-size:12px;color:#8a8a8a;margin:6px 0 16px">Chest · Barbell</div>
+              <div style="display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid rgba(0,0,0,.13);border-radius:13px;margin-bottom:18px"><div style="width:28px;height:28px;border-radius:8px;background:#0a0a0a;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#0a0a0a">Watch demo</div><div style="font-size:11px;color:#8a8a8a">How to: Bench Press</div></div></div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8a8a8a;margin-bottom:4px">Sets</div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.1)"><div style="width:20px;height:20px;border-radius:6px;background:#0a0a0a;position:relative"><div style="position:absolute;left:6px;top:3px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)"></div></div><div style="flex:1;font-size:14px;font-weight:600;color:#c2c2c2;text-decoration:line-through">Set 1</div><div style="font-size:13px;color:#c2c2c2">10 · 60 kg</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.1)"><div style="width:20px;height:20px;border-radius:6px;border:1.6px solid #0a0a0a"></div><div style="flex:1;font-size:14px;font-weight:600;color:#0a0a0a">Set 2</div><div style="font-size:13px;color:#8a8a8a">10 · 60 kg</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.1)"><div style="width:20px;height:20px;border-radius:6px;border:1.6px solid rgba(0,0,0,.2)"></div><div style="flex:1;font-size:14px;font-weight:600;color:#0a0a0a">Set 3</div><div style="font-size:13px;color:#8a8a8a">8 · 65 kg</div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 0"><div style="width:20px;height:20px;border-radius:6px;border:1.6px solid rgba(0,0,0,.2)"></div><div style="flex:1;font-size:14px;font-weight:600;color:#0a0a0a">Set 4</div><div style="font-size:13px;color:#8a8a8a">8 · 65 kg</div></div>
+            </div>
+            <div style="padding:8px 20px 14px"><div style="height:50px;border-radius:14px;background:#0a0a0a;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600">Next exercise ›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================ 1b  PAPER ============================ -->
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Paper <span class="sub">— warm neutral, soft rounded, one calm accent</span></div>
+      <div class="dv-row">
+
+        <!-- 1b HOME -->
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#f4f1ea;border:1px solid rgba(30,25,20,.12);box-shadow:0 24px 60px rgba(60,50,35,.16);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#2a2620"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #2a2620;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 20px 0">
+              <div style="font-size:12px;color:#8c877d;font-weight:500">Good morning, Alex</div>
+              <div style="font-size:26px;font-weight:700;color:#211e18;letter-spacing:-.02em;margin:2px 0 18px">Your workouts</div>
+              <div style="display:flex;flex-direction:column;gap:13px">
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:20px;padding:16px;box-shadow:0 2px 6px rgba(60,50,35,.05)">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:16px;font-weight:600;color:#211e18">Push Day</div><div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5c7350;background:#e7ede0;padding:4px 8px;border-radius:8px">Strength</div></div>
+                  <div style="font-size:12px;color:#8c877d;margin-top:9px">6 exercises · 45 min</div>
+                </div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:20px;padding:16px;box-shadow:0 2px 6px rgba(60,50,35,.05)">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:16px;font-weight:600;color:#211e18">20-Min Burner</div><div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5c7350;background:#e7ede0;padding:4px 8px;border-radius:8px">HIIT</div></div>
+                  <div style="font-size:12px;color:#8c877d;margin-top:9px">5 rounds · 20 min</div>
+                </div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:20px;padding:16px;box-shadow:0 2px 6px rgba(60,50,35,.05)">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-size:16px;font-weight:600;color:#211e18">Morning Mobility</div><div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5c7350;background:#e7ede0;padding:4px 8px;border-radius:8px">Mobility</div></div>
+                  <div style="font-size:12px;color:#8c877d;margin-top:9px">9 moves · 18 min</div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:0 20px 12px"><div style="height:50px;border-radius:16px;background:#5c7350;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600"><span style="font-size:18px;line-height:1">+</span> Build a workout</div></div>
+            <div style="display:flex;border-top:1px solid rgba(30,25,20,.08)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;border:2px solid #211e18;border-radius:5px"></div><span style="font-size:10px;font-weight:600;color:#211e18">Home</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="height:2px;background:#b3aea3;border-radius:2px"></span><span style="height:2px;background:#b3aea3;border-radius:2px"></span><span style="height:2px;background:#b3aea3;border-radius:2px"></span></div><span style="font-size:10px;font-weight:500;color:#b3aea3">Library</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:6px 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(30,25,20,.2)"></div></div>
+          </div>
+        </div>
+
+        <!-- 1b LIBRARY -->
+        <div class="dv-col"><div class="dv-cap">Library</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#f4f1ea;border:1px solid rgba(30,25,20,.12);box-shadow:0 24px 60px rgba(60,50,35,.16);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#2a2620"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #2a2620;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 20px 0">
+              <div style="font-size:26px;font-weight:700;color:#211e18;letter-spacing:-.02em;margin-bottom:14px">Library</div>
+              <div style="display:flex;align-items:center;gap:9px;height:44px;border-radius:22px;background:#fffdf8;border:1px solid rgba(30,25,20,.09);padding:0 15px;margin-bottom:15px"><div style="width:13px;height:13px;border:2px solid #b0a99c;border-radius:50%"></div><span style="font-size:13px;color:#a6a094">Search exercises</span></div>
+              <div style="display:flex;gap:7px;margin-bottom:16px;overflow:hidden"><div style="font-size:11px;font-weight:600;color:#fff;background:#5c7350;padding:6px 13px;border-radius:16px">All</div><div style="font-size:11px;font-weight:500;color:#6a6459;background:#fffdf8;border:1px solid rgba(30,25,20,.1);padding:6px 13px;border-radius:16px">Strength</div><div style="font-size:11px;font-weight:500;color:#6a6459;background:#fffdf8;border:1px solid rgba(30,25,20,.1);padding:6px 13px;border-radius:16px">HIIT</div><div style="font-size:11px;font-weight:500;color:#6a6459;background:#fffdf8;border:1px solid rgba(30,25,20,.1);padding:6px 13px;border-radius:16px">Yoga</div></div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8c877d;margin-bottom:11px">Browse by muscle</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:15px;padding:14px"><div style="font-size:14px;font-weight:600;color:#211e18">Chest</div><div style="font-size:11px;color:#8c877d;margin-top:3px">12 exercises</div></div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:15px;padding:14px"><div style="font-size:14px;font-weight:600;color:#211e18">Back</div><div style="font-size:11px;color:#8c877d;margin-top:3px">14 exercises</div></div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:15px;padding:14px"><div style="font-size:14px;font-weight:600;color:#211e18">Legs</div><div style="font-size:11px;color:#8c877d;margin-top:3px">18 exercises</div></div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:15px;padding:14px"><div style="font-size:14px;font-weight:600;color:#211e18">Shoulders</div><div style="font-size:11px;color:#8c877d;margin-top:3px">10 exercises</div></div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:15px;padding:14px"><div style="font-size:14px;font-weight:600;color:#211e18">Core</div><div style="font-size:11px;color:#8c877d;margin-top:3px">11 exercises</div></div>
+                <div style="background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:15px;padding:14px"><div style="font-size:14px;font-weight:600;color:#211e18">Cardio</div><div style="font-size:11px;color:#8c877d;margin-top:3px">8 exercises</div></div>
+              </div>
+            </div>
+            <div style="display:flex;border-top:1px solid rgba(30,25,20,.08)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;border:2px solid #b3aea3;border-radius:5px"></div><span style="font-size:10px;font-weight:500;color:#b3aea3">Home</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="height:2px;background:#211e18;border-radius:2px"></span><span style="height:2px;background:#211e18;border-radius:2px"></span><span style="height:2px;background:#211e18;border-radius:2px"></span></div><span style="font-size:10px;font-weight:600;color:#211e18">Library</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:6px 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(30,25,20,.2)"></div></div>
+          </div>
+        </div>
+
+        <!-- 1b WORKOUT (timer) -->
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#f4f1ea;border:1px solid rgba(30,25,20,.12);box-shadow:0 24px 60px rgba(60,50,35,.16);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#2a2620"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #2a2620;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 20px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:12px;font-weight:600;color:#8c877d">20-Min Burner · Round 2 of 5</div><div style="font-size:20px;color:#211e18;line-height:1">×</div></div>
+              <div style="font-size:24px;font-weight:700;color:#211e18;letter-spacing:-.02em;margin:14px 0 2px;text-align:center">Mountain Climbers</div>
+              <div style="font-size:12px;color:#8c877d;margin-bottom:14px">Full body · Bodyweight</div>
+              <div style="position:relative;width:172px;height:172px;margin-bottom:16px">
+                <svg width="172" height="172" viewBox="0 0 172 172"><circle cx="86" cy="86" r="78" fill="none" stroke="rgba(30,25,20,.1)" stroke-width="9"/><circle cx="86" cy="86" r="78" fill="none" stroke="#5c7350" stroke-width="9" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="150" transform="rotate(-90 86 86)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:46px;font-weight:700;color:#211e18;letter-spacing:-.02em;font-variant-numeric:tabular-nums">0:24</div><div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8c877d">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:11px;padding:11px 13px;background:#fffdf8;border:1px solid rgba(30,25,20,.08);border-radius:14px;margin-bottom:12px"><div style="width:28px;height:28px;border-radius:8px;background:#5c7350;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#211e18">Watch demo</div><div style="font-size:11px;color:#8c877d">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;background:#eae5db;border-radius:14px;padding:12px 14px"><div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8c877d;margin-bottom:3px">Up next</div><div style="font-size:14px;font-weight:600;color:#211e18">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:10px;padding:12px 20px 14px"><div style="flex:1;height:50px;border-radius:14px;background:#fffdf8;border:1px solid rgba(30,25,20,.14);display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;color:#211e18"><span style="display:flex;gap:3px"><span style="width:3px;height:13px;background:#211e18;border-radius:1px"></span><span style="width:3px;height:13px;background:#211e18;border-radius:1px"></span></span>Pause</div><div style="width:56px;height:50px;border-radius:14px;background:#5c7350;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(30,25,20,.2)"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================ 1c  CONTRAST ============================ -->
+    <div class="dv-opt" id="1c">
+      <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Contrast <span class="sub">— bold mono, black hero surfaces, one electric accent</span></div>
+      <div class="dv-row">
+
+        <!-- 1c HOME -->
+        <div class="dv-col"><div class="dv-cap">Home</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 24px 60px rgba(0,0,0,.16);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#111"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 18px 0">
+              <div style="font-size:12px;color:#9a9a9a;font-weight:600;letter-spacing:.02em">TUE · JUL 21</div>
+              <div style="font-size:30px;font-weight:800;color:#0b0b0d;letter-spacing:-.035em;line-height:1.02;margin:3px 0 16px">YOUR<br>WORKOUTS</div>
+              <div style="background:#0b0b0d;border-radius:20px;padding:17px 18px;margin-bottom:12px;position:relative;overflow:hidden">
+                <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#c8f24a;margin-bottom:8px">Up next</div>
+                <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em">Push Day</div>
+                <div style="font-size:12px;color:#9a9a9a;margin-top:6px">6 exercises · 45 min · Strength</div>
+                <div style="margin-top:14px;height:40px;border-radius:11px;background:#c8f24a;color:#0b0b0d;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">Start workout ›</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:13px;border:1px solid rgba(0,0,0,.13);border-radius:15px;padding:13px 15px"><div style="width:38px;height:38px;border-radius:11px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#0b0b0d">20</div><div style="flex:1"><div style="font-size:15px;font-weight:700;color:#0b0b0d">20-Min Burner</div><div style="font-size:11px;color:#9a9a9a;margin-top:2px">5 rounds · HIIT</div></div></div>
+                <div style="display:flex;align-items:center;gap:13px;border:1px solid rgba(0,0,0,.13);border-radius:15px;padding:13px 15px"><div style="width:38px;height:38px;border-radius:11px;background:#f1f1ef;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#0b0b0d">18</div><div style="flex:1"><div style="font-size:15px;font-weight:700;color:#0b0b0d">Morning Mobility</div><div style="font-size:11px;color:#9a9a9a;margin-top:2px">9 moves · Mobility</div></div></div>
+              </div>
+            </div>
+            <div style="padding:10px 18px 12px"><div style="height:50px;border-radius:14px;background:#0b0b0d;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700"><span style="font-size:18px;line-height:1;color:#c8f24a">+</span> BUILD A WORKOUT</div></div>
+            <div style="display:flex;border-top:1px solid rgba(0,0,0,.08)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;border:2px solid #0b0b0d;border-radius:5px"></div><span style="font-size:10px;font-weight:700;color:#0b0b0d">Home</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="height:2px;background:#b3b3b3;border-radius:2px"></span><span style="height:2px;background:#b3b3b3;border-radius:2px"></span><span style="height:2px;background:#b3b3b3;border-radius:2px"></span></div><span style="font-size:10px;font-weight:600;color:#b3b3b3">Library</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:6px 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <!-- 1c LIBRARY -->
+        <div class="dv-col"><div class="dv-cap">Library</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#fff;border:1px solid rgba(0,0,0,.14);box-shadow:0 24px 60px rgba(0,0,0,.16);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#111"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #111;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 18px 0">
+              <div style="font-size:30px;font-weight:800;color:#0b0b0d;letter-spacing:-.03em;margin-bottom:14px">LIBRARY</div>
+              <div style="display:flex;align-items:center;gap:9px;height:44px;border-radius:13px;background:#f1f1ef;padding:0 15px;margin-bottom:15px"><div style="width:13px;height:13px;border:2px solid #a6a6a6;border-radius:50%"></div><span style="font-size:13px;color:#a0a0a0;font-weight:500">Search exercises</span></div>
+              <div style="display:flex;gap:7px;margin-bottom:18px;overflow:hidden"><div style="font-size:11px;font-weight:700;color:#0b0b0d;background:#c8f24a;padding:7px 13px;border-radius:10px">All</div><div style="font-size:11px;font-weight:600;color:#5a5a5a;background:#f1f1ef;padding:7px 13px;border-radius:10px">Strength</div><div style="font-size:11px;font-weight:600;color:#5a5a5a;background:#f1f1ef;padding:7px 13px;border-radius:10px">HIIT</div><div style="font-size:11px;font-weight:600;color:#5a5a5a;background:#f1f1ef;padding:7px 13px;border-radius:10px">Yoga</div></div>
+              <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0b0b0d;margin-bottom:12px">Browse by muscle</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+                <div style="background:#0b0b0d;border-radius:15px;padding:15px 14px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between"><div style="font-size:15px;font-weight:700;color:#fff">Chest</div><div style="font-size:11px;color:#c8f24a;font-weight:600;margin-top:8px">12</div></div>
+                <div style="background:#f1f1ef;border-radius:15px;padding:15px 14px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between"><div style="font-size:15px;font-weight:700;color:#0b0b0d">Back</div><div style="font-size:11px;color:#9a9a9a;font-weight:600;margin-top:8px">14</div></div>
+                <div style="background:#f1f1ef;border-radius:15px;padding:15px 14px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between"><div style="font-size:15px;font-weight:700;color:#0b0b0d">Legs</div><div style="font-size:11px;color:#9a9a9a;font-weight:600;margin-top:8px">18</div></div>
+                <div style="background:#f1f1ef;border-radius:15px;padding:15px 14px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between"><div style="font-size:15px;font-weight:700;color:#0b0b0d">Shoulders</div><div style="font-size:11px;color:#9a9a9a;font-weight:600;margin-top:8px">10</div></div>
+                <div style="background:#f1f1ef;border-radius:15px;padding:15px 14px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between"><div style="font-size:15px;font-weight:700;color:#0b0b0d">Core</div><div style="font-size:11px;color:#9a9a9a;font-weight:600;margin-top:8px">11</div></div>
+                <div style="background:#f1f1ef;border-radius:15px;padding:15px 14px;min-height:56px;display:flex;flex-direction:column;justify-content:space-between"><div style="font-size:15px;font-weight:700;color:#0b0b0d">Cardio</div><div style="font-size:11px;color:#9a9a9a;font-weight:600;margin-top:8px">8</div></div>
+              </div>
+            </div>
+            <div style="display:flex;border-top:1px solid rgba(0,0,0,.08)">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;border:2px solid #b3b3b3;border-radius:5px"></div><span style="font-size:10px;font-weight:600;color:#b3b3b3">Home</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 6px"><div style="width:16px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:3px"><span style="height:2px;background:#0b0b0d;border-radius:2px"></span><span style="height:2px;background:#0b0b0d;border-radius:2px"></span><span style="height:2px;background:#0b0b0d;border-radius:2px"></span></div><span style="font-size:10px;font-weight:700;color:#0b0b0d">Library</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:6px 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(0,0,0,.22)"></div></div>
+          </div>
+        </div>
+
+        <!-- 1c WORKOUT (timer, black hero) -->
+        <div class="dv-col"><div class="dv-cap">Workout · timed</div>
+          <div style="width:288px;height:604px;border-radius:34px;background:#0b0b0d;border:1px solid rgba(0,0,0,.4);box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;font-family:'Helvetica Neue',Arial,sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px 4px;font-size:11px;font-weight:600;color:#fff"><span>9:41</span><span style="width:15px;height:8px;border:1.4px solid #fff;border-radius:2px;display:inline-block"></span></div>
+            <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:12px 20px 0;align-items:center">
+              <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-size:12px;font-weight:600;color:#9a9a9a">20-MIN BURNER · 2/5</div><div style="font-size:20px;color:#fff;line-height:1">×</div></div>
+              <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:16px 0 2px;text-align:center">Mountain<br>Climbers</div>
+              <div style="font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#c8f24a;margin-bottom:16px">Full body</div>
+              <div style="position:relative;width:176px;height:176px;margin-bottom:18px">
+                <svg width="176" height="176" viewBox="0 0 176 176"><circle cx="88" cy="88" r="80" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="88" cy="88" r="80" fill="none" stroke="#c8f24a" stroke-width="10" stroke-linecap="round" stroke-dasharray="503" stroke-dashoffset="150" transform="rotate(-90 88 88)"/></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:50px;font-weight:800;color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">0:24</div><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-top:2px">remaining</div></div>
+              </div>
+              <div style="width:100%;display:flex;align-items:center;gap:11px;padding:12px 14px;background:#18181c;border-radius:14px;margin-bottom:12px"><div style="width:28px;height:28px;border-radius:8px;background:#c8f24a;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #0b0b0d;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff">Watch demo</div><div style="font-size:11px;color:#9a9a9a">How to: Mountain Climbers</div></div></div>
+              <div style="width:100%;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 14px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px">Up next</div><div style="font-size:14px;font-weight:700;color:#fff">Rest 15s → Jump Squats</div></div>
+            </div>
+            <div style="display:flex;gap:10px;padding:12px 20px 14px"><div style="flex:1;height:50px;border-radius:14px;border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;color:#fff"><span style="display:flex;gap:3px"><span style="width:3px;height:13px;background:#fff;border-radius:1px"></span><span style="width:3px;height:13px;background:#fff;border-radius:1px"></span></span>Pause</div><div style="width:56px;height:50px;border-radius:14px;background:#c8f24a;color:#0b0b0d;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">›</div></div>
+            <div style="display:flex;justify-content:center;padding:0 0 9px"><div style="width:100px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Try next: "take <a class="dv-oid" href="#1a">1a</a> and add the accent from <a class="dv-oid" href="#1c">1c</a>" · "show the build-a-workout flow for <a class="dv-oid" href="#1b">1b</a>" · "make <a class="dv-oid" href="#1c">1c</a> a full interactive prototype" · "new direction: card-based library with photos"</p>
+</section>
+</x-dc>
+</body>
+</html>
