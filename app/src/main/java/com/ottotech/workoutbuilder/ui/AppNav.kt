@@ -20,6 +20,7 @@ import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
 import com.ottotech.workoutbuilder.ui.library.CategoryScreen
+import com.ottotech.workoutbuilder.ui.library.ExerciseDetailScreen
 import com.ottotech.workoutbuilder.ui.library.FiltersSheet
 import com.ottotech.workoutbuilder.ui.library.LibraryScreen
 import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
@@ -116,7 +117,15 @@ fun AppNav() {
             route = Routes.EXERCISE,
             arguments = listOf(navArgument("exerciseId") { type = NavType.StringType }),
         ) { entry ->
-            Text(entry.arguments?.getString("exerciseId").orEmpty())
+            val libraryVm: LibraryViewModel = viewModel(
+                viewModelStoreOwner = nav.getBackStackEntry(Routes.LIBRARY),
+                factory = LibraryViewModel.Factory,
+            )
+            ExerciseDetailScreen(
+                exerciseId = entry.arguments?.getString("exerciseId").orEmpty(),
+                viewModel = libraryVm,
+                onBack = { nav.popBackStack() },
+            )
         }
     }
 }
