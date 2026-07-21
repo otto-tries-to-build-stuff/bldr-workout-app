@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Launch theme only. All in-app colour comes from ui/theme/Colors.kt.
+      windowBackground matches the `background` role so there is no flash
+      between the launch window and the first Compose frame.
+    -->
+    <style name="Theme.WorkoutBuilder" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFFFFFFF</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
