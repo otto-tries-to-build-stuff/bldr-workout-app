@@ -2,6 +2,10 @@ package com.ottotech.workoutbuilder.ui
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -12,6 +16,7 @@ import androidx.navigation.navArgument
 import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
+import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
 
 object Routes {
@@ -41,12 +46,25 @@ fun AppNav() {
     NavHost(navController = nav, startDestination = Routes.HOME) {
 
         composable(Routes.HOME) {
+            // The two Build destinations do not exist yet; the sheet is the seam they
+            // plug into. Left as no-ops rather than placeholder screens.
+            var showBuildSheet by rememberSaveable { mutableStateOf(false) }
+
             AppScaffold(tab = Tab.HOME, onSelectTab = { if (it == Tab.LIBRARY) nav.switchTab(Routes.LIBRARY) }) {
                 HomeScreen(
                     // TODO(Plan 1D): route to the execution screen.
                     onStartWorkout = { },
-                    // TODO(Plan 1C): raise the Build sheet. Wired in Task 5.
-                    onBuild = { },
+                    onBuild = { showBuildSheet = true },
+                )
+            }
+
+            if (showBuildSheet) {
+                BuildSheet(
+                    onDismiss = { showBuildSheet = false },
+                    // TODO(Plan 1C): navigate to the Builder.
+                    onBuildYourself = { showBuildSheet = false },
+                    // TODO(Plan 2): navigate to the Coach.
+                    onAskCoach = { showBuildSheet = false },
                 )
             }
         }
