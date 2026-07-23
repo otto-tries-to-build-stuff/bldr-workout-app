@@ -1,53 +1,36 @@
-package com.ottotech.workoutbuilder.fixtures
+package com.ottotech.workoutbuilder.data.seed
 
-import com.ottotech.workoutbuilder.domain.Exercise
-import com.ottotech.workoutbuilder.domain.Facet
 import com.ottotech.workoutbuilder.domain.ItemMode
-import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.domain.Rest
 import com.ottotech.workoutbuilder.domain.Section
-import com.ottotech.workoutbuilder.domain.Tag
 import com.ottotech.workoutbuilder.domain.TrainingType
 import com.ottotech.workoutbuilder.domain.Workout
 import com.ottotech.workoutbuilder.domain.WorkoutItem
 import java.time.Instant
 
 /**
- * The Court Speed workout from `web-app-reference/HIIT Workout.html`, rebuilt in the
- * data model. Mirrors that file's `buildSegments()`.
+ * The workouts a fresh install starts with.
  *
- * This is the acceptance fixture: if the compiler turns this into the same segment
- * sequence the web app produces, the model can express a real workout.
+ * Court Speed is rebuilt from `web-app-reference/HIIT Workout.html` and mirrors that file's
+ * `buildSegments()`. It is both the app's sample content and its acceptance fixture: if the
+ * compiler turns this into the same 40-segment sequence the web app produces, the data model
+ * can express a real workout. See `WorkoutSeedTest`.
+ *
+ * Every `exerciseId` below must be a row in [ExerciseSeed] — the test enforces that too.
+ *
+ * `createdAt` is EPOCH rather than the install time so the object stays a constant and the
+ * test stays deterministic. Nothing renders a workout's creation date; it is only a
+ * tiebreak in `UpNext`, where any workout the user builds later correctly outranks this one.
  */
-object CourtSpeed {
+object WorkoutSeed {
 
-    private fun ex(id: String, name: String, muscle: Muscle, url: String? = null) = Exercise(
-        id = id,
-        name = name,
-        primaryMuscle = muscle,
-        tags = setOf(Tag(Facet.TYPE, "HIIT"), Tag(Facet.EQUIPMENT, "Bodyweight")),
-        demoQuery = "${name.lowercase()} proper form",
-        demoUrl = url,
-    )
-
-    val exercises: Map<String, Exercise> = listOf(
-        ex("leg-swings", "Leg Swings", Muscle.MOBILITY, "https://www.youtube.com/shorts/3l31E2cMGMk"),
-        ex("walking-lunge-twist", "Walking Lunge + Twist", Muscle.LEGS, "https://www.youtube.com/shorts/2crIg2iqi8w"),
-        ex("a-skips", "A-Skips", Muscle.CARDIO, "https://www.youtube.com/shorts/fSZUFBbK7CE"),
-        ex("build-up-strides", "Build-Up Strides", Muscle.CARDIO, "https://www.youtube.com/watch?v=IQrbQMPbTtU"),
-        ex("lateral-shuffle", "Lateral Shuffle", Muscle.LEGS, "https://www.youtube.com/shorts/iQjCIghvheI"),
-        ex("skater-bounds", "Skater Bounds", Muscle.LEGS, "https://www.youtube.com/shorts/7-Qfb881k7o"),
-        ex("split-squat-jumps", "Split Squat Jumps", Muscle.LEGS, "https://www.youtube.com/shorts/e6s05vAhAZo"),
-        ex("squat-jumps-180", "180° Squat Jumps", Muscle.LEGS, "https://www.youtube.com/watch?v=_-Q5ywo24_s"),
-        ex("sprint", "Sprint", Muscle.CARDIO),
-        ex("flyer", "Flyer", Muscle.CARDIO),
-    ).associateBy { it.id }
+    const val COURT_SPEED_ID = "court-speed"
 
     private fun timed(id: String, exId: String, sec: Int, note: String? = null) =
         WorkoutItem(id = id, exerciseId = exId, mode = ItemMode.TIMED, durationSec = sec, note = note)
 
-    val workout = Workout(
-        id = "court-speed",
+    val courtSpeed = Workout(
+        id = COURT_SPEED_ID,
         name = "Court Speed",
         type = TrainingType.HIIT,
         createdAt = Instant.EPOCH,
@@ -102,4 +85,6 @@ object CourtSpeed {
             ),
         ),
     )
+
+    val workouts: List<Workout> = listOf(courtSpeed)
 }

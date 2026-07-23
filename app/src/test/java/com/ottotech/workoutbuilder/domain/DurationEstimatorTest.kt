@@ -1,9 +1,7 @@
 package com.ottotech.workoutbuilder.domain
 
-import com.ottotech.workoutbuilder.fixtures.CourtSpeed
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class DurationEstimatorTest {
 
@@ -53,16 +51,5 @@ class DurationEstimatorTest {
     @Test
     fun `empty list is zero`() {
         assertEquals(0, DurationEstimator.estimateSeconds(emptyList()))
-    }
-
-    @Test
-    fun `court speed estimates to a plausible session length`() {
-        val minutes = DurationEstimator.estimateMinutes(
-            SegmentCompiler.compile(CourtSpeed.workout, CourtSpeed.exercises),
-        )
-        // 180s warm prep + 675s block A + 420s block B + 20s bonus = 1295s ≈ 22 min.
-        // Asserted as a band, not an exact figure, so tuning the manual constants
-        // does not break this test.
-        assertTrue(minutes in 20..35, "expected 20-35 min, got $minutes")
     }
 }

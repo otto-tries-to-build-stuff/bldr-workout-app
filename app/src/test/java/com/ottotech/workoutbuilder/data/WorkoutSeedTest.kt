@@ -1,20 +1,39 @@
-package com.ottotech.workoutbuilder.domain
+package com.ottotech.workoutbuilder.data
 
-import com.ottotech.workoutbuilder.fixtures.CourtSpeed
+import com.ottotech.workoutbuilder.data.seed.ExerciseSeed
+import com.ottotech.workoutbuilder.data.seed.WorkoutSeed
+import com.ottotech.workoutbuilder.domain.DurationEstimator
+import com.ottotech.workoutbuilder.domain.ItemMode
+import com.ottotech.workoutbuilder.domain.SegmentCompiler
+import com.ottotech.workoutbuilder.domain.SegmentKind
+import com.ottotech.workoutbuilder.domain.WorkoutSummarizer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Acceptance test. Rebuilds the real Court Speed workout in the data model and asserts
- * the compiled output matches `buildSegments()` in the reference web app.
+ * Acceptance test. Compiles the shipped Court Speed workout against the shipped exercise
+ * library and asserts the output matches `buildSegments()` in the reference web app.
  *
- * If the segment count is not 40, the compiler or the fixture is wrong — not this
- * expectation. Re-read spec §4 and the reference file before changing a number here.
+ * If the segment count is not 40, the compiler or the seed is wrong — not this
+ * expectation. Re-read spec §4 and `web-app-reference/HIIT Workout.html` before changing a
+ * number here.
  */
-class CourtSpeedFixtureTest {
+class WorkoutSeedTest {
 
-    private val segments = SegmentCompiler.compile(CourtSpeed.workout, CourtSpeed.exercises)
+    private val library = ExerciseSeed.exercises.associateBy { it.id }
+    private val segments = SegmentCompiler.compile(WorkoutSeed.courtSpeed, library)
+
+    @Test
+    fun `every exercise the seeded workout references exists in the seeded library`() {
+        val missing = WorkoutSeed.workouts
+            .flatMap { it.sections }
+            .flatMap { it.items }
+            .map { it.exerciseId }
+            .filterNot { it in library }
+            .distinct()
+        assertTrue(missing.isEmpty(), "seeded workouts reference unknown exercises: $missing")
+    }
 
     @Test
     fun `compiles to forty segments matching the reference web app`() {
@@ -75,5 +94,22 @@ class CourtSpeedFixtureTest {
     fun `verified demo urls survive compilation`() {
         val shuffle = segments.first { it.exerciseName == "Lateral Shuffle" }
         assertEquals("https://www.youtube.com/shorts/iQjCIghvheI", shuffle.demoUrl)
+    }
+
+    @Test
+    fun `court speed estimates to a plausible session length`() {
+        // 180s warm prep + 675s block A + 420s block B + 20s bonus = 1295s ≈ 22 min.
+        // Asserted as a band, not an exact figure, so tuning the manual constants in
+        // DurationEstimator does not break this test.
+        val minutes = DurationEstimator.estimateMinutes(segments)
+        assertTrue(minutes in 20..35, "expected 20-35 min, got $minutes")
+    }
+
+    @Test
+    fun `court speed summarises to the meta line Home will render`() {
+        val summary = WorkoutSummarizer.summarize(WorkoutSeed.courtSpeed, library)
+        assertEquals(10, summary.exerciseCount)
+        assertEquals(22, summary.estimatedMinutes)
+        assertEquals("10 exercises · 22 min · HIIT", summary.metaLine)
     }
 }

@@ -11,6 +11,7 @@ object Dimens {
 
     val radiusChip = 10.dp
     val radiusCard = 14.dp
+    val radiusTile = 15.dp
     val radiusHero = 18.dp
     val radiusButton = 13.dp
     val radiusCheckbox = 6.dp

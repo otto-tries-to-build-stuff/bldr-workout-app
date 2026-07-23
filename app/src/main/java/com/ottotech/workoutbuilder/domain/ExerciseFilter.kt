@@ -41,6 +41,18 @@ object ExerciseFilter {
         }
     }
 
+    /**
+     * The categories the grid shows. A muscle with no exercises at all is not a category —
+     * it would be a permanently dead tile. This is distinct from a category that the active
+     * filter narrows to zero, which stays on screen dimmed and untappable (spec §6.3).
+     */
+    fun categoriesIn(exercises: List<Exercise>): List<Muscle> =
+        Muscle.entries.filter { muscle -> exercises.any { it.primaryMuscle == muscle } }
+
+    /** The category screen: the active filter, narrowed to one home category. */
+    fun forMuscle(exercises: List<Exercise>, state: FilterState, muscle: Muscle): List<Exercise> =
+        apply(exercises, state).filter { it.primaryMuscle == muscle }
+
     private fun matchesFacets(exercise: Exercise, state: FilterState): Boolean =
         state.facets.all { (facet, values) ->
             values.isEmpty() || exercise.tags.any { it.facet == facet && it.value in values }
@@ -53,3 +65,35 @@ object ExerciseFilter {
             exercise.tags.any { it.value.lowercase().contains(q) }
     }
 }
+
+// ---- FilterState transitions ----
+//
+// The chip row and the Filters sheet edit the same state, so these live here rather than
+// in either screen. Extensions on an immutable data class: every call returns a new state,
+// which is what a Compose StateFlow wants.
+
+/** Multi-select within a facet — the Filters sheet's chips. */
+fun FilterState.toggle(facet: Facet, value: String): FilterState {
+    val current = facets[facet].orEmpty()
+    val next = if (value in current) current - value else current + value
+    // Drop the key rather than leaving an empty set, so activeFacetCount — which drives
+    // the Filters badge — never counts a facet the user has fully deselected.
+    return copy(facets = if (next.isEmpty()) facets - facet else facets + (facet to next))
+}
+
+/**
+ * Single-select within a facet — the Library's TYPE chip row. Passing null is the `All`
+ * chip: it clears TYPE and nothing else (spec §6.3a).
+ */
+fun FilterState.selectOnly(facet: Facet, value: String?): FilterState =
+    if (value == null) copy(facets = facets - facet)
+    else copy(facets = facets + (facet to setOf(value)))
+
+/**
+ * `Clear all` in the Filters sheet. The search query is a control outside the sheet and
+ * is deliberately left alone.
+ */
+fun FilterState.clearFacets(): FilterState = copy(facets = emptyMap())
+
+fun FilterState.isSelected(facet: Facet, value: String): Boolean =
+    value in facets[facet].orEmpty()
