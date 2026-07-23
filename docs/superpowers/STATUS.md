@@ -8,7 +8,7 @@
 |---|---|
 | Design spec | Complete, approved — `specs/2026-07-21-workout-builder-android-design.md` |
 | **Plan 1A** — foundation & domain | **Merged to `main`.** 46 tests green, verified on device. |
-| **Plan 1B** — Home + Library screens | **Complete** on `phase-1b-home-library`. 76 tests green, verified on the emulator. |
+| **Plan 1B** — Home + Library screens | **Merged to `main`.** 76 tests green, verified on the emulator. |
 | Plan 1C — Builder | Not started |
 | Plan 1D — Execution + audio | Not started |
 | Phase 2 — AI Coach | Not started |
