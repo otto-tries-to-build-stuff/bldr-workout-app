@@ -4,6 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -33,9 +34,12 @@ object Routes {
     const val CATEGORY = "library/{muscle}"
     const val EXERCISE = "exercise/{exerciseId}"
     const val BUILDER = "builder"
+    const val PICK_LIBRARY = "pick"
+    const val PICK_CATEGORY = "pick/{muscle}"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
+    fun pickCategory(muscle: Muscle) = "pick/${muscle.name}"
 }
 
 /**
@@ -140,9 +144,57 @@ fun AppNav() {
             BuilderScreen(
                 viewModel = builderVm,
                 onClose = { nav.popBackStack() },
-                // TODO(Task 3): navigate to the Library in pick mode for this section.
-                onAddExercise = { },
+                onAddExercise = { sectionId ->
+                    builderVm.beginPick(sectionId)
+                    nav.navigate(Routes.PICK_LIBRARY)
+                },
                 onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
+            )
+        }
+
+        composable(Routes.PICK_LIBRARY) {
+            // A fresh, pick-scoped Library filter — independent of the Library tab's state.
+            val pickVm: LibraryViewModel = viewModel(factory = LibraryViewModel.Factory)
+            var showFilters by rememberSaveable { mutableStateOf(false) }
+
+            LibraryScreen(
+                viewModel = pickVm,
+                onOpenCategory = { nav.navigate(Routes.pickCategory(it)) },
+                onOpenFilters = { showFilters = true },
+            )
+            if (showFilters) {
+                FiltersSheet(viewModel = pickVm, onDismiss = { showFilters = false })
+            }
+        }
+
+        composable(
+            route = Routes.PICK_CATEGORY,
+            arguments = listOf(navArgument("muscle") { type = NavType.StringType }),
+        ) { entry ->
+            val muscle = Muscle.valueOf(entry.arguments?.getString("muscle") ?: Muscle.CHEST.name)
+            // Resolve the shared owners once. Picking pops both PICK_LIBRARY and PICK_CATEGORY,
+            // and this frame recomposes during the exit transition — re-calling
+            // getBackStackEntry(PICK_LIBRARY) then would throw because the entry is already
+            // gone. Remembering the owners reuses the cached ones and avoids the lookup.
+            val pickOwner = remember { nav.getBackStackEntry(Routes.PICK_LIBRARY) }
+            val builderOwner = remember { nav.getBackStackEntry(Routes.BUILDER) }
+            val pickVm: LibraryViewModel = viewModel(
+                viewModelStoreOwner = pickOwner,
+                factory = LibraryViewModel.Factory,
+            )
+            val builderVm: BuilderViewModel = viewModel(
+                viewModelStoreOwner = builderOwner,
+                factory = BuilderViewModel.Factory,
+            )
+            CategoryScreen(
+                muscle = muscle,
+                viewModel = pickVm,
+                onBack = { nav.popBackStack() },
+                onOpenExercise = { exerciseId ->
+                    builderVm.onExercisePicked(exerciseId)
+                    nav.popBackStack(Routes.BUILDER, inclusive = false)
+                },
+                pickMode = true,
             )
         }
     }

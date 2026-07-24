@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +39,7 @@ fun CategoryScreen(
     viewModel: LibraryViewModel,
     onBack: () -> Unit,
     onOpenExercise: (String) -> Unit,
+    pickMode: Boolean = false,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
@@ -76,7 +79,7 @@ fun CategoryScreen(
                 }
             } else {
                 items(matches, key = { it.id }) { exercise ->
-                    ExerciseRow(exercise) { onOpenExercise(exercise.id) }
+                    ExerciseRow(exercise, pickMode) { onOpenExercise(exercise.id) }
                 }
             }
         }
@@ -84,7 +87,7 @@ fun CategoryScreen(
 }
 
 @Composable
-private fun ExerciseRow(exercise: Exercise, onClick: () -> Unit) {
+private fun ExerciseRow(exercise: Exercise, pickMode: Boolean, onClick: () -> Unit) {
     val colors = LocalAppColors.current
     // The sub-line is the exercise's equipment plus its secondary muscles — the two things
     // that decide whether you can actually do it right now.
@@ -93,11 +96,19 @@ private fun ExerciseRow(exercise: Exercise, onClick: () -> Unit) {
     val sub = (equipment + alsoHits).joinToString(" · ")
 
     HairlineCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
-        Column(Modifier.fillMaxWidth().padding(Dimens.cardPadding)) {
-            Text(exercise.name, style = AppType.cardTitle, color = colors.onBackground)
-            if (sub.isNotBlank()) {
-                Spacer(Modifier.height(3.dp))
-                Text(sub, style = AppType.cardMeta, color = colors.textMuted)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(Dimens.cardPadding),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(exercise.name, style = AppType.cardTitle, color = colors.onBackground)
+                if (sub.isNotBlank()) {
+                    Spacer(Modifier.height(3.dp))
+                    Text(sub, style = AppType.cardMeta, color = colors.textMuted)
+                }
+            }
+            if (pickMode) {
+                Text("+", style = AppType.heroName, color = colors.onBackground)
             }
         }
     }
