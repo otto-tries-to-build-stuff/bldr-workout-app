@@ -4,6 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -15,6 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ottotech.workoutbuilder.domain.Muscle
+import com.ottotech.workoutbuilder.ui.builder.BuilderScreen
+import com.ottotech.workoutbuilder.ui.builder.BuilderViewModel
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
@@ -30,9 +33,13 @@ object Routes {
     const val LIBRARY = "library"
     const val CATEGORY = "library/{muscle}"
     const val EXERCISE = "exercise/{exerciseId}"
+    const val BUILDER = "builder"
+    const val PICK_LIBRARY = "pick"
+    const val PICK_CATEGORY = "pick/{muscle}"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
+    fun pickCategory(muscle: Muscle) = "pick/${muscle.name}"
 }
 
 /**
@@ -67,8 +74,10 @@ fun AppNav() {
             if (showBuildSheet) {
                 BuildSheet(
                     onDismiss = { showBuildSheet = false },
-                    // TODO(Plan 1C): navigate to the Builder.
-                    onBuildYourself = { showBuildSheet = false },
+                    onBuildYourself = {
+                        showBuildSheet = false
+                        nav.navigate(Routes.BUILDER)
+                    },
                     // TODO(Plan 2): navigate to the Coach.
                     onAskCoach = { showBuildSheet = false },
                 )
@@ -127,6 +136,65 @@ fun AppNav() {
                 exerciseId = entry.arguments?.getString("exerciseId").orEmpty(),
                 viewModel = libraryVm,
                 onBack = { nav.popBackStack() },
+            )
+        }
+
+        composable(Routes.BUILDER) {
+            val builderVm: BuilderViewModel = viewModel(factory = BuilderViewModel.Factory)
+            BuilderScreen(
+                viewModel = builderVm,
+                onClose = { nav.popBackStack() },
+                onAddExercise = { sectionId ->
+                    builderVm.beginPick(sectionId)
+                    nav.navigate(Routes.PICK_LIBRARY)
+                },
+                onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
+            )
+        }
+
+        composable(Routes.PICK_LIBRARY) {
+            // A fresh, pick-scoped Library filter — independent of the Library tab's state.
+            val pickVm: LibraryViewModel = viewModel(factory = LibraryViewModel.Factory)
+            var showFilters by rememberSaveable { mutableStateOf(false) }
+
+            LibraryScreen(
+                viewModel = pickVm,
+                onOpenCategory = { nav.navigate(Routes.pickCategory(it)) },
+                onOpenFilters = { showFilters = true },
+            )
+            if (showFilters) {
+                FiltersSheet(viewModel = pickVm, onDismiss = { showFilters = false })
+            }
+        }
+
+        composable(
+            route = Routes.PICK_CATEGORY,
+            arguments = listOf(navArgument("muscle") { type = NavType.StringType }),
+        ) { entry ->
+            val muscle = Muscle.valueOf(entry.arguments?.getString("muscle") ?: Muscle.CHEST.name)
+            // Resolve the shared owners once. Picking pops both PICK_LIBRARY and PICK_CATEGORY,
+            // and this frame recomposes during the exit transition — re-calling
+            // getBackStackEntry(PICK_LIBRARY) then would throw because the entry is already
+            // gone. Remembering the owners reuses the cached ones and avoids the lookup.
+            val pickOwner = remember { nav.getBackStackEntry(Routes.PICK_LIBRARY) }
+            val builderOwner = remember { nav.getBackStackEntry(Routes.BUILDER) }
+            val pickVm: LibraryViewModel = viewModel(
+                viewModelStoreOwner = pickOwner,
+                factory = LibraryViewModel.Factory,
+            )
+            val builderVm: BuilderViewModel = viewModel(
+                viewModelStoreOwner = builderOwner,
+                factory = BuilderViewModel.Factory,
+            )
+            CategoryScreen(
+                muscle = muscle,
+                viewModel = pickVm,
+                onBack = { nav.popBackStack() },
+                onOpenExercise = { exerciseId ->
+                    builderVm.onExercisePicked(exerciseId)
+                    nav.popBackStack(Routes.BUILDER, inclusive = false)
+                },
+                pickMode = true,
             )
         }
     }
