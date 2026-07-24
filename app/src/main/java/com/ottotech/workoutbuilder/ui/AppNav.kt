@@ -15,6 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ottotech.workoutbuilder.domain.Muscle
+import com.ottotech.workoutbuilder.ui.builder.BuilderScreen
+import com.ottotech.workoutbuilder.ui.builder.BuilderViewModel
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
@@ -30,6 +32,7 @@ object Routes {
     const val LIBRARY = "library"
     const val CATEGORY = "library/{muscle}"
     const val EXERCISE = "exercise/{exerciseId}"
+    const val BUILDER = "builder"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
@@ -67,8 +70,10 @@ fun AppNav() {
             if (showBuildSheet) {
                 BuildSheet(
                     onDismiss = { showBuildSheet = false },
-                    // TODO(Plan 1C): navigate to the Builder.
-                    onBuildYourself = { showBuildSheet = false },
+                    onBuildYourself = {
+                        showBuildSheet = false
+                        nav.navigate(Routes.BUILDER)
+                    },
                     // TODO(Plan 2): navigate to the Coach.
                     onAskCoach = { showBuildSheet = false },
                 )
@@ -127,6 +132,17 @@ fun AppNav() {
                 exerciseId = entry.arguments?.getString("exerciseId").orEmpty(),
                 viewModel = libraryVm,
                 onBack = { nav.popBackStack() },
+            )
+        }
+
+        composable(Routes.BUILDER) {
+            val builderVm: BuilderViewModel = viewModel(factory = BuilderViewModel.Factory)
+            BuilderScreen(
+                viewModel = builderVm,
+                onClose = { nav.popBackStack() },
+                // TODO(Task 3): navigate to the Library in pick mode for this section.
+                onAddExercise = { },
+                onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
             )
         }
     }
