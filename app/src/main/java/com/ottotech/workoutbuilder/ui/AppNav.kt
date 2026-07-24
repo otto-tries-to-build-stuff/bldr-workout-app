@@ -76,10 +76,12 @@ fun AppNav() {
         }
 
         composable(Routes.LIBRARY) {
-            val libraryVm: LibraryViewModel = viewModel(
-                viewModelStoreOwner = nav.getBackStackEntry(Routes.LIBRARY),
-                factory = LibraryViewModel.Factory,
-            )
+            // Scope to the current entry (this *is* the Library entry) rather than looking
+            // it up by route. Looking it up crashes on the way out: a bottom-nav tab switch
+            // pops Library while its exit transition is still composing this frame, and
+            // getBackStackEntry("library") then throws because the entry is already gone.
+            // The default scope is the same ViewModelStore the child screens share below.
+            val libraryVm: LibraryViewModel = viewModel(factory = LibraryViewModel.Factory)
             var showFilters by rememberSaveable { mutableStateOf(false) }
 
             AppScaffold(tab = Tab.LIBRARY, onSelectTab = { if (it == Tab.HOME) nav.switchTab(Routes.HOME) }) {
