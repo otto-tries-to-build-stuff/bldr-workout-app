@@ -21,6 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -233,10 +236,6 @@ private fun SectionCard(
     }
 }
 
-/**
- * Read-only in this task — Task 4 replaces this with the mode toggle and per-mode field
- * editors. For now it shows the exercise name and a summary of its default values.
- */
 @Composable
 private fun ItemRow(
     state: BuilderUiState,
@@ -245,16 +244,107 @@ private fun ItemRow(
     viewModel: BuilderViewModel,
 ) {
     val colors = LocalAppColors.current
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(state.exerciseName(item.exerciseId), style = AppType.cardTitle, color = colors.onBackground)
-        Text(itemSummary(item), style = AppType.cardMeta, color = colors.textMuted)
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clip(RoundedCornerShape(Dimens.radiusChip))
+            .background(colors.surface)
+            .padding(Dimens.cardPadding),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                state.exerciseName(item.exerciseId),
+                style = AppType.cardTitle,
+                color = colors.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            GlyphButton("↑") { viewModel.onMoveItem(sectionId, item.id, MoveDirection.UP) }
+            GlyphButton("↓") { viewModel.onMoveItem(sectionId, item.id, MoveDirection.DOWN) }
+            GlyphButton("✕") { viewModel.onRemoveItem(sectionId, item.id) }
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            ItemMode.entries.forEach { mode ->
+                Chip(text = mode.chipLabel(), selected = mode == item.mode) {
+                    viewModel.onSetItemMode(sectionId, item.id, mode)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+        when (item.mode) {
+            ItemMode.TIMED -> Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Duration", style = AppType.cardMeta, color = colors.textMuted, modifier = Modifier.weight(1f))
+                Stepper(value = item.durationSec ?: 30, min = 5, step = 5, label = { "${it}s" }) {
+                    viewModel.onSetDuration(sectionId, item.id, it)
+                }
+            }
+
+            ItemMode.REPS -> Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Sets", style = AppType.cardMeta, color = colors.textMuted, modifier = Modifier.weight(1f))
+                    Stepper(value = item.sets ?: 3, min = 1, step = 1) {
+                        viewModel.onSetSetsReps(sectionId, item.id, it, item.reps ?: 10)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Reps", style = AppType.cardMeta, color = colors.textMuted, modifier = Modifier.weight(1f))
+                    Stepper(value = item.reps ?: 10, min = 1, step = 1) {
+                        viewModel.onSetSetsReps(sectionId, item.id, item.sets ?: 3, it)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                WeightField(item = item) { viewModel.onSetWeight(sectionId, item.id, it) }
+            }
+
+            ItemMode.MANUAL -> Text(
+                "Tap Done to advance — no timer.",
+                style = AppType.cardMeta,
+                color = colors.textMuted,
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+        AppTextField(
+            value = item.note.orEmpty(),
+            onValueChange = { viewModel.onSetNote(sectionId, item.id, it) },
+            placeholder = "Note (optional)",
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
-private fun itemSummary(item: WorkoutItem): String = when (item.mode) {
-    ItemMode.TIMED -> "Timed · ${item.durationSec ?: 0}s"
-    ItemMode.REPS -> "Reps · ${item.sets ?: 0}×${item.reps ?: 0}"
+private fun ItemMode.chipLabel(): String = when (this) {
+    ItemMode.TIMED -> "Timed"
+    ItemMode.REPS -> "Reps"
     ItemMode.MANUAL -> "Manual"
+}
+
+/**
+ * Weight is optional and decimal, so it is a text field kept in local state — driving it from
+ * the draft would re-parse mid-entry and eat a trailing decimal point. Blank clears it.
+ */
+@Composable
+private fun WeightField(item: WorkoutItem, onChange: (Float?) -> Unit) {
+    var text by remember(item.id) {
+        mutableStateOf(item.weightKg?.let { if (it % 1f == 0f) it.toInt().toString() else it.toString() } ?: "")
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("Weight (kg)", style = AppType.cardMeta, color = LocalAppColors.current.textMuted, modifier = Modifier.weight(1f))
+        AppTextField(
+            value = text,
+            onValueChange = {
+                text = it
+                onChange(it.toFloatOrNull())
+            },
+            placeholder = "—",
+            modifier = Modifier.size(width = 96.dp, height = Dimens.searchFieldHeight),
+        )
+    }
 }
 
 /** A `−  value  +` control. Whole-number fields only; the label formats it. */
