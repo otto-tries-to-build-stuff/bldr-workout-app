@@ -263,4 +263,34 @@ class WorkoutDraftTest {
         assertEquals(emptyList(), WorkoutDraft.saveBlockers(w))
         assertTrue(WorkoutDraft.canSave(w))
     }
+
+    // ---- hasContent ----
+
+    @Test
+    fun `a brand-new draft with its seeded empty section has no content`() {
+        // BuilderViewModel seeds one empty section, so "untouched" is not "no sections".
+        val fresh = WorkoutDraft.addSection(
+            WorkoutDraft.newWorkout("w", Instant.EPOCH),
+            "s1",
+        )
+        assertFalse(WorkoutDraft.hasContent(fresh))
+    }
+
+    @Test
+    fun `naming the workout counts as content`() {
+        val named = WorkoutDraft.rename(
+            WorkoutDraft.addSection(WorkoutDraft.newWorkout("w", Instant.EPOCH), "s1"),
+            "Leg Day",
+        )
+        assertTrue(WorkoutDraft.hasContent(named))
+    }
+
+    @Test
+    fun `adding an exercise counts as content`() {
+        val withItem = WorkoutDraft.addItem(
+            WorkoutDraft.addSection(WorkoutDraft.newWorkout("w", Instant.EPOCH), "s1"),
+            "s1", "i1", "push-up",
+        )
+        assertTrue(WorkoutDraft.hasContent(withItem))
+    }
 }
