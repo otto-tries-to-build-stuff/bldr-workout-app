@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
  * they inherit the mono palette by taking a colour parameter.
  */
 
-private val StrokeWidth = 1.6.dp
+private val StrokeWidth = 2.dp
 
 /** Bottom nav, Home tab: a rounded-square outline. */
 @Composable
-fun HomeGlyph(size: Dp = 16.dp, color: Color) {
+fun HomeGlyph(size: Dp = 22.dp, color: Color) {
     Canvas(Modifier.size(size)) {
         val w = StrokeWidth.toPx()
         val inset = w / 2f
@@ -38,7 +38,7 @@ fun HomeGlyph(size: Dp = 16.dp, color: Color) {
 
 /** Bottom nav, Library tab: three stacked bars. */
 @Composable
-fun LibraryGlyph(size: Dp = 16.dp, color: Color) {
+fun LibraryGlyph(size: Dp = 22.dp, color: Color) {
     Canvas(Modifier.size(size)) {
         val barHeight = this.size.height * 0.16f
         val gap = (this.size.height - barHeight * 3f) / 2f
@@ -55,7 +55,7 @@ fun LibraryGlyph(size: Dp = 16.dp, color: Color) {
 
 /** Search field leading icon: a circle outline. */
 @Composable
-fun SearchGlyph(size: Dp = 13.dp, color: Color) {
+fun SearchGlyph(size: Dp = 18.dp, color: Color) {
     Canvas(Modifier.size(size)) {
         val w = StrokeWidth.toPx()
         drawCircle(color = color, radius = (this.size.minDimension - w) / 2f, style = Stroke(width = w))
