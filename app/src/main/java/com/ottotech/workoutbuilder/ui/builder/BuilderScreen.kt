@@ -91,6 +91,7 @@ fun BuilderScreen(
                     section = section,
                     viewModel = viewModel,
                     onAddExercise = { onAddExercise(section.id) },
+                    modifier = Modifier.animateItem(),
                 )
             }
 
@@ -187,9 +188,10 @@ private fun SectionCard(
     section: Section,
     viewModel: BuilderViewModel,
     onAddExercise: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val colors = LocalAppColors.current
-    HairlineCard(modifier = Modifier.fillMaxWidth()) {
+    HairlineCard(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth().padding(Dimens.cardPadding)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AppTextField(
