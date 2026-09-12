@@ -1,9 +1,9 @@
 package com.ottotech.workoutbuilder.domain
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class WorkoutSummaryTest {
 
@@ -112,10 +112,10 @@ class WorkoutSummaryTest {
         assertEquals(0, out.estimatedMinutes)
     }
 
-    // ---- metaLine ----
+    // ---- card lines ----
 
     @Test
-    fun `meta line reads count, minutes and type`() {
+    fun `short meta reads count and type, without minutes`() {
         val out = WorkoutSummarizer.summarize(
             workout(
                 sections = arrayOf(
@@ -124,62 +124,80 @@ class WorkoutSummaryTest {
             ),
             lookup,
         )
-        assertEquals("2 exercises · 2 min · HIIT", out.metaLine)
+        assertEquals("2 exercises · HIIT", out.shortMeta)
     }
 
     @Test
-    fun `meta line singularises one exercise`() {
+    fun `short meta singularises one exercise`() {
         val out = WorkoutSummarizer.summarize(
             workout(sections = arrayOf(Section("s", "A", items = listOf(timed("a", push.id, 60))))),
             lookup,
         )
-        assertEquals("1 exercise · 1 min · HIIT", out.metaLine)
-    }
-
-    // ---- UpNext ----
-
-    @Test
-    fun `up next is null when there is nothing to do`() {
-        assertNull(UpNext.select(emptyList()))
+        assertEquals("1 exercise · HIIT", out.shortMeta)
     }
 
     @Test
-    fun `up next is the workout performed longest ago`() {
-        val out = UpNext.select(
-            listOf(
-                summary("recent", lastPerformedAt = Instant.ofEpochSecond(3000)),
-                summary("stale", lastPerformedAt = Instant.ofEpochSecond(1000)),
-                summary("middle", lastPerformedAt = Instant.ofEpochSecond(2000)),
-            ),
+    fun `minutes label carries its unit`() {
+        val out = WorkoutSummarizer.summarize(
+            workout(sections = arrayOf(Section("s", "A", items = listOf(timed("a", push.id, 60))))),
+            lookup,
         )
-        assertEquals("stale", out?.id)
+        assertEquals("1 MIN", out.minutesLabel)
+    }
+
+    // ---- lastDoneLine ----
+
+    private val now: Instant = Instant.parse("2026-07-26T12:00:00Z")
+
+    private fun daysAgo(days: Long) = now.minus(days, ChronoUnit.DAYS)
+
+    @Test
+    fun `a never-performed workout says so plainly`() {
+        assertEquals("Never done", summary("w", lastPerformedAt = null).lastDoneLine(now))
     }
 
     @Test
-    fun `a never-performed workout outranks every performed one`() {
-        val out = UpNext.select(
-            listOf(
-                summary("ancient", lastPerformedAt = Instant.EPOCH),
-                summary("fresh", createdAt = Instant.ofEpochSecond(500), lastPerformedAt = null),
-            ),
-        )
-        assertEquals("fresh", out?.id)
+    fun `same day reads Today`() {
+        assertEquals("Today", summary("w", lastPerformedAt = now.minus(3, ChronoUnit.HOURS)).lastDoneLine(now))
     }
 
     @Test
-    fun `among never-performed workouts the newest wins`() {
-        val out = UpNext.select(
+    fun `one day reads Yesterday`() {
+        assertEquals("Yesterday", summary("w", lastPerformedAt = daysAgo(1)).lastDoneLine(now))
+    }
+
+    @Test
+    fun `under a week counts days`() {
+        assertEquals("4 days ago", summary("w", lastPerformedAt = daysAgo(4)).lastDoneLine(now))
+    }
+
+    @Test
+    fun `under two months counts weeks`() {
+        assertEquals("1 week ago", summary("w", lastPerformedAt = daysAgo(7)).lastDoneLine(now))
+        assertEquals("3 weeks ago", summary("w", lastPerformedAt = daysAgo(21)).lastDoneLine(now))
+    }
+
+    @Test
+    fun `beyond two months counts months`() {
+        assertEquals("2 months ago", summary("w", lastPerformedAt = daysAgo(70)).lastDoneLine(now))
+    }
+
+    // ---- sortedForHome ----
+
+    @Test
+    fun `home order is newest created first`() {
+        val out = WorkoutSummarizer.sortedForHome(
             listOf(
                 summary("older", createdAt = Instant.ofEpochSecond(100)),
                 summary("newest", createdAt = Instant.ofEpochSecond(900)),
                 summary("middle", createdAt = Instant.ofEpochSecond(500)),
             ),
         )
-        assertEquals("newest", out?.id)
+        assertEquals(listOf("newest", "middle", "older"), out.map { it.id })
     }
 
     @Test
-    fun `a single workout is always up next`() {
-        assertEquals("only", UpNext.select(listOf(summary("only")))?.id)
+    fun `sorting an empty list is empty, not an error`() {
+        assertEquals(emptyList(), WorkoutSummarizer.sortedForHome(emptyList()))
     }
 }

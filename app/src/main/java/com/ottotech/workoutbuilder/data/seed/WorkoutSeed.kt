@@ -19,8 +19,9 @@ import java.time.Instant
  * Every `exerciseId` below must be a row in [ExerciseSeed] — the test enforces that too.
  *
  * `createdAt` is EPOCH rather than the install time so the object stays a constant and the
- * test stays deterministic. Nothing renders a workout's creation date; it is only a
- * tiebreak in `UpNext`, where any workout the user builds later correctly outranks this one.
+ * test stays deterministic. Nothing renders a workout's creation date directly, but Home
+ * orders its list newest-created first via `WorkoutSummarizer.sortedForHome`, so anything
+ * the user builds later correctly appears above this seed.
  */
 object WorkoutSeed {
 

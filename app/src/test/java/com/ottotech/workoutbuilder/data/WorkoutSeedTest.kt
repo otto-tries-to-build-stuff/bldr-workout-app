@@ -106,10 +106,11 @@ class WorkoutSeedTest {
     }
 
     @Test
-    fun `court speed summarises to the meta line Home will render`() {
+    fun `court speed summarises to the card lines Home will render`() {
         val summary = WorkoutSummarizer.summarize(WorkoutSeed.courtSpeed, library)
         assertEquals(10, summary.exerciseCount)
         assertEquals(22, summary.estimatedMinutes)
-        assertEquals("10 exercises · 22 min · HIIT", summary.metaLine)
+        assertEquals("10 exercises · HIIT", summary.shortMeta)
+        assertEquals("22 MIN", summary.minutesLabel)
     }
 }
