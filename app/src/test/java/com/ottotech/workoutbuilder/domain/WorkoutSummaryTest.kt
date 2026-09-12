@@ -1,6 +1,7 @@
 package com.ottotech.workoutbuilder.domain
 
 import java.time.Instant
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -147,39 +148,52 @@ class WorkoutSummaryTest {
 
     // ---- lastDoneLine ----
 
+    private val zone = ZoneOffset.UTC
     private val now: Instant = Instant.parse("2026-07-26T12:00:00Z")
 
     private fun daysAgo(days: Long) = now.minus(days, ChronoUnit.DAYS)
 
     @Test
     fun `a never-performed workout says so plainly`() {
-        assertEquals("Never done", summary("w", lastPerformedAt = null).lastDoneLine(now))
+        assertEquals("Never done", summary("w", lastPerformedAt = null).lastDoneLine(now, zone))
     }
 
     @Test
     fun `same day reads Today`() {
-        assertEquals("Today", summary("w", lastPerformedAt = now.minus(3, ChronoUnit.HOURS)).lastDoneLine(now))
+        assertEquals("Today", summary("w", lastPerformedAt = now.minus(3, ChronoUnit.HOURS)).lastDoneLine(now, zone))
     }
 
     @Test
     fun `one day reads Yesterday`() {
-        assertEquals("Yesterday", summary("w", lastPerformedAt = daysAgo(1)).lastDoneLine(now))
+        assertEquals("Yesterday", summary("w", lastPerformedAt = daysAgo(1)).lastDoneLine(now, zone))
     }
 
     @Test
     fun `under a week counts days`() {
-        assertEquals("4 days ago", summary("w", lastPerformedAt = daysAgo(4)).lastDoneLine(now))
+        assertEquals("4 days ago", summary("w", lastPerformedAt = daysAgo(4)).lastDoneLine(now, zone))
     }
 
     @Test
     fun `under two months counts weeks`() {
-        assertEquals("1 week ago", summary("w", lastPerformedAt = daysAgo(7)).lastDoneLine(now))
-        assertEquals("3 weeks ago", summary("w", lastPerformedAt = daysAgo(21)).lastDoneLine(now))
+        assertEquals("1 week ago", summary("w", lastPerformedAt = daysAgo(7)).lastDoneLine(now, zone))
+        assertEquals("3 weeks ago", summary("w", lastPerformedAt = daysAgo(21)).lastDoneLine(now, zone))
     }
 
     @Test
     fun `beyond two months counts months`() {
-        assertEquals("2 months ago", summary("w", lastPerformedAt = daysAgo(70)).lastDoneLine(now))
+        assertEquals("2 months ago", summary("w", lastPerformedAt = daysAgo(70)).lastDoneLine(now, zone))
+    }
+
+    @Test
+    fun `a workout done late last night reads Yesterday even though under 24 hours have passed`() {
+        // Done at 23:00 yesterday, viewed at 08:00 today — 9 hours apart, but a different
+        // calendar day. A block-of-24-hours count would wrongly read "Today".
+        val performedLateLastNight = Instant.parse("2026-07-25T23:00:00Z")
+        val viewedNextMorning = Instant.parse("2026-07-26T08:00:00Z")
+        assertEquals(
+            "Yesterday",
+            summary("w", lastPerformedAt = performedLateLastNight).lastDoneLine(viewedNextMorning, zone),
+        )
     }
 
     // ---- sortedForHome ----

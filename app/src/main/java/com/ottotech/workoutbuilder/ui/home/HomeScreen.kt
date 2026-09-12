@@ -29,6 +29,7 @@ import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -49,8 +50,10 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Read once per composition rather than per card — every card would otherwise get a
-    // slightly different "now", and none of them need second-level accuracy.
+    // slightly different "now", and none of them need second-level accuracy. The zone is
+    // read alongside it so "Today" / "Yesterday" line up with the device's calendar day.
     val now = remember { Instant.now() }
+    val zone = remember { ZoneId.systemDefault() }
 
     Column(Modifier.fillMaxWidth()) {
         LazyColumn(
@@ -75,6 +78,7 @@ fun HomeScreen(
                     WorkoutCard(
                         summary = summary,
                         now = now,
+                        zone = zone,
                         onClick = { onStartWorkout(summary.id) },
                     )
                 }
@@ -116,7 +120,7 @@ private fun Header() {
  * edges, so the card is filled by construction rather than left-heavy with dead space.
  */
 @Composable
-private fun WorkoutCard(summary: WorkoutSummary, now: Instant, onClick: () -> Unit) {
+private fun WorkoutCard(summary: WorkoutSummary, now: Instant, zone: ZoneId, onClick: () -> Unit) {
     val colors = LocalAppColors.current
     HairlineCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Column(Modifier.fillMaxWidth().padding(Dimens.cardPadding)) {
@@ -139,8 +143,14 @@ private fun WorkoutCard(summary: WorkoutSummary, now: Instant, onClick: () -> Un
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(summary.shortMeta, style = AppType.cardMeta, color = colors.textMuted)
-                Text(summary.lastDoneLine(now), style = AppType.cardMeta, color = colors.textMuted)
+                Text(
+                    summary.shortMeta,
+                    style = AppType.cardMeta,
+                    color = colors.textMuted,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(summary.lastDoneLine(now, zone), style = AppType.cardMeta, color = colors.textMuted)
             }
         }
     }

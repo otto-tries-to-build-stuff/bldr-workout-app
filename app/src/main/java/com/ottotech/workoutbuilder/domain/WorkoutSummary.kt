@@ -1,6 +1,7 @@
 package com.ottotech.workoutbuilder.domain
 
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 /**
@@ -23,21 +24,24 @@ data class WorkoutSummary(
             return "$exerciseCount $noun · ${type.label}"
         }
 
-    /** `37 MIN` — right-aligned on the Home card. Carries its unit; the old bare badge did not. */
+    /** `22 MIN` — right-aligned on the Home card. Carries its unit; the old bare badge did not. */
     val minutesLabel: String get() = "$estimatedMinutes MIN"
 
     /**
      * `Never done` / `Today` / `Yesterday` / `4 days ago` / `3 weeks ago` / `2 months ago`.
      *
      * [now] is a parameter rather than `Instant.now()` so this stays pure and testable —
-     * the same reason `WorkoutDraft` takes its ids from the caller.
+     * the same reason `WorkoutDraft` takes its ids from the caller. [zone] is likewise a
+     * parameter: the difference is counted in *calendar days* in that zone, not 24-hour
+     * blocks, so a workout done at 23:00 and viewed at 08:00 the next day reads "Yesterday"
+     * rather than "Today".
      *
      * Until Plan 1D calls `WorkoutRepository.markPerformed`, every workout returns
      * "Never done". That is accurate, not a placeholder.
      */
-    fun lastDoneLine(now: Instant): String {
+    fun lastDoneLine(now: Instant, zone: ZoneId): String {
         val performed = lastPerformedAt ?: return "Never done"
-        val days = ChronoUnit.DAYS.between(performed, now)
+        val days = ChronoUnit.DAYS.between(performed.atZone(zone).toLocalDate(), now.atZone(zone).toLocalDate())
         return when {
             days <= 0L -> "Today"
             days == 1L -> "Yesterday"
@@ -48,7 +52,7 @@ data class WorkoutSummary(
             }
             else -> {
                 val months = days / 30L
-                if (months == 1L) "1 month ago" else "$months months ago"
+                "$months months ago"
             }
         }
     }
