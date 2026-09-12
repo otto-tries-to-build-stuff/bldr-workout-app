@@ -209,6 +209,12 @@ for legibility.
 
 ## 5. Design tokens
 
+> **Amended 2026-07-26 — token rescale.** The px values originally recorded here were measured
+> inside the handoff's 264px-wide mock phone frame, which is a thumbnail rather than a device.
+> They shipped at ~62% of intended size. `ui/theme/Type.kt` and `ui/theme/Dimens.kt` are now the
+> authority for every size, spacing and radius in the app; this section describes intent, not
+> exact numbers. See `docs/superpowers/plans/2026-07-26-design-correction-pass.md`.
+
 Every colour is referenced by **role**, never as a literal hex value, from the first screen
 onward. This is what makes dark mode approximately free rather than a retrofit.
 
@@ -239,8 +245,8 @@ and spacing**. Two places need explicit attention:
 - **Featured (black) category tile:** name and count would both be white. Name stays `w700`
   at full opacity; count drops to 70% opacity to preserve the hierarchy the accent used to
   carry.
-- **"Up next" hero label:** already differentiated at 9sp / w700 / uppercase / +0.08em against
-  a 19sp / w800 name. No change needed.
+- **"Up next" hero label:** already differentiated at 12sp / w700 / uppercase / +0.08em against
+  a 26sp / w800 name. No change needed.
 
 ### Execution screen (fixed in both themes)
 
@@ -260,27 +266,27 @@ files. Weights 600 / 700 / 800 map to `SemiBold` / `Bold` / `ExtraBold`.
 
 | Element | Size | Weight | Tracking |
 |---|---|---|---|
-| Overline date | 11sp | 600 | +0.02em |
-| Screen title | 27–30sp | 800 | −0.035em, line-height 1.02 |
-| Library title | 30sp | 800 | −0.03em |
-| Hero label | 9sp | 700 | +0.08em, uppercase |
-| Hero workout name | 19–20sp | 800 | |
-| Hero meta | 11–12sp | 400 | |
-| Primary button | 12–13sp | 700 | |
-| Build button | 13–14sp | 700 | |
-| Card title / meta | 14–15sp / 10–11sp | 700 / 400 | |
-| Section label | 11sp | 800 | +0.06em, uppercase |
-| Chip | 11sp | 600–700 | |
-| Category tile name / count | 15sp / 11sp | 700 / 600 | |
-| Execution move name | 24–26sp | 800 | −0.02em |
-| Muscle tag | 10sp | 600 | +0.04em, uppercase |
-| Timer digits | 44–50sp | 800 | −0.03em, tabular figures |
-| Reps exercise name | 28sp | 700 | −0.02em |
+| Overline date | 13sp | 600 | +0.02em |
+| Screen title | 40sp | 800 | −0.035em, line-height 42sp |
+| Library title | 40sp | 800 | −0.03em |
+| Hero label | 12sp | 700 | +0.08em, uppercase |
+| Hero workout name | 26sp | 800 | |
+| Hero meta | 16sp | 400 | |
+| Primary button | 16sp | 700 | |
+| Build button | 17sp | 700 | |
+| Card title / meta | 18sp / 14sp | 700 / 400 | |
+| Section label | 13sp | 800 | +0.06em, uppercase |
+| Chip | 14sp | 600 | |
+| Category tile name / count | 18sp / 14sp | 700 / 600 | |
+| Execution move name | 34sp | 800 | −0.02em |
+| Muscle tag | 13sp | 600 | +0.04em, uppercase |
+| Timer digits | 44–50sp (unchanged — Plan 1D has not built the execution screen; no token exists yet) | 800 | −0.03em, tabular figures |
+| Reps exercise name | 38sp | 700 | −0.02em |
 
 ### Spacing, radii, elevation
 
-- Screen padding 16–18dp; card padding 12–17dp; gaps 9–13dp
-- Radii: chips 10dp, cards 13–15dp, hero 18dp, buttons 10–14dp, checkbox 6dp
+- Screen padding 20dp; card padding 18dp; gaps 14dp
+- Radii: chips 12dp, cards/tiles 18dp, hero 22dp, buttons 16dp, checkbox 8dp
 - **No shadows.** Hairline borders only. The drop shadow in the prototype belongs to the mock
   phone frame and is not shipped.
 - The prototype's phone bezel, status bar, and gesture pill are presentation chrome — not
@@ -308,8 +314,12 @@ hero card → remaining workout rows → `+ BUILD A WORKOUT` button → bottom n
 library, or let the Coach draft one."* — then the Build button. The empty state uses the hero
 treatment so a fresh install looks designed rather than broken.
 
-**"Up next" selection:** the workout with the oldest `lastPerformedAt`; if none has ever been
-performed, the most recently created.
+**Amended 2026-07-26 — no "Up next".** Home does not rank or recommend. It presents two
+options: **choose a workout** (equal-weight cards under a `CHOOSE A WORKOUT` label, ordered
+newest-created first) or **build a workout** (the pinned button). Each card carries its own
+`Never done` / `4 days ago` last-done line. The original rule ranked by `lastPerformedAt`, which
+nothing writes until Plan 1D, so it could only ever resolve to "the last workout you created"
+while presenting itself as a recommendation. `domain/UpNext` is deleted.
 
 Components per the handoff: hero card (`surfaceInverse`, radius 18dp, padding 15–17dp), workout
 rows (1dp border, radius 14–15dp, leading 36–38dp badge on `surface` showing **estimated
