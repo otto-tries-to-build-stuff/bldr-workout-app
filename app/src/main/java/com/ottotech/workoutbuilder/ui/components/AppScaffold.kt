@@ -87,7 +87,7 @@ private fun NavItem(tab: Tab, active: Boolean, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 4.dp),
+            .padding(horizontal = 24.dp, vertical = 10.dp),
     ) {
         when (tab) {
             Tab.HOME -> HomeGlyph(color = tint)
@@ -96,7 +96,7 @@ private fun NavItem(tab: Tab, active: Boolean, onClick: () -> Unit) {
         Spacer(Modifier.height(5.dp))
         Text(
             text = tab.label,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
             color = tint,
         )

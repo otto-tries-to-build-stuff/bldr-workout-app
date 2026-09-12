@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -113,10 +115,12 @@ fun Chip(
     val foreground = if (selected) colors.onSurfaceInverse else colors.onSurface
     Box(
         modifier = modifier
+            .defaultMinSize(minHeight = Dimens.minTouchTarget)
             .clip(RoundedCornerShape(Dimens.radiusChip))
             .background(background)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(horizontal = 13.dp, vertical = 7.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(text, style = AppType.chip, color = foreground)
     }
@@ -179,15 +183,18 @@ fun ScreenHeader(title: String, onBack: () -> Unit) {
             .padding(horizontal = Dimens.screenPadding)
             .padding(top = 10.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        // heroName rather than a title style: a 30sp chevron overwhelms the word beside it.
-        Text(
-            text = "‹",
-            style = AppType.heroName,
-            color = colors.onBackground,
-            modifier = Modifier.clickable(onClick = onBack),
-        )
+        Box(
+            modifier = Modifier
+                .size(Dimens.minTouchTarget)
+                .clip(RoundedCornerShape(Dimens.radiusChip))
+                .clickable(onClick = onBack),
+            contentAlignment = Alignment.Center,
+        ) {
+            // heroName rather than a title style: a 40sp chevron overwhelms the word beside it.
+            Text(text = "‹", style = AppType.heroName, color = colors.onBackground)
+        }
         Text(title.uppercase(), style = AppType.screenTitle, color = colors.onBackground)
     }
 }

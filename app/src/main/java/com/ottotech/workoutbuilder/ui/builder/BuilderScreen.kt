@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -124,12 +125,17 @@ fun BuilderScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text("Deleted", style = AppType.cardMeta, color = colors.onSurface)
-                Text(
-                    "Undo",
-                    style = AppType.chip,
-                    color = colors.onSurface,
-                    modifier = Modifier.clickable(onClick = viewModel::onUndo),
-                )
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(
+                            minWidth = Dimens.minTouchTarget,
+                            minHeight = Dimens.minTouchTarget,
+                        )
+                        .clickable(onClick = viewModel::onUndo),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Text("Undo", style = AppType.chip, color = colors.onSurface)
+                }
             }
         }
 
@@ -222,16 +228,17 @@ private fun SectionCard(
             }
 
             Spacer(Modifier.height(10.dp))
-            Text(
-                "+ Add exercise",
-                style = AppType.chip,
-                color = colors.onBackground,
+            Box(
                 modifier = Modifier
+                    .defaultMinSize(minHeight = Dimens.minTouchTarget)
                     .clip(RoundedCornerShape(Dimens.radiusChip))
                     .background(colors.surface)
                     .clickable(onClick = onAddExercise)
                     .padding(horizontal = 13.dp, vertical = 9.dp),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("+ Add exercise", style = AppType.chip, color = colors.onBackground)
+            }
         }
     }
 }
@@ -370,17 +377,17 @@ private fun RestControl(label: String, rest: Rest?, onChange: (Rest?) -> Unit) {
     Column(Modifier.padding(vertical = 4.dp)) {
         Text(label, style = AppType.cardMeta, color = colors.textMuted)
         Spacer(Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             Chip("Off", selected = rest == null) { onChange(null) }
             Chip("Timed", selected = rest is Rest.Timed) {
                 onChange(Rest.Timed((rest as? Rest.Timed)?.seconds ?: 30))
             }
             Chip("Manual", selected = rest is Rest.Manual) { onChange(Rest.Manual) }
-            if (rest is Rest.Timed) {
-                Spacer(Modifier.size(2.dp))
-                Stepper(value = rest.seconds, min = 5, step = 5, label = { "${it}s" }) {
-                    onChange(Rest.Timed(it))
-                }
+        }
+        if (rest is Rest.Timed) {
+            Spacer(Modifier.height(6.dp))
+            Stepper(value = rest.seconds, min = 5, step = 5, label = { "${it}s" }) {
+                onChange(Rest.Timed(it))
             }
         }
     }
@@ -392,7 +399,7 @@ private fun GlyphButton(glyph: String, onClick: () -> Unit) {
     val colors = LocalAppColors.current
     Box(
         modifier = Modifier
-            .size(30.dp)
+            .size(Dimens.glyphButtonSize)
             .clip(RoundedCornerShape(Dimens.radiusChip))
             .background(colors.surface)
             .clickable(onClick = onClick),

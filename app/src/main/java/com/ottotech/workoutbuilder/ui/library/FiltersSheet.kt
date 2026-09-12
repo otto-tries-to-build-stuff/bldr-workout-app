@@ -2,11 +2,13 @@ package com.ottotech.workoutbuilder.ui.library
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -66,12 +68,17 @@ fun FiltersSheet(viewModel: LibraryViewModel, onDismiss: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 SectionLabel("Filters")
-                Text(
-                    text = "Clear all",
-                    style = AppType.chip,
-                    color = colors.textMuted,
-                    modifier = Modifier.clickable(onClick = viewModel::onClearFacets),
-                )
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(
+                            minWidth = Dimens.minTouchTarget,
+                            minHeight = Dimens.minTouchTarget,
+                        )
+                        .clickable(onClick = viewModel::onClearFacets),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Text(text = "Clear all", style = AppType.chip, color = colors.textMuted)
+                }
             }
 
             Column(
