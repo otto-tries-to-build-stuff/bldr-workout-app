@@ -224,16 +224,22 @@ onward. This is what makes dark mode approximately free rather than a retrofit.
 |---|---|---|---|
 | `background` | `#FFFFFF` | `#0B0B0D` | Page |
 | `surface` | `#F1F1EF` | `#18181C` | Chips, search field, category tiles, duration badges |
-| `surfaceInverse` | `#0B0B0D` | `#F4F4F2` | Hero card, featured category tile, Build button |
+| `surfaceInverse` | `#0B0B0D` | `#F4F4F2` | Featured category tile, Build button. *(Was also the Home hero card; the hero is deleted — see §6.1. The token is kept, rescaled, reserved for Plan 1D's execution "Up next" card.)* |
 | `onBackground` | `#0A0A0A` | `#FFFFFF` | Primary text |
 | `onSurface` | `#0B0B0D` | `#FFFFFF` | Text on `surface` |
 | `onSurfaceInverse` | `#FFFFFF` | `#0B0B0D` | Text on `surfaceInverse` |
-| `textMuted` | `#9A9A9A` | `#9A9A9A` | Meta lines, counts, placeholders |
-| `textMutedAlt` | `#8A8A8A` | `#8A8A8A` | Secondary meta |
+| `textMuted` | `#6B6B6B` | `#9A9A9A` | Meta lines, counts, placeholders |
+| `textMutedAlt` | `#5F5F5F` | `#8A8A8A` | Secondary meta |
 | `textDisabled` | `#C2C2C2` | `#5A5A5A` | Completed / struck-through set rows |
-| `navInactive` | `#B3B3B3` | `#5A5A5A` | Inactive bottom-nav item |
+| `navInactive` | `#767676` | `#5A5A5A` | Inactive bottom-nav item |
 | `border` | `rgba(0,0,0,.13)` | `rgba(255,255,255,.14)` | Card hairlines |
 | `borderSubtle` | `rgba(0,0,0,.08)` | `rgba(255,255,255,.08)` | Bottom-nav top border |
+
+**Amended 2026-07-26 — light and dark muted greys deliberately differ.** `textMuted` /
+`textMutedAlt` / `navInactive` are no longer symmetric across themes: the original shared values
+were a WCAG AA contrast failure on a white background (light-mode `textMuted` was 2.8:1 on
+white). The light column above is corrected; the dark column is unchanged because it was never
+the problem. See `ui/theme/Colors.kt` and STATUS.md.
 
 **Mono accent rule:** the accent equals maximum contrast against its own surface —
 `onSurfaceInverse` when on `surfaceInverse`, `onBackground` when on `background`. There is no
@@ -245,7 +251,8 @@ and spacing**. Two places need explicit attention:
 - **Featured (black) category tile:** name and count would both be white. Name stays `w700`
   at full opacity; count drops to 70% opacity to preserve the hierarchy the accent used to
   carry.
-- **"Up next" hero label:** already differentiated at 12sp / w700 / uppercase / +0.08em against
+- **"Up next" hero label** *(reserved for Plan 1D's execution screen now that Home's hero is
+  deleted — see §6.1)*: already differentiated at 12sp / w700 / uppercase / +0.08em against
   a 26sp / w800 name. No change needed.
 
 ### Execution screen (fixed in both themes)
@@ -305,14 +312,18 @@ files. Weights 600 / 700 / 800 map to `SemiBold` / `Bold` / `ExtraBold`.
 
 ### 6.1 Home
 
-Single scrolling column, 16dp horizontal padding.
+Single scrolling column, 20dp horizontal padding.
 
-**Populated:** overline date (`TUE · JUL 21`) → two-line title `YOUR WORKOUTS` → "Up next"
-hero card → remaining workout rows → `+ BUILD A WORKOUT` button → bottom nav.
+**Populated (amended 2026-07-26 — describes the current build, not the handoff):** overline
+date (`TUE · JUL 21`) → two-line title `YOUR WORKOUTS` → `CHOOSE A WORKOUT` label → one
+full-width hairline card per workout, newest-created first (name + estimated minutes on row 1,
+short meta + last-done line on row 2) → pinned `BUILD A WORKOUT` button → bottom nav. The
+handoff's hero card is gone; every workout is an equal-weight card. Authority:
+`ui/home/HomeScreen.kt`.
 
-**Empty:** same header, then a hero-styled empty card — *"Nothing here yet. Build one from the
-library, or let the Coach draft one."* — then the Build button. The empty state uses the hero
-treatment so a fresh install looks designed rather than broken.
+**Empty (amended 2026-07-26):** same header, no `CHOOSE A WORKOUT` label, a single hairline
+"No workouts yet" card ("Build one from the library and it will appear here.") in place of the
+workout list → the Build button. The handoff's hero-styled empty treatment is gone.
 
 **Amended 2026-07-26 — no "Up next".** Home does not rank or recommend. It presents two
 options: **choose a workout** (equal-weight cards under a `CHOOSE A WORKOUT` label, ordered
@@ -321,9 +332,11 @@ newest-created first) or **build a workout** (the pinned button). Each card carr
 nothing writes until Plan 1D, so it could only ever resolve to "the last workout you created"
 while presenting itself as a recommendation. `domain/UpNext` is deleted.
 
-Components per the handoff: hero card (`surfaceInverse`, radius 18dp, padding 15–17dp), workout
-rows (1dp border, radius 14–15dp, leading 36–38dp badge on `surface` showing **estimated
-minutes** from §4), Build button (48dp, radius 13dp, `surfaceInverse`, leading `+` glyph).
+**Components as built (amended 2026-07-26 — supersedes the handoff description):** workout card
+(`HairlineCard`, 1dp hairline border, radius 18dp, padding 18dp), empty-state card (same
+`HairlineCard` treatment), Build button (56dp, radius 16dp, `surfaceInverse`, leading `+` glyph).
+The handoff's hero card, its 36–38dp leading minutes badge, and its 13–15dp card radii no longer
+exist on this screen — `surfaceInverse` now appears on Home only via the Build button.
 
 ### 6.2 Build sheet
 
