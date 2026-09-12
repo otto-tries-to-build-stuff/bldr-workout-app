@@ -231,15 +231,18 @@ onward. This is what makes dark mode approximately free rather than a retrofit.
 | `textMuted` | `#6B6B6B` | `#9A9A9A` | Meta lines, counts, placeholders |
 | `textMutedAlt` | `#5F5F5F` | `#8A8A8A` | Secondary meta |
 | `textDisabled` | `#C2C2C2` | `#5A5A5A` | Completed / struck-through set rows |
-| `navInactive` | `#767676` | `#5A5A5A` | Inactive bottom-nav item |
+| `navInactive` | `#767676` | `#8A8A8A` | Inactive bottom-nav item |
 | `border` | `rgba(0,0,0,.13)` | `rgba(255,255,255,.14)` | Card hairlines |
 | `borderSubtle` | `rgba(0,0,0,.08)` | `rgba(255,255,255,.08)` | Bottom-nav top border |
 
 **Amended 2026-07-26 — light and dark muted greys deliberately differ.** `textMuted` /
 `textMutedAlt` / `navInactive` are no longer symmetric across themes: the original shared values
 were a WCAG AA contrast failure on a white background (light-mode `textMuted` was 2.8:1 on
-white). The light column above is corrected; the dark column is unchanged because it was never
-the problem. See `ui/theme/Colors.kt` and STATUS.md.
+white). The light column above is corrected. `textMuted` and `textMutedAlt`'s dark values were
+already fine (6.8:1 and 6.4:1 on the dark background) and are unchanged. `navInactive`'s dark
+value was not: the original pass audited light mode only, so `navInactive`'s dark `#5A5A5A`
+(≈2.85:1 on `#0B0B0D`, also an AA fail) went unnoticed until a final review caught it and raised
+it to `#8A8A8A` (≈5.7:1) above. See `ui/theme/Colors.kt` and STATUS.md.
 
 **Mono accent rule:** the accent equals maximum contrast against its own surface —
 `onSurfaceInverse` when on `surfaceInverse`, `onBackground` when on `background`. There is no

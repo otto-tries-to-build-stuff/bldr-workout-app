@@ -123,7 +123,7 @@ object WorkoutDraft {
 
     /**
      * Human-readable reasons the workout cannot be saved yet, empty when it is ready. The
-     * Builder disables SAVE and shows the first blocker while this is non-empty.
+     * Builder disables SAVE and shows all of them while this is non-empty.
      */
     fun saveBlockers(workout: Workout): List<String> = buildList {
         if (workout.name.isBlank()) add("Name your workout")

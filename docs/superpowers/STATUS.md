@@ -76,7 +76,10 @@
   `Dimens.kt`, which are now the authority. **Do not "restore" handoff numbers.**
 - **Light-mode muted greys are deliberately darker than dark-mode's.** `#6B6B6B` vs `#9A9A9A`.
   The original symmetric value was 2.8:1 on white — an accessibility failure. The two themes
-  must not share these values.
+  must not share these values. **`navInactive`'s dark value had a separate, later-caught bug:**
+  the original pass only audited light mode, so dark `navInactive` stayed at `#5A5A5A`
+  (≈2.85:1 on `#0B0B0D` — also an AA fail). A final review found it and raised it to `#8A8A8A`
+  (≈5.7:1).
 - **`UpNext` is deleted and Home does not recommend.** It ranked by `lastPerformedAt`, which is
   still never written — `WorkoutRepository.markPerformed` remains callerless until Plan 1D.
   **When 1D wires up execution, do not resurrect the hero**; the product decision is that Home
@@ -94,7 +97,11 @@
 - **The Builder's discard confirmation checks `WorkoutDraft.hasContent`, not `sections.isEmpty()`.**
   Every new draft is seeded with one empty section, so `hasContent` deliberately ignores that
   seeded section and only counts a name or an actual exercise. Back and the header `‹` both ask
-  "Discard this workout?" only when there's real content to lose.
+  "Discard this workout?" only when there's real content to lose. **This also means
+  structure-only edits don't count as content** — renaming a section, adding an extra empty
+  section, or setting a rest, with no name and no exercise ever added, all leave `hasContent`
+  false. That draft closes on Back with no prompt. Deliberate: those are structural edits, not
+  workout content.
 
 Useful verification one-liner after a test run:
 
