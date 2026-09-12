@@ -145,6 +145,7 @@ fun BuilderScreen(
                             minWidth = Dimens.minTouchTarget,
                             minHeight = Dimens.minTouchTarget,
                         )
+                        .clip(RoundedCornerShape(Dimens.radiusChip))
                         .clickable(onClick = viewModel::onUndo),
                     contentAlignment = Alignment.CenterEnd,
                 ) {
@@ -171,7 +172,11 @@ fun BuilderScreen(
         if (confirmDiscard) {
             AlertDialog(
                 onDismissRequest = { confirmDiscard = false },
-                containerColor = colors.background,
+                // `background` was nearly indistinguishable from the AlertDialog scrim on top
+                // of it in dark mode (both ~#0B0B0D) — see the final review's screenshot.
+                // `surface` gives the dialog a visible edge in both themes; body text stays AA
+                // (dark textMuted #9A9A9A on #18181C is 6.4:1, light #6B6B6B on #F1F1EF is 4.7:1).
+                containerColor = colors.surface,
                 title = { Text("Discard this workout?", style = AppType.cardTitle, color = colors.onBackground) },
                 text = {
                     Text(

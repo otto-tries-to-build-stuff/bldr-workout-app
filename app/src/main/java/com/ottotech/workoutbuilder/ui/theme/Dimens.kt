@@ -29,8 +29,15 @@ object Dimens {
     val primaryButtonHeight = 48.dp
     val searchFieldHeight = 52.dp
     val glyphButtonSize = 48.dp
-    val badgeSize = 52.dp
     val categoryTileMinHeight = 80.dp
+
+    /**
+     * `ScreenHeader`'s ‹ glyph is narrow inside its 48dp touch box, so centering leaves a
+     * visible gap before it — measured on device at ~20dp. This shifts the box left by that
+     * much so the glyph lines up with the content edge below it, while the touch target stays
+     * 48×48dp (only its position moves, not its size).
+     */
+    val chevronInset = 20.dp
     val ringSize = 240.dp
     val ringStroke = 14.dp
     val progressBarHeight = 4.dp

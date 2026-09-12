@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,8 +56,8 @@ fun HairlineCard(
  * page.
  *
  * [container] and [content] default to that pairing but can be swapped, which is what a
- * button sitting *on* an inverse surface needs: inside the hero card the accent flips back
- * to `onSurfaceInverse`, so the same component covers both without a second copy of it.
+ * button sitting *on* an inverse surface needs: the accent flips back to `onSurfaceInverse`
+ * there, so the same component covers both without a second copy of it.
  */
 @Composable
 fun InverseButton(
@@ -187,6 +188,7 @@ fun ScreenHeader(title: String, onBack: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
+                .offset(x = -Dimens.chevronInset)
                 .size(Dimens.minTouchTarget)
                 .clip(RoundedCornerShape(Dimens.radiusChip))
                 .clickable(onClick = onBack),
