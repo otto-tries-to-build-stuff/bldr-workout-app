@@ -128,7 +128,7 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
                 centreBottom = "ELAPSED",
                 onTap = viewModel::complete,
             )
-            ItemMode.REPS -> RepsPanel(segment = segment, onDone = viewModel::complete)
+            ItemMode.REPS -> RepsPanel(segment = segment)
         }
 
         Spacer(Modifier.weight(1f))
