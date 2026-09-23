@@ -223,7 +223,20 @@ fun AppNav() {
                 ActivityResultContracts.RequestPermission(),
             ) { /* granted or not, the workout runs */ }
 
+            // Rotation (or any Activity recreation — no configChanges is declared) recreates
+            // this whole composable and, with it, a fresh LaunchedEffect(workoutId). A plain
+            // `remember` would not survive that and ACTION_START would refire — restarting an
+            // already-finished workout the user never asked to repeat (begin()'s guard only
+            // ignores a restart of an UNFINISHED session, since a deliberate restart of the
+            // same workout from Home must still work). rememberSaveable does survive: this is
+            // the same backstack entry being recomposed, so its SavedStateHandle carries
+            // `started` through. A genuinely fresh navigation here (including restarting this
+            // same workout from Home) always creates a brand-new backstack entry instead, with
+            // its own fresh `false`.
+            var started by rememberSaveable(workoutId) { mutableStateOf(false) }
             LaunchedEffect(workoutId) {
+                if (started) return@LaunchedEffect
+                started = true
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
