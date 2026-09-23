@@ -35,6 +35,7 @@ object ExecutionNotification {
         text: String,
         paused: Boolean,
         sessionToken: MediaSession.Token? = null,
+        finished: Boolean = false,
     ): Notification {
         val open = PendingIntent.getActivity(
             context,
@@ -63,13 +64,16 @@ object ExecutionNotification {
             .setContentIntent(open)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .addAction(
-                if (paused) action("Resume", ExecutionService.ACTION_RESUME)
-                else action("Pause", ExecutionService.ACTION_PAUSE),
-            )
-            .addAction(action("Skip", ExecutionService.ACTION_SKIP))
             .apply {
-                // Task 8 supplies the token; until then the notification is plain.
+                // A finished workout is not a media session anymore — offering live Pause/Skip
+                // controls for it would be dead weight at best and confusing at worst.
+                if (!finished) {
+                    addAction(
+                        if (paused) action("Resume", ExecutionService.ACTION_RESUME)
+                        else action("Pause", ExecutionService.ACTION_PAUSE),
+                    )
+                    addAction(action("Skip", ExecutionService.ACTION_SKIP))
+                }
                 sessionToken?.let { style = Notification.MediaStyle().setMediaSession(it) }
             }
             .build()
