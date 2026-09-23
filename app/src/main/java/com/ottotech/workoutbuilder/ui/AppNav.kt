@@ -1,7 +1,12 @@
 package com.ottotech.workoutbuilder.ui
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +25,8 @@ import com.ottotech.workoutbuilder.ui.builder.BuilderScreen
 import com.ottotech.workoutbuilder.ui.builder.BuilderViewModel
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
+import com.ottotech.workoutbuilder.ui.execution.ExecutionScreen
+import com.ottotech.workoutbuilder.ui.execution.ExecutionViewModel
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
 import com.ottotech.workoutbuilder.ui.library.CategoryScreen
@@ -36,10 +43,12 @@ object Routes {
     const val BUILDER = "builder"
     const val PICK_LIBRARY = "pick"
     const val PICK_CATEGORY = "pick/{muscle}"
+    const val EXECUTION = "execution/{workoutId}"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
     fun pickCategory(muscle: Muscle) = "pick/${muscle.name}"
+    fun execution(workoutId: String) = "execution/$workoutId"
 }
 
 /**
@@ -65,8 +74,7 @@ fun AppNav() {
 
             AppScaffold(tab = Tab.HOME, onSelectTab = { if (it == Tab.LIBRARY) nav.switchTab(Routes.LIBRARY) }) {
                 HomeScreen(
-                    // TODO(Plan 1D): route to the execution screen.
-                    onStartWorkout = { },
+                    onStartWorkout = { workoutId -> nav.navigate(Routes.execution(workoutId)) },
                     onBuild = { showBuildSheet = true },
                 )
             }
@@ -195,6 +203,38 @@ fun AppNav() {
                     nav.popBackStack(Routes.BUILDER, inclusive = false)
                 },
                 pickMode = true,
+            )
+        }
+
+        composable(
+            route = Routes.EXECUTION,
+            arguments = listOf(navArgument("workoutId") { type = NavType.StringType }),
+        ) { entry ->
+            val workoutId = entry.arguments?.getString("workoutId").orEmpty()
+            val executionVm: ExecutionViewModel = viewModel(factory = ExecutionViewModel.Factory)
+
+            // Android 13+ will not show the notification unless the user has granted
+            // POST_NOTIFICATIONS, and without the notification the foreground service — and
+            // with it the whole point of this phase — is on borrowed time. Ask once, at the
+            // first workout start, which is the moment it is self-explanatory. Starting the
+            // workout does not wait on the answer: a declined prompt should cost the
+            // notification, not the workout.
+            val askNotifications = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission(),
+            ) { /* granted or not, the workout runs */ }
+
+            LaunchedEffect(workoutId) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                executionVm.start(workoutId)   // once per entry, not per recomposition
+            }
+            ExecutionScreen(
+                viewModel = executionVm,
+                onExit = {
+                    executionVm.stop()
+                    nav.popBackStack(Routes.HOME, inclusive = false)
+                },
             )
         }
     }
