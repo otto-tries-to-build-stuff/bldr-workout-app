@@ -209,6 +209,12 @@ for legibility.
 
 ## 5. Design tokens
 
+> **Amended 2026-07-26 — token rescale.** The px values originally recorded here were measured
+> inside the handoff's 264px-wide mock phone frame, which is a thumbnail rather than a device.
+> They shipped at ~62% of intended size. `ui/theme/Type.kt` and `ui/theme/Dimens.kt` are now the
+> authority for every size, spacing and radius in the app; this section describes intent, not
+> exact numbers. See `docs/superpowers/plans/2026-07-26-design-correction-pass.md`.
+
 Every colour is referenced by **role**, never as a literal hex value, from the first screen
 onward. This is what makes dark mode approximately free rather than a retrofit.
 
@@ -218,16 +224,25 @@ onward. This is what makes dark mode approximately free rather than a retrofit.
 |---|---|---|---|
 | `background` | `#FFFFFF` | `#0B0B0D` | Page |
 | `surface` | `#F1F1EF` | `#18181C` | Chips, search field, category tiles, duration badges |
-| `surfaceInverse` | `#0B0B0D` | `#F4F4F2` | Hero card, featured category tile, Build button |
+| `surfaceInverse` | `#0B0B0D` | `#F4F4F2` | Featured category tile, Build button. *(Was also the Home hero card; the hero is deleted — see §6.1. The token is kept, rescaled, reserved for Plan 1D's execution "Up next" card.)* |
 | `onBackground` | `#0A0A0A` | `#FFFFFF` | Primary text |
 | `onSurface` | `#0B0B0D` | `#FFFFFF` | Text on `surface` |
 | `onSurfaceInverse` | `#FFFFFF` | `#0B0B0D` | Text on `surfaceInverse` |
-| `textMuted` | `#9A9A9A` | `#9A9A9A` | Meta lines, counts, placeholders |
-| `textMutedAlt` | `#8A8A8A` | `#8A8A8A` | Secondary meta |
+| `textMuted` | `#6B6B6B` | `#9A9A9A` | Meta lines, counts, placeholders |
+| `textMutedAlt` | `#5F5F5F` | `#8A8A8A` | Secondary meta |
 | `textDisabled` | `#C2C2C2` | `#5A5A5A` | Completed / struck-through set rows |
-| `navInactive` | `#B3B3B3` | `#5A5A5A` | Inactive bottom-nav item |
+| `navInactive` | `#767676` | `#8A8A8A` | Inactive bottom-nav item |
 | `border` | `rgba(0,0,0,.13)` | `rgba(255,255,255,.14)` | Card hairlines |
 | `borderSubtle` | `rgba(0,0,0,.08)` | `rgba(255,255,255,.08)` | Bottom-nav top border |
+
+**Amended 2026-07-26 — light and dark muted greys deliberately differ.** `textMuted` /
+`textMutedAlt` / `navInactive` are no longer symmetric across themes: the original shared values
+were a WCAG AA contrast failure on a white background (light-mode `textMuted` was 2.8:1 on
+white). The light column above is corrected. `textMuted` and `textMutedAlt`'s dark values were
+already fine (6.8:1 and 6.4:1 on the dark background) and are unchanged. `navInactive`'s dark
+value was not: the original pass audited light mode only, so `navInactive`'s dark `#5A5A5A`
+(≈2.85:1 on `#0B0B0D`, also an AA fail) went unnoticed until a final review caught it and raised
+it to `#8A8A8A` (≈5.7:1) above. See `ui/theme/Colors.kt` and STATUS.md.
 
 **Mono accent rule:** the accent equals maximum contrast against its own surface —
 `onSurfaceInverse` when on `surfaceInverse`, `onBackground` when on `background`. There is no
@@ -239,8 +254,9 @@ and spacing**. Two places need explicit attention:
 - **Featured (black) category tile:** name and count would both be white. Name stays `w700`
   at full opacity; count drops to 70% opacity to preserve the hierarchy the accent used to
   carry.
-- **"Up next" hero label:** already differentiated at 9sp / w700 / uppercase / +0.08em against
-  a 19sp / w800 name. No change needed.
+- **"Up next" hero label** *(reserved for Plan 1D's execution screen now that Home's hero is
+  deleted — see §6.1)*: already differentiated at 12sp / w700 / uppercase / +0.08em against
+  a 26sp / w800 name. No change needed.
 
 ### Execution screen (fixed in both themes)
 
@@ -260,27 +276,27 @@ files. Weights 600 / 700 / 800 map to `SemiBold` / `Bold` / `ExtraBold`.
 
 | Element | Size | Weight | Tracking |
 |---|---|---|---|
-| Overline date | 11sp | 600 | +0.02em |
-| Screen title | 27–30sp | 800 | −0.035em, line-height 1.02 |
-| Library title | 30sp | 800 | −0.03em |
-| Hero label | 9sp | 700 | +0.08em, uppercase |
-| Hero workout name | 19–20sp | 800 | |
-| Hero meta | 11–12sp | 400 | |
-| Primary button | 12–13sp | 700 | |
-| Build button | 13–14sp | 700 | |
-| Card title / meta | 14–15sp / 10–11sp | 700 / 400 | |
-| Section label | 11sp | 800 | +0.06em, uppercase |
-| Chip | 11sp | 600–700 | |
-| Category tile name / count | 15sp / 11sp | 700 / 600 | |
-| Execution move name | 24–26sp | 800 | −0.02em |
-| Muscle tag | 10sp | 600 | +0.04em, uppercase |
-| Timer digits | 44–50sp | 800 | −0.03em, tabular figures |
-| Reps exercise name | 28sp | 700 | −0.02em |
+| Overline date | 13sp | 600 | +0.02em |
+| Screen title | 40sp | 800 | −0.035em, line-height 42sp |
+| Library title | 40sp | 800 | −0.03em |
+| Hero label | 12sp | 700 | +0.08em, uppercase |
+| Hero workout name | 26sp | 800 | |
+| Hero meta | 16sp | 400 | |
+| Primary button | 16sp | 700 | |
+| Build button | 17sp | 700 | |
+| Card title / meta | 18sp / 14sp | 700 / 400 | |
+| Section label | 13sp | 800 | +0.06em, uppercase |
+| Chip | 14sp | 600 | |
+| Category tile name / count | 18sp / 14sp | 700 / 600 | |
+| Execution move name | 34sp | 800 | −0.02em |
+| Muscle tag | 13sp | 600 | +0.04em, uppercase |
+| Timer digits | 44–50sp (unchanged — Plan 1D has not built the execution screen; no token exists yet) | 800 | −0.03em, tabular figures |
+| Reps exercise name | 38sp | 700 | −0.02em |
 
 ### Spacing, radii, elevation
 
-- Screen padding 16–18dp; card padding 12–17dp; gaps 9–13dp
-- Radii: chips 10dp, cards 13–15dp, hero 18dp, buttons 10–14dp, checkbox 6dp
+- Screen padding 20dp; card padding 18dp; gaps 14dp
+- Radii: chips 12dp, cards/tiles 18dp, hero 22dp, buttons 16dp, checkbox 8dp
 - **No shadows.** Hairline borders only. The drop shadow in the prototype belongs to the mock
   phone frame and is not shipped.
 - The prototype's phone bezel, status bar, and gesture pill are presentation chrome — not
@@ -299,21 +315,31 @@ files. Weights 600 / 700 / 800 map to `SemiBold` / `Bold` / `ExtraBold`.
 
 ### 6.1 Home
 
-Single scrolling column, 16dp horizontal padding.
+Single scrolling column, 20dp horizontal padding.
 
-**Populated:** overline date (`TUE · JUL 21`) → two-line title `YOUR WORKOUTS` → "Up next"
-hero card → remaining workout rows → `+ BUILD A WORKOUT` button → bottom nav.
+**Populated (amended 2026-07-26 — describes the current build, not the handoff):** overline
+date (`TUE · JUL 21`) → two-line title `YOUR WORKOUTS` → `CHOOSE A WORKOUT` label → one
+full-width hairline card per workout, newest-created first (name + estimated minutes on row 1,
+short meta + last-done line on row 2) → pinned `BUILD A WORKOUT` button → bottom nav. The
+handoff's hero card is gone; every workout is an equal-weight card. Authority:
+`ui/home/HomeScreen.kt`.
 
-**Empty:** same header, then a hero-styled empty card — *"Nothing here yet. Build one from the
-library, or let the Coach draft one."* — then the Build button. The empty state uses the hero
-treatment so a fresh install looks designed rather than broken.
+**Empty (amended 2026-07-26):** same header, no `CHOOSE A WORKOUT` label, a single hairline
+"No workouts yet" card ("Build one from the library and it will appear here.") in place of the
+workout list → the Build button. The handoff's hero-styled empty treatment is gone.
 
-**"Up next" selection:** the workout with the oldest `lastPerformedAt`; if none has ever been
-performed, the most recently created.
+**Amended 2026-07-26 — no "Up next".** Home does not rank or recommend. It presents two
+options: **choose a workout** (equal-weight cards under a `CHOOSE A WORKOUT` label, ordered
+newest-created first) or **build a workout** (the pinned button). Each card carries its own
+`Never done` / `4 days ago` last-done line. The original rule ranked by `lastPerformedAt`, which
+nothing writes until Plan 1D, so it could only ever resolve to "the last workout you created"
+while presenting itself as a recommendation. `domain/UpNext` is deleted.
 
-Components per the handoff: hero card (`surfaceInverse`, radius 18dp, padding 15–17dp), workout
-rows (1dp border, radius 14–15dp, leading 36–38dp badge on `surface` showing **estimated
-minutes** from §4), Build button (48dp, radius 13dp, `surfaceInverse`, leading `+` glyph).
+**Components as built (amended 2026-07-26 — supersedes the handoff description):** workout card
+(`HairlineCard`, 1dp hairline border, radius 18dp, padding 18dp), empty-state card (same
+`HairlineCard` treatment), Build button (56dp, radius 16dp, `surfaceInverse`, leading `+` glyph).
+The handoff's hero card, its 36–38dp leading minutes badge, and its 13–15dp card radii no longer
+exist on this screen — `surfaceInverse` now appears on Home only via the Build button.
 
 ### 6.2 Build sheet
 

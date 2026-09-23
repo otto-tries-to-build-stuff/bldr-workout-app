@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ottotech.workoutbuilder.WorkoutApp
 import com.ottotech.workoutbuilder.data.ExerciseRepository
 import com.ottotech.workoutbuilder.data.WorkoutRepository
-import com.ottotech.workoutbuilder.domain.UpNext
 import com.ottotech.workoutbuilder.domain.WorkoutSummarizer
 import com.ottotech.workoutbuilder.domain.WorkoutSummary
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,14 +17,13 @@ import kotlinx.coroutines.flow.stateIn
 
 data class HomeUiState(
     val loading: Boolean = true,
-    val upNext: WorkoutSummary? = null,
-    val others: List<WorkoutSummary> = emptyList(),
+    val workouts: List<WorkoutSummary> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = !loading && upNext == null
+    val isEmpty: Boolean get() = !loading && workouts.isEmpty()
 }
 
 /**
- * Thin by design. Every decision it appears to make — summarising, choosing "Up next" —
+ * Thin by design. Every decision it appears to make — summarising, ordering the list —
  * is a pure function in `domain/` with its own unit tests; this class only joins two
  * flows and holds the result.
  */
@@ -38,11 +36,9 @@ class HomeViewModel(
         combine(workouts.observeAll(), exercises.observeAll()) { workoutList, exerciseList ->
             val library = exerciseList.associateBy { it.id }
             val summaries = WorkoutSummarizer.summarizeAll(workoutList, library)
-            val up = UpNext.select(summaries)
             HomeUiState(
                 loading = false,
-                upNext = up,
-                others = summaries.filter { it.id != up?.id },
+                workouts = WorkoutSummarizer.sortedForHome(summaries),
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 

@@ -62,6 +62,6 @@ class WorkoutRepository(private val dao: WorkoutDao) {
 
     suspend fun delete(id: String) = dao.deleteWorkout(id)
 
-    /** Drives "Up next" selection on Home. */
+    /** Records when a workout was done, for the Home card's last-done line. Callerless until Plan 1D wires up execution. */
     suspend fun markPerformed(id: String) = dao.markPerformed(id, Instant.now().toEpochMilli())
 }

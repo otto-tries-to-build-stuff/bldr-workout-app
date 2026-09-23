@@ -1,6 +1,8 @@
 package com.ottotech.workoutbuilder.domain
 
 import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 /**
  * Everything the Home screen shows about a workout, so the screen never re-walks
@@ -15,12 +17,45 @@ data class WorkoutSummary(
     val createdAt: Instant,
     val lastPerformedAt: Instant?,
 ) {
-    /** `10 exercises · 22 min · HIIT` — the hero and row meta line, spec §6.1. */
-    val metaLine: String
+    /** `10 exercises · HIIT` — the Home card's second line. Minutes get their own slot. */
+    val shortMeta: String
         get() {
             val noun = if (exerciseCount == 1) "exercise" else "exercises"
-            return "$exerciseCount $noun · $estimatedMinutes min · ${type.label}"
+            return "$exerciseCount $noun · ${type.label}"
         }
+
+    /** `22 MIN` — right-aligned on the Home card. Carries its unit; the old bare badge did not. */
+    val minutesLabel: String get() = "$estimatedMinutes MIN"
+
+    /**
+     * `Never done` / `Today` / `Yesterday` / `4 days ago` / `3 weeks ago` / `2 months ago`.
+     *
+     * [now] is a parameter rather than `Instant.now()` so this stays pure and testable —
+     * the same reason `WorkoutDraft` takes its ids from the caller. [zone] is likewise a
+     * parameter: the difference is counted in *calendar days* in that zone, not 24-hour
+     * blocks, so a workout done at 23:00 and viewed at 08:00 the next day reads "Yesterday"
+     * rather than "Today".
+     *
+     * Until Plan 1D calls `WorkoutRepository.markPerformed`, every workout returns
+     * "Never done". That is accurate, not a placeholder.
+     */
+    fun lastDoneLine(now: Instant, zone: ZoneId): String {
+        val performed = lastPerformedAt ?: return "Never done"
+        val days = ChronoUnit.DAYS.between(performed.atZone(zone).toLocalDate(), now.atZone(zone).toLocalDate())
+        return when {
+            days <= 0L -> "Today"
+            days == 1L -> "Yesterday"
+            days < 7L -> "$days days ago"
+            days < 60L -> {
+                val weeks = days / 7L
+                if (weeks == 1L) "1 week ago" else "$weeks weeks ago"
+            }
+            else -> {
+                val months = days / 30L
+                "$months months ago"
+            }
+        }
+    }
 }
 
 object WorkoutSummarizer {
@@ -49,23 +84,16 @@ object WorkoutSummarizer {
 
     fun summarizeAll(workouts: List<Workout>, exercises: Map<String, Exercise>): List<WorkoutSummary> =
         workouts.map { summarize(it, exercises) }
-}
-
-object UpNext {
 
     /**
-     * Spec §6.1: the workout performed longest ago.
+     * Home's card order: newest created first, so the workout you just built is at the top.
      *
-     * Never-performed workouts sort ahead of every performed one — nothing is more
-     * overdue than a workout you have not done at all — and among those the most recently
-     * created wins, because the one you just built is the one you meant to do next.
+     * This replaces the recommendation logic deleted 2026-07-26, which ranked by
+     * `lastPerformedAt`. Nothing ever writes that field — `markPerformed` has no caller until
+     * Plan 1D — so the old rule always fell through to its "newest created" tiebreak while
+     * presenting itself as a recommendation. Home now offers two plain options, choose or
+     * build, and does not rank.
      */
-    fun select(summaries: List<WorkoutSummary>): WorkoutSummary? {
-        val neverPerformed = summaries.filter { it.lastPerformedAt == null }
-        return if (neverPerformed.isNotEmpty()) {
-            neverPerformed.maxByOrNull { it.createdAt }
-        } else {
-            summaries.minByOrNull { it.lastPerformedAt!! }
-        }
-    }
+    fun sortedForHome(summaries: List<WorkoutSummary>): List<WorkoutSummary> =
+        summaries.sortedByDescending { it.createdAt }
 }

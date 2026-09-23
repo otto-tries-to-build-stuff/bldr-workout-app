@@ -1,40 +1,47 @@
 package com.ottotech.workoutbuilder.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ottotech.workoutbuilder.domain.WorkoutSummary
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
+import com.ottotech.workoutbuilder.ui.components.SectionLabel
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+/**
+ * Home offers two options and does not rank: choose a workout, or build one.
+ *
+ * The old "Up next" hero was removed 2026-07-26. It presented itself as a recommendation but
+ * could only ever resolve to "the last workout you created" — nothing writes `lastPerformedAt`
+ * until Plan 1D — and the user does not train in a fixed rotation, so even a working version
+ * would have promised a schedule the app does not have. See
+ * docs/superpowers/plans/2026-07-26-design-correction-pass.md.
+ */
 @Composable
 fun HomeScreen(
     onStartWorkout: (String) -> Unit,
@@ -42,7 +49,11 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val upNext = state.upNext
+    // Read once per composition rather than per card — every card would otherwise get a
+    // slightly different "now", and none of them need second-level accuracy. The zone is
+    // read alongside it so "Today" / "Yesterday" line up with the device's calendar day.
+    val now = remember { Instant.now() }
+    val zone = remember { ZoneId.systemDefault() }
 
     Column(Modifier.fillMaxWidth()) {
         LazyColumn(
@@ -50,7 +61,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(
                 start = Dimens.screenPadding,
                 end = Dimens.screenPadding,
-                top = 14.dp,
+                top = 16.dp,
                 bottom = 16.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.gap),
@@ -60,17 +71,22 @@ fun HomeScreen(
             // While loading, the header stands alone rather than flashing an empty state.
             // In practice this is at most one frame — MainActivity gates on seeding.
             if (state.isEmpty) {
-                item { EmptyHero() }
-            } else if (upNext != null) {
-                item { UpNextHero(upNext, onStart = { onStartWorkout(upNext.id) }) }
-                items(state.others, key = { it.id }) { summary ->
-                    WorkoutRow(summary, onClick = { onStartWorkout(summary.id) })
+                item { EmptyCard() }
+            } else if (state.workouts.isNotEmpty()) {
+                item { SectionLabel("Choose a workout") }
+                items(state.workouts, key = { it.id }) { summary ->
+                    WorkoutCard(
+                        summary = summary,
+                        now = now,
+                        zone = zone,
+                        onClick = { onStartWorkout(summary.id) },
+                    )
                 }
             }
         }
 
-        // Pinned above the bottom nav rather than scrolling away — the handoff calls it
-        // "sticky-feeling", and it is the screen's only creative action.
+        // The second of Home's two options, pinned above the bottom nav rather than scrolling
+        // away — the handoff calls it "sticky-feeling".
         InverseButton(
             text = "BUILD A WORKOUT",
             leadingGlyph = "+",
@@ -93,94 +109,69 @@ private fun Header() {
     }
     Column {
         Text(overline, style = AppType.overline, color = colors.textMuted)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text("YOUR\nWORKOUTS", style = AppType.screenTitle, color = colors.onBackground)
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(6.dp))
     }
 }
 
 /**
- * The inverted card at the top of Home. Spec §6.1 gives the empty state this same
- * treatment so a fresh install looks designed rather than broken, so both states are one
- * component with one label and different bodies — they cannot drift apart.
+ * One workout, equal in weight to every other. Both rows push their content to the card's two
+ * edges, so the card is filled by construction rather than left-heavy with dead space.
  */
 @Composable
-private fun HeroCard(label: String, body: @Composable ColumnScope.() -> Unit) {
-    val colors = LocalAppColors.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(Dimens.radiusHero))
-            .background(colors.surfaceInverse)
-            .padding(Dimens.heroPadding),
-    ) {
-        // Mono accent: on an inverse surface the accent is onSurfaceInverse.
-        Text(label, style = AppType.heroLabel, color = colors.onSurfaceInverse)
-        Spacer(Modifier.height(8.dp))
-        body()
-    }
-}
-
-@Composable
-private fun UpNextHero(summary: WorkoutSummary, onStart: () -> Unit) {
-    val colors = LocalAppColors.current
-    HeroCard(label = "UP NEXT") {
-        Text(summary.name, style = AppType.heroName, color = colors.onSurfaceInverse)
-        Spacer(Modifier.height(4.dp))
-        Text(summary.metaLine, style = AppType.heroMeta, color = colors.textMuted)
-        Spacer(Modifier.height(14.dp))
-        InverseButton(
-            text = "Start workout ›",
-            height = Dimens.primaryButtonHeight,
-            style = AppType.primaryButton,
-            // Inside the hero the surfaces are swapped, so the accent swaps with them.
-            container = colors.onSurfaceInverse,
-            content = colors.surfaceInverse,
-            onClick = onStart,
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
-}
-
-@Composable
-private fun EmptyHero() {
-    val colors = LocalAppColors.current
-    HeroCard(label = "NOTHING YET") {
-        Text(
-            "Nothing here yet. Build one from the library, or let the Coach draft one.",
-            style = AppType.heroMeta,
-            color = colors.onSurfaceInverse,
-        )
-    }
-}
-
-@Composable
-private fun WorkoutRow(summary: WorkoutSummary, onClick: () -> Unit) {
+private fun WorkoutCard(summary: WorkoutSummary, now: Instant, zone: ZoneId, onClick: () -> Unit) {
     val colors = LocalAppColors.current
     HairlineCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
-        Row(
-            modifier = Modifier.padding(Dimens.cardPadding),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(Dimens.badgeSize)
-                    .clip(RoundedCornerShape(Dimens.radiusChip))
-                    .background(colors.surface),
-                contentAlignment = Alignment.Center,
+        Column(Modifier.fillMaxWidth().padding(Dimens.cardPadding)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
             ) {
                 Text(
-                    summary.estimatedMinutes.toString(),
+                    summary.name,
                     style = AppType.cardTitle,
-                    color = colors.onSurface,
+                    color = colors.onBackground,
+                    modifier = Modifier.weight(1f),
                 )
+                Spacer(Modifier.width(12.dp))
+                Text(summary.minutesLabel, style = AppType.cardTitle, color = colors.onBackground)
             }
-            Column {
-                Text(summary.name, style = AppType.cardTitle, color = colors.onBackground)
-                Spacer(Modifier.height(2.dp))
-                Text(summary.metaLine, style = AppType.cardMeta, color = colors.textMuted)
+            Spacer(Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    summary.shortMeta,
+                    style = AppType.cardMeta,
+                    color = colors.textMuted,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(summary.lastDoneLine(now, zone), style = AppType.cardMeta, color = colors.textMuted)
             }
+        }
+    }
+}
+
+/**
+ * Spec §6.1 gives the empty state a designed treatment so a fresh install looks intentional
+ * rather than broken. It names the one option that is still available.
+ */
+@Composable
+private fun EmptyCard() {
+    val colors = LocalAppColors.current
+    HairlineCard(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(Dimens.cardPadding)) {
+            Text("No workouts yet", style = AppType.cardTitle, color = colors.onBackground)
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Build one from the library and it will appear here.",
+                style = AppType.cardMeta,
+                color = colors.textMuted,
+            )
         }
     }
 }

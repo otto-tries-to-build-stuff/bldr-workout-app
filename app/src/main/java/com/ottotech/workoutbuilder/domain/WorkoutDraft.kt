@@ -111,8 +111,19 @@ object WorkoutDraft {
     // ---- validation ----
 
     /**
+     * Is there anything in this draft worth warning about before discarding it?
+     *
+     * Deliberately *not* `saveBlockers(workout).isEmpty()` — a half-finished draft is not
+     * saveable but is absolutely worth protecting. And deliberately not `sections.isEmpty()`,
+     * because `BuilderViewModel` seeds every new draft with one empty section, so a brand-new
+     * untouched draft already has one.
+     */
+    fun hasContent(workout: Workout): Boolean =
+        workout.name.isNotBlank() || workout.sections.any { it.items.isNotEmpty() }
+
+    /**
      * Human-readable reasons the workout cannot be saved yet, empty when it is ready. The
-     * Builder disables SAVE and shows the first blocker while this is non-empty.
+     * Builder disables SAVE and shows all of them while this is non-empty.
      */
     fun saveBlockers(workout: Workout): List<String> = buildList {
         if (workout.name.isBlank()) add("Name your workout")

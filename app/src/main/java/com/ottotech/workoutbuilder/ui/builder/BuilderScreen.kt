@@ -8,16 +8,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +40,7 @@ import com.ottotech.workoutbuilder.domain.Rest
 import com.ottotech.workoutbuilder.domain.RestSlot
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TrainingType
+import com.ottotech.workoutbuilder.domain.WorkoutDraft
 import com.ottotech.workoutbuilder.domain.WorkoutItem
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
@@ -57,13 +62,22 @@ fun BuilderScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
 
+    var confirmDiscard by remember { mutableStateOf(false) }
+    val dirty = WorkoutDraft.hasContent(state.workout)
+
+    // One exit path for both the header chevron and the system Back gesture, so they cannot
+    // diverge. An untouched draft closes straight away — prompting on an empty form is noise.
+    val requestClose = { if (dirty) { confirmDiscard = true } else { onClose() } }
+
+    BackHandler(enabled = dirty) { confirmDiscard = true }
+
     Column(
         Modifier
             .fillMaxSize()
             .background(colors.background)
             .statusBarsPadding(),
     ) {
-        ScreenHeader(title = "Build", onBack = onClose)
+        ScreenHeader(title = "Build", onBack = requestClose)
 
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -90,6 +104,7 @@ fun BuilderScreen(
                     section = section,
                     viewModel = viewModel,
                     onAddExercise = { onAddExercise(section.id) },
+                    modifier = Modifier.animateItem(),
                 )
             }
 
@@ -124,18 +139,24 @@ fun BuilderScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text("Deleted", style = AppType.cardMeta, color = colors.onSurface)
-                Text(
-                    "Undo",
-                    style = AppType.chip,
-                    color = colors.onSurface,
-                    modifier = Modifier.clickable(onClick = viewModel::onUndo),
-                )
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(
+                            minWidth = Dimens.minTouchTarget,
+                            minHeight = Dimens.minTouchTarget,
+                        )
+                        .clip(RoundedCornerShape(Dimens.radiusChip))
+                        .clickable(onClick = viewModel::onUndo),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Text("Undo", style = AppType.chip, color = colors.onSurface)
+                }
             }
         }
 
         if (!state.canSave) {
             Text(
-                text = state.saveBlockers.first(),
+                text = state.saveBlockers.joinToString(" · "),
                 style = AppType.cardMeta,
                 color = colors.textMuted,
                 textAlign = TextAlign.Center,
@@ -147,6 +168,35 @@ fun BuilderScreen(
         }
 
         SaveButton(enabled = state.canSave, onClick = { viewModel.save(onSaved) })
+
+        if (confirmDiscard) {
+            AlertDialog(
+                onDismissRequest = { confirmDiscard = false },
+                // `background` was nearly indistinguishable from the AlertDialog scrim on top
+                // of it in dark mode (both ~#0B0B0D) — see the final review's screenshot.
+                // `surface` gives the dialog a visible edge in both themes; body text stays AA
+                // (dark textMuted #9A9A9A on #18181C is 6.4:1, light #6B6B6B on #F1F1EF is 4.7:1).
+                containerColor = colors.surface,
+                title = { Text("Discard this workout?", style = AppType.cardTitle, color = colors.onBackground) },
+                text = {
+                    Text(
+                        "It hasn't been saved. Everything you've added will be lost.",
+                        style = AppType.cardMeta,
+                        color = colors.textMuted,
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { confirmDiscard = false; onClose() }) {
+                        Text("Discard", style = AppType.chip, color = colors.onBackground)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmDiscard = false }) {
+                        Text("Keep editing", style = AppType.chip, color = colors.onBackground)
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -181,9 +231,10 @@ private fun SectionCard(
     section: Section,
     viewModel: BuilderViewModel,
     onAddExercise: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val colors = LocalAppColors.current
-    HairlineCard(modifier = Modifier.fillMaxWidth()) {
+    HairlineCard(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth().padding(Dimens.cardPadding)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AppTextField(
@@ -222,16 +273,17 @@ private fun SectionCard(
             }
 
             Spacer(Modifier.height(10.dp))
-            Text(
-                "+ Add exercise",
-                style = AppType.chip,
-                color = colors.onBackground,
+            Box(
                 modifier = Modifier
+                    .defaultMinSize(minHeight = Dimens.minTouchTarget)
                     .clip(RoundedCornerShape(Dimens.radiusChip))
                     .background(colors.surface)
                     .clickable(onClick = onAddExercise)
                     .padding(horizontal = 13.dp, vertical = 9.dp),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("+ Add exercise", style = AppType.chip, color = colors.onBackground)
+            }
         }
     }
 }
@@ -370,17 +422,17 @@ private fun RestControl(label: String, rest: Rest?, onChange: (Rest?) -> Unit) {
     Column(Modifier.padding(vertical = 4.dp)) {
         Text(label, style = AppType.cardMeta, color = colors.textMuted)
         Spacer(Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             Chip("Off", selected = rest == null) { onChange(null) }
             Chip("Timed", selected = rest is Rest.Timed) {
                 onChange(Rest.Timed((rest as? Rest.Timed)?.seconds ?: 30))
             }
             Chip("Manual", selected = rest is Rest.Manual) { onChange(Rest.Manual) }
-            if (rest is Rest.Timed) {
-                Spacer(Modifier.size(2.dp))
-                Stepper(value = rest.seconds, min = 5, step = 5, label = { "${it}s" }) {
-                    onChange(Rest.Timed(it))
-                }
+        }
+        if (rest is Rest.Timed) {
+            Spacer(Modifier.height(6.dp))
+            Stepper(value = rest.seconds, min = 5, step = 5, label = { "${it}s" }) {
+                onChange(Rest.Timed(it))
             }
         }
     }
@@ -392,7 +444,7 @@ private fun GlyphButton(glyph: String, onClick: () -> Unit) {
     val colors = LocalAppColors.current
     Box(
         modifier = Modifier
-            .size(30.dp)
+            .size(Dimens.glyphButtonSize)
             .clip(RoundedCornerShape(Dimens.radiusChip))
             .background(colors.surface)
             .clickable(onClick = onClick),
