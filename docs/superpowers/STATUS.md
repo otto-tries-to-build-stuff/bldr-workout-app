@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 2026-09-12
+**Last updated:** 2026-09-23
 
 ## Where things stand
 
@@ -10,7 +10,7 @@
 | **Plan 1A** — foundation & domain | **Merged to `main`.** 46 tests green, verified on device. |
 | **Plan 1B** — Home + Library screens | **Merged to `main`.** 76 tests green, verified on the emulator. |
 | **Plan 1C** — Builder + Library pick mode | **Merged to `main`.** 108 tests green, verified on the emulator. |
-| **Design correction pass** — scale, contrast, targets, Home | **Complete on branch `design-correction-pass`, awaiting merge.** 115 tests green, verified on the emulator. |
+| **Design correction pass** — scale, contrast, targets, Home | **Merged to `main`.** 116 tests green, verified on the emulator. |
 | Plan 1D — Execution + audio | Not started |
 | Phase 2 — AI Coach | Not started |
 
