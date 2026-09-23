@@ -31,7 +31,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.ottotech.workoutbuilder.domain.ItemMode
 import com.ottotech.workoutbuilder.domain.Segment
 import com.ottotech.workoutbuilder.domain.SegmentKind
@@ -46,12 +49,18 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val session = state.session
 
-    // The service owns the clock; the screen samples it so the ring moves smoothly.
+    // The service owns the clock; the screen samples it so the ring moves smoothly. Gated on
+    // the lifecycle so this 10Hz recomposition loop actually pauses when the app is
+    // backgrounded rather than spinning unseen — the service's own clock is what must keep
+    // running with the screen off, not this UI sampler.
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = SystemClock.elapsedRealtime()
-            delay(100L)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                now = SystemClock.elapsedRealtime()
+                delay(100L)
+            }
         }
     }
 
@@ -88,6 +97,11 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             .fillMaxSize()
             .background(ExecutionColors.background)
             .statusBarsPadding()
+            // This screen is a full-screen route outside AppScaffold, so — unlike every
+            // bottom-anchored surface inside it — it inherits no nav-bar inset on its own.
+            // Edge-to-edge is on (enableEdgeToEdge in MainActivity), so without this the
+            // Pause/Skip row sits inside the 3-button nav bar and taps land on Back/Home.
+            .navigationBarsPadding()
             .padding(horizontal = Dimens.screenPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -97,7 +111,9 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             onToggleMute = viewModel::toggleMute,
             onClose = { confirmExit = true },
         )
-        ProgressBar(done = session.workIndex, total = session.workTotal)
+        // workIndex is 1-based and includes the in-progress exercise; done must count only
+        // what's actually finished, or the bar reads fully solid on an exercise not yet done.
+        ProgressBar(done = session.workIndex - 1, total = session.workTotal)
 
         Spacer(Modifier.height(24.dp))
         Text(
@@ -106,9 +122,13 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             color = ExecutionColors.onBackground,
             textAlign = TextAlign.Center,
         )
-        segment.primaryMuscle?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it.label.uppercase(), style = AppType.muscleTag, color = ExecutionColors.textMuted)
+        // REPS mode renders its own "Chest · Barbell" sub-line (RepsPanel) that already
+        // carries the muscle — showing the tag here too would say it twice on screen.
+        if (segment.mode != ItemMode.REPS) {
+            segment.primaryMuscle?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it.label.uppercase(), style = AppType.muscleTag, color = ExecutionColors.textMuted)
+            }
         }
 
         Spacer(Modifier.height(28.dp))
