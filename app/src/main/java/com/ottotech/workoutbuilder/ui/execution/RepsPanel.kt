@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
@@ -27,7 +30,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.ottotech.workoutbuilder.domain.Segment
 import com.ottotech.workoutbuilder.ui.theme.AppType
+import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
+
+/** How many rows show before the list scrolls internally, rather than growing the screen. */
+private const val MAX_VISIBLE_ROWS = 4
 
 /**
  * REPS mode (spec §6.6): a `Chest · Barbell` sub-line, a watch-demo card (rendered by
@@ -54,7 +61,9 @@ fun RepsPanel(segment: Segment) {
     // it, and it must reset when the exercise changes, which keying on the segment's index
     // (unique per compiled segment) gives for free.
     val checked = remember(segment.index) {
-        mutableStateListOf<Boolean>().apply { addAll(List(segment.sets ?: 1) { false }) }
+        mutableStateListOf<Boolean>().apply {
+            addAll(List((segment.sets ?: 1).coerceAtLeast(1)) { false })
+        }
     }
 
     Column(
@@ -80,7 +89,18 @@ fun RepsPanel(segment: Segment) {
                 .fillMaxWidth()
                 .padding(top = 24.dp, bottom = 4.dp),
         )
-        Column(Modifier.fillMaxWidth()) {
+        // Bounded and independently scrollable, so an unusually large sets value (the
+        // Builder's stepper has no maximum) grows this list only up to MAX_VISIBLE_ROWS
+        // rows before it scrolls internally, rather than growing the whole screen and
+        // pushing the watch-demo/up-next cards and the Pause/Done row off-screen.
+        // ExecutionScreen's outer Column is deliberately not scrollable itself — it relies
+        // on Spacer(Modifier.weight(1f)), which does not coexist with a scrollable parent.
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(max = Dimens.minTouchTarget * MAX_VISIBLE_ROWS)
+                .verticalScroll(rememberScrollState()),
+        ) {
             repeat(checked.size) { i ->
                 SetRow(
                     label = setRowLabel(segment, i),
@@ -93,8 +113,10 @@ fun RepsPanel(segment: Segment) {
 }
 
 private fun setRowLabel(segment: Segment, i: Int): String {
-    val weight = segment.weightKg?.let { " · ${it.toCleanString()}kg" }.orEmpty()
-    return "Set ${i + 1} · ${segment.reps} reps$weight"
+    val reps = segment.reps?.let { "$it reps" }
+    val weight = segment.weightKg?.let { "${it.toCleanString()}kg" }
+    val detail = listOfNotNull(reps, weight).joinToString(" · ")
+    return if (detail.isBlank()) "Set ${i + 1}" else "Set ${i + 1} · $detail"
 }
 
 /** Trims a trailing `.0` off a whole-number weight without dropping a real fraction (e.g. 7.5). */
@@ -106,7 +128,7 @@ private fun SetRow(label: String, done: Boolean, onToggle: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .height(Dimens.minTouchTarget)
             // clip() before clickable() so the ripple follows the row's shape rather than
             // drawing square outside it.
             .clip(RoundedCornerShape(8.dp))
