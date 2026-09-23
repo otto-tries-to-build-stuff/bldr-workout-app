@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.SystemClock
 import com.ottotech.workoutbuilder.WorkoutApp
+import com.ottotech.workoutbuilder.audio.CuePlayer
 import com.ottotech.workoutbuilder.domain.Cue
 import com.ottotech.workoutbuilder.domain.SegmentCompiler
 import com.ottotech.workoutbuilder.domain.WorkoutSession
@@ -45,6 +46,8 @@ class ExecutionService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val app: WorkoutApp get() = application as WorkoutApp
+
+    private val cues by lazy { CuePlayer(this) }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -89,14 +92,16 @@ class ExecutionService : Service() {
             val workout = app.workouts.load(workoutId) ?: run { stopEverything(); return@launch }
             val library = app.exercises.observeAll().first().associateBy { it.id }
             val segments = SegmentCompiler.compile(workout, library)
-            val (session, cues) = WorkoutSession.start(segments, now())
+            val (session, sessionCues) = WorkoutSession.start(segments, now())
+            cues.muted = app.prefs.cuesMuted
+            cues.prime()
             _state.value = ExecutionState(
                 workoutName = workout.name,
                 workoutId = workoutId,
                 session = session,
                 muted = app.prefs.cuesMuted,
             )
-            cues.forEach { play(it) } // the opening GO — start() emits it for any non-empty workout
+            sessionCues.forEach { play(it) } // the opening GO — start() emits it for any non-empty workout
             refreshNotification()
             runClock()
         }
@@ -159,8 +164,7 @@ class ExecutionService : Service() {
         }
     }
 
-    /** Replaced with real audio in Task 4. */
-    private fun play(cue: Cue) = Unit
+    private fun play(cue: Cue) = cues.play(cue)
 
     private fun refreshNotification() {
         val state = _state.value
@@ -183,6 +187,7 @@ class ExecutionService : Service() {
     }
 
     override fun onDestroy() {
+        cues.release()
         scope.cancel()
         super.onDestroy()
     }
