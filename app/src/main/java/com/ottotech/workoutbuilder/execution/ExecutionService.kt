@@ -60,6 +60,17 @@ class ExecutionService : Service() {
      */
     private lateinit var mediaSession: MediaSession
 
+    /**
+     * As [CuePlayer.released]: [refreshNotification] runs not only from [onStartCommand] on
+     * the main thread but also from [runClock]'s tick on [Dispatchers.Default], and coroutine
+     * cancellation is cooperative — a tick already past its `delay()` and mid-[refreshNotification]
+     * is not interrupted by [scope]`.cancel()`. Set as the first statement of [onDestroy],
+     * before [mediaSession]`.release()`, so a late tick sees it and backs off instead of
+     * calling into a released [MediaSession] (which throws, and since it's on an
+     * uncaught-exception coroutine, takes the process down).
+     */
+    @Volatile private var destroyed = false
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -230,6 +241,10 @@ class ExecutionService : Service() {
     private fun play(cue: Cue) = cues.play(cue)
 
     private fun refreshNotification() {
+        // Guards every mediaSession/NotificationManager call below — including the
+        // notify() at the end of this function — against a tick that lost the race with
+        // onDestroy(). See [destroyed].
+        if (destroyed) return
         val state = _state.value
         val session = state.session ?: return
         val segment = session.current
@@ -272,6 +287,10 @@ class ExecutionService : Service() {
     }
 
     private fun stopEverything() {
+        // Also reachable off the main thread (begin()'s scope.launch calls this when a
+        // workout id fails to load), so it gets the same released-mediaSession guard as
+        // refreshNotification.
+        if (destroyed) return
         _state.value = ExecutionState()
         // Belt and braces alongside onDestroy's release(): a mid-workout quit (ACTION_STOP)
         // must drop the lock screen controls immediately, not wait for teardown to catch up.
@@ -281,6 +300,7 @@ class ExecutionService : Service() {
     }
 
     override fun onDestroy() {
+        destroyed = true
         cues.release()
         mediaSession.release()
         scope.cancel()
