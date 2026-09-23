@@ -143,6 +143,73 @@ class WorkoutSessionTest {
         )
     }
 
+    // ---- countdown catch-up ----
+
+    // A scheduling gap (Doze, a GC pause, the app backgrounded) can land mid-segment
+    // after skipping straight past the 3 and 2 beeps into the final second. Replaying all
+    // three beeps in the half-second before the go tone would be worse to hear than a
+    // single slightly-late beep, so only the second landed on plays and the missed ones
+    // are never replayed. advance() makes the same trade across segment boundaries; this
+    // pins the equivalent decision inside a single segment.
+    @Test
+    fun `a gap past the countdown window fires only the beep it lands on`() {
+        var s = WorkoutSession.start(indexed(timed(10)), now = 0L).session
+        s = s.tick(0L).session
+        val (landed, cues) = s.tick(9_500L)
+        assertEquals(listOf(Cue.COUNTDOWN), cues, "only the beep for the second it lands on")
+
+        val heard = mutableListOf<Cue>()
+        var t = landed
+        for (ms in 9_600L..10_000L step 100L) {
+            val (next, c) = t.tick(ms)
+            t = next
+            heard += c
+        }
+        assertTrue(
+            heard.none { it == Cue.COUNTDOWN },
+            "the missed 3 and 2 beeps must not replay after the gap",
+        )
+    }
+
+    // A gap that lands before a beep's second has been reached does not swallow it — only
+    // a gap that jumps past a second's boundary loses that beep.
+    @Test
+    fun `a gap landing mid window still fires the remaining beeps`() {
+        var s = WorkoutSession.start(indexed(timed(10)), now = 0L).session
+        s = s.tick(0L).session
+        val heard = mutableListOf<Pair<Long, Cue>>()
+        val (landed, firstCues) = s.tick(7_500L)
+        firstCues.forEach { heard += 7_500L to it }
+        var t = landed
+        for (ms in 7_600L..10_000L step 100L) {
+            val (next, cues) = t.tick(ms)
+            t = next
+            cues.forEach { heard += ms to it }
+        }
+        assertEquals(
+            listOf(7_500L, 8_000L, 9_000L),
+            heard.filter { it.second == Cue.COUNTDOWN }.map { it.first },
+            "landing at 2.5s remaining still hears 3, then 2 and 1 on schedule",
+        )
+    }
+
+    @Test
+    fun `a segment shorter than the countdown window only beeps for the seconds it has`() {
+        var s = WorkoutSession.start(indexed(timed(2)), now = 0L).session
+        val heard = mutableListOf<Pair<Long, Cue>>()
+        for (ms in 0L..2_000L step 100L) {
+            val (next, cues) = s.tick(ms)
+            s = next
+            cues.forEach { heard += ms to it }
+        }
+        assertEquals(
+            listOf(0L, 1_000L),
+            heard.filter { it.second == Cue.COUNTDOWN }.map { it.first },
+            "a 2-second segment only ever has a 2 and a 1 to count down",
+        )
+        assertTrue(s.finished, "the segment still advances at zero")
+    }
+
     // ---- pause / resume ----
 
     @Test
