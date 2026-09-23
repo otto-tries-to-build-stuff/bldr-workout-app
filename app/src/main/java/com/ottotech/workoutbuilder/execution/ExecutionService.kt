@@ -74,6 +74,16 @@ class ExecutionService : Service() {
     /** The single running clock loop, so a second ACTION_START can never stack a duplicate. */
     private var clockJob: Job? = null
 
+    /** Set once, in [begin], for the currently-running workout — the id [markPerformed] writes. */
+    private var runningWorkoutId: String = ""
+
+    /**
+     * Guards against the 10Hz tick writing the "performed" row repeatedly once finished, and
+     * against a workout that compiled to zero segments (which finishes at [WorkoutSession.start],
+     * never reaching [updateWithCues]) ever being recorded at all.
+     */
+    private var performedRecorded = false
+
     private fun begin(workoutId: String) {
         val current = _state.value
         val alreadyRunningThisWorkout =
@@ -91,6 +101,11 @@ class ExecutionService : Service() {
         startForeground(ExecutionNotification.ID, ExecutionNotification.build(this, "Starting…", "", paused = false))
         clockJob = scope.launch {
             val workout = app.workouts.load(workoutId) ?: run { stopEverything(); return@launch }
+            runningWorkoutId = workoutId
+            // A fresh session, whether this is the service's first workout or (defensively)
+            // a second one run without the instance being torn down in between — either way
+            // nothing has been recorded for it yet.
+            performedRecorded = false
             val library = app.exercises.observeAll().first().associateBy { it.id }
             val segments = SegmentCompiler.compile(workout, library)
             val (session, sessionCues) = WorkoutSession.start(segments, now())
@@ -150,6 +165,7 @@ class ExecutionService : Service() {
     private inline fun updateWithCues(transform: (WorkoutSession) -> com.ottotech.workoutbuilder.domain.SessionTick) {
         var applied = false
         var pendingCues: List<Cue> = emptyList()
+        var committed: WorkoutSession? = null
         _state.update { current ->
             applied = false
             val session = current.session ?: return@update current
@@ -157,11 +173,22 @@ class ExecutionService : Service() {
             if (next == session && cues.isEmpty()) return@update current
             applied = true
             pendingCues = cues
+            committed = next
             current.copy(session = next)
         }
         if (applied) {
             pendingCues.forEach { play(it) }
             refreshNotification()
+            // As with pendingCues above: `committed` is the session from whichever invocation
+            // of the update block actually won the compare-and-set, so this check and the
+            // markPerformed write it can trigger happen exactly once per real transition —
+            // never from a retried, discarded invocation, and never inside the update{}
+            // lambda itself (which could re-run under contention and write the row twice).
+            val next = committed
+            if (next != null && next.finished && !performedRecorded && next.segments.isNotEmpty()) {
+                performedRecorded = true
+                scope.launch { app.workouts.markPerformed(runningWorkoutId) }
+            }
         }
     }
 

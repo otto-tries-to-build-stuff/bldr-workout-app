@@ -22,9 +22,8 @@ import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
 
 /**
- * Placeholder for the workout-complete screen. Task 7 replaces this with the full summary
- * (spec §6.7); this stub only needs to keep the execution screen compiling and let a finished
- * session be dismissed during Task 5 verification.
+ * The workout-complete screen (spec §6.7): a centred "WORKOUT COMPLETE" label over the
+ * workout's name, and a single full-width Done button back to Home.
  */
 @Composable
 fun FinishScreen(workoutName: String, onDone: () -> Unit) {
@@ -34,24 +33,31 @@ fun FinishScreen(workoutName: String, onDone: () -> Unit) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                "$workoutName complete",
+                "WORKOUT COMPLETE",
+                style = AppType.heroLabel,
+                color = ExecutionColors.textMuted,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                workoutName,
                 style = AppType.moveName,
                 color = ExecutionColors.onBackground,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 28.dp),
             )
             Box(
                 modifier = Modifier
-                    .height(Dimens.primaryButtonHeight)
                     .fillMaxWidth()
+                    .height(Dimens.minTouchTarget)
                     .clip(RoundedCornerShape(Dimens.radiusButton))
-                    .background(ExecutionColors.onBackground)
+                    .background(ExecutionColors.card)
                     .clickable(onClick = onDone),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("Done", style = AppType.primaryButton, color = ExecutionColors.background)
+                Text("Done", style = AppType.primaryButton, color = ExecutionColors.onBackground)
             }
         }
     }
