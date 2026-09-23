@@ -39,7 +39,10 @@ object ExecutionNotification {
         val open = PendingIntent.getActivity(
             context,
             0,
-            Intent(context, MainActivity::class.java),
+            // SINGLE_TOP + MainActivity's singleTop launch mode: if it's already running (the
+            // normal case — this is the only way back into a backgrounded workout), reuse that
+            // instance and its navigation state instead of stacking a second one on Home.
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE,
         )
         fun action(label: String, command: String) = Notification.Action.Builder(
