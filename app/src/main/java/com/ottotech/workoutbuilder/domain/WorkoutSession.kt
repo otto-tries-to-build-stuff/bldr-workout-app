@@ -41,6 +41,18 @@ data class WorkoutSession(
 
     val isPaused: Boolean get() = pausedAt != null
 
+    /** Number of WORK segments — the progress bar's denominator; rests are not steps. */
+    val workTotal: Int get() = segments.count { it.kind == SegmentKind.WORK }
+
+    /**
+     * 1-based count of WORK segments reached so far. A rest reports the exercise that
+     * preceded it, so the header does not flicker backwards between exercises.
+     */
+    val workIndex: Int
+        get() = segments.take((index + 1).coerceAtMost(segments.size))
+            .count { it.kind == SegmentKind.WORK }
+            .coerceAtLeast(1)
+
     /** Milliseconds actually spent on the current segment, excluding paused time. */
     fun elapsedMs(now: Long): Long {
         val end = pausedAt ?: now
@@ -51,6 +63,108 @@ data class WorkoutSession(
     fun remainingMs(now: Long): Long? {
         val duration = current?.durationSec ?: return null
         return duration * 1000L - elapsedMs(now)
+    }
+
+    /**
+     * Seconds to show on the ring. Rounds **up**, so a segment shows its full duration the
+     * instant it starts and shows "1" through the whole final second. Rounding down would
+     * display 29 immediately and hold 0 on screen for a full second before advancing.
+     */
+    fun remainingSecDisplay(now: Long): Int? {
+        val ms = remainingMs(now) ?: return null
+        return ceil(ms / 1000.0).toInt().coerceAtLeast(0)
+    }
+
+    /**
+     * Advances the clock. Returns the same session when nothing is due, so the caller can
+     * compare instances cheaply and only re-publish state that changed.
+     */
+    fun tick(now: Long): SessionTick {
+        if (finished || isPaused) return SessionTick(this)
+        val remaining = remainingMs(now) ?: return SessionTick(this) // manual / reps wait for a tap
+        if (remaining <= 0L) return advance(now, overflow = -remaining)
+
+        val second = ceil(remaining / 1000.0).toInt()
+        val due = second in 1..3 && (lastCountdown == null || second < lastCountdown)
+        return if (due) {
+            SessionTick(copy(lastCountdown = second), listOf(Cue.COUNTDOWN))
+        } else {
+            SessionTick(this)
+        }
+    }
+
+    /**
+     * Moves past the current segment, carrying [overflow] — the milliseconds by which the
+     * clock has already run past its end — into the next one, so a late tick does not
+     * silently lengthen the workout.
+     *
+     * A long gap (device asleep, service descheduled) can span several segments. Those are
+     * consumed by arithmetic and land on the right one with a single go cue, rather than
+     * replaying each intermediate segment's cues in a burst. A segment with no duration
+     * stops the catch-up: it waits for a person, and cannot be slept through.
+     */
+    private fun advance(now: Long, overflow: Long): SessionTick {
+        var next = index + 1
+        var carry = overflow
+        while (next < segments.size) {
+            val durationMs = (segments[next].durationSec ?: break) * 1000L
+            if (carry < durationMs) break
+            carry -= durationMs
+            next++
+        }
+        return if (next >= segments.size) {
+            SessionTick(copy(index = segments.size, finished = true, lastCountdown = null), listOf(Cue.FINISH))
+        } else {
+            SessionTick(
+                copy(
+                    index = next,
+                    startedAt = now - carry,
+                    pausedAt = null,
+                    pausedTotal = 0L,
+                    lastCountdown = null,
+                ),
+                listOf(Cue.GO),
+            )
+        }
+    }
+
+    /**
+     * Moves to the next segment on the person's instruction, whatever its mode and whatever
+     * time is left. Unlike [tick]'s auto-advance there is no overflow to carry: the new
+     * segment starts now.
+     */
+    fun skip(now: Long): SessionTick {
+        if (finished) return SessionTick(this)
+        val next = index + 1
+        return if (next >= segments.size) {
+            SessionTick(copy(index = segments.size, finished = true, lastCountdown = null), listOf(Cue.FINISH))
+        } else {
+            SessionTick(
+                copy(
+                    index = next,
+                    startedAt = now,
+                    pausedAt = null,
+                    pausedTotal = 0L,
+                    lastCountdown = null,
+                ),
+                listOf(Cue.GO),
+            )
+        }
+    }
+
+    /**
+     * "Done" on a manual or reps segment. Mechanically identical to [skip] — named
+     * separately because the intent differs, and the screen shows a different control.
+     */
+    fun complete(now: Long): SessionTick = skip(now)
+
+    fun pause(now: Long): WorkoutSession =
+        if (finished || isPaused) this else copy(pausedAt = now)
+
+    /** Folds the pause into [pausedTotal], so remaining time resumes where it stopped. */
+    fun resume(now: Long): WorkoutSession {
+        val since = pausedAt ?: return this
+        return copy(pausedAt = null, pausedTotal = pausedTotal + (now - since))
     }
 
     companion object {
