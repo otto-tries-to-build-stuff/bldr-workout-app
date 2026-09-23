@@ -3,6 +3,8 @@ package com.ottotech.workoutbuilder.execution
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
 import android.os.IBinder
 import android.os.SystemClock
 import com.ottotech.workoutbuilder.WorkoutApp
@@ -49,11 +51,30 @@ class ExecutionService : Service() {
 
     private val cues by lazy { CuePlayer(this) }
 
+    /**
+     * Exposes pause/resume/skip to the lock screen and headset buttons. Its `isActive` state
+     * and whether its token reaches [ExecutionNotification.build] are kept in lockstep with
+     * the session in [refreshNotification] and [stopEverything], so the app stops looking
+     * like a media app the moment the workout finishes or is quit — an active session left
+     * behind after that would otherwise linger on the lock screen with nothing real behind it.
+     */
+    private lateinit var mediaSession: MediaSession
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         ExecutionNotification.ensureChannel(this)
+        mediaSession = MediaSession(this, "workout").apply {
+            setCallback(object : MediaSession.Callback() {
+                // The default onMediaButtonEvent() dispatches a headset PLAY_PAUSE toggle to
+                // onPlay/onPause based on the PlaybackState most recently published below, so
+                // a single physical button still maps to the right action.
+                override fun onPlay() { update { it.resume(now()) } }
+                override fun onPause() { update { it.pause(now()) } }
+                override fun onSkipToNext() { updateWithCues { it.skip(now()) } }
+            })
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -218,18 +239,50 @@ class ExecutionService : Service() {
             else -> session.remainingSecDisplay(now())?.let { "$it s left" } ?: segment.label
         }
         val title = if (session.finished) state.workoutName else segment?.exerciseName ?: state.workoutName
+
+        // Active only while there is a real, unfinished workout behind it — a finished session
+        // still lingers in state until the finish screen quits, and the lock screen must not
+        // keep offering transport controls for a workout that is over.
+        mediaSession.isActive = !session.finished
+        mediaSession.setPlaybackState(
+            PlaybackState.Builder()
+                .setActions(
+                    PlaybackState.ACTION_PLAY or
+                        PlaybackState.ACTION_PAUSE or
+                        PlaybackState.ACTION_SKIP_TO_NEXT,
+                )
+                .setState(
+                    if (session.isPaused) PlaybackState.STATE_PAUSED else PlaybackState.STATE_PLAYING,
+                    PlaybackState.PLAYBACK_POSITION_UNKNOWN,
+                    1f,
+                )
+                .build(),
+        )
         getSystemService(android.app.NotificationManager::class.java)
-            .notify(ExecutionNotification.ID, ExecutionNotification.build(this, title, text, session.isPaused))
+            .notify(
+                ExecutionNotification.ID,
+                ExecutionNotification.build(
+                    this,
+                    title,
+                    text,
+                    session.isPaused,
+                    if (session.finished) null else mediaSession.sessionToken,
+                ),
+            )
     }
 
     private fun stopEverything() {
         _state.value = ExecutionState()
+        // Belt and braces alongside onDestroy's release(): a mid-workout quit (ACTION_STOP)
+        // must drop the lock screen controls immediately, not wait for teardown to catch up.
+        mediaSession.isActive = false
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
     override fun onDestroy() {
         cues.release()
+        mediaSession.release()
         scope.cancel()
         super.onDestroy()
     }
