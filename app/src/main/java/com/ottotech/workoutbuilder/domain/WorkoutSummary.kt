@@ -89,10 +89,10 @@ object WorkoutSummarizer {
      * Home's card order: newest created first, so the workout you just built is at the top.
      *
      * This replaces the recommendation logic deleted 2026-07-26, which ranked by
-     * `lastPerformedAt`. Nothing ever writes that field — `markPerformed` has no caller until
-     * Plan 1D — so the old rule always fell through to its "newest created" tiebreak while
-     * presenting itself as a recommendation. Home now offers two plain options, choose or
-     * build, and does not rank.
+     * `lastPerformedAt`. At the time, nothing ever wrote that field — `markPerformed` had no
+     * caller until Plan 1D added its only one, in `ExecutionService` — so the old rule always
+     * fell through to its "newest created" tiebreak while presenting itself as a
+     * recommendation. Home now offers two plain options, choose or build, and does not rank.
      */
     fun sortedForHome(summaries: List<WorkoutSummary>): List<WorkoutSummary> =
         summaries.sortedByDescending { it.createdAt }

@@ -37,7 +37,7 @@ import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
 private const val MAX_VISIBLE_ROWS = 4
 
 /**
- * REPS mode (spec §6.6): a `Chest · Barbell` sub-line, a watch-demo card (rendered by
+ * REPS mode (spec §6.5): a `Chest · Barbell` sub-line, a watch-demo card (rendered by
  * [ExecutionScreen] itself, same as every other WORK segment), a `SETS` label and one
  * checkable row per set.
  *

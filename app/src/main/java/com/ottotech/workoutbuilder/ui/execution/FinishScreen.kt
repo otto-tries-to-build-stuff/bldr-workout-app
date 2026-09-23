@@ -22,7 +22,7 @@ import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
 
 /**
- * The workout-complete screen (spec §6.7): a centred "WORKOUT COMPLETE" label over the
+ * The workout-complete screen (spec §6.5): a centred "WORKOUT COMPLETE" label over the
  * workout's name, and a single full-width Done button back to Home.
  */
 @Composable
@@ -51,7 +51,7 @@ fun FinishScreen(workoutName: String, onDone: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(Dimens.minTouchTarget)
+                    .height(Dimens.primaryButtonHeight)
                     .clip(RoundedCornerShape(Dimens.radiusButton))
                     .background(ExecutionColors.card)
                     .clickable(onClick = onDone),
