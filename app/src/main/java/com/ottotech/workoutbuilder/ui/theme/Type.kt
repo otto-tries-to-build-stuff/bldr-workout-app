@@ -36,6 +36,13 @@ object AppType {
     val tileCount = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     val moveName = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.02).em, textAlign = TextAlign.Center)
     val muscleTag = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.04.em)
+    val timerDigits = TextStyle(
+        fontSize = 46.sp,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = (-0.03).em,
+        fontFeatureSettings = "tnum", // tabular figures: digits must not jitter as they change
+    )
+    val timerCaption = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.08.em)
     val repsExerciseName = TextStyle(fontSize = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.02).em)
     val setRowLabel = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
 }

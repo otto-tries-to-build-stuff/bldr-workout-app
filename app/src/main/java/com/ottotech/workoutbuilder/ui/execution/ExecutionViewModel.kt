@@ -28,6 +28,7 @@ class ExecutionViewModel(app: Application) : AndroidViewModel(app) {
     fun resume() = ExecutionService.resume(context)
     fun skip() = ExecutionService.skip(context)
     fun complete() = ExecutionService.complete(context)
+    fun toggleMute() = ExecutionService.toggleMute(context)
     fun stop() = ExecutionService.stop(context)
 
     companion object {

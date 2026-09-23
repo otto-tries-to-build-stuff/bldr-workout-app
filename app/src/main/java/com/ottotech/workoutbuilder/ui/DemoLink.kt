@@ -12,8 +12,10 @@ import com.ottotech.workoutbuilder.domain.Exercise
  * Lives in `ui/` rather than `domain/` because it returns an android.content.Intent, and
  * `domain/` is enforced Android-free by DomainPurityTest.
  */
-fun demoIntent(exercise: Exercise): Intent {
-    val url = exercise.demoUrl?.takeIf { it.isNotBlank() }
-        ?: "https://www.youtube.com/results?search_query=" + Uri.encode(exercise.demoQuery)
+fun demoIntent(demoUrl: String?, demoQuery: String?): Intent {
+    val url = demoUrl?.takeIf { it.isNotBlank() }
+        ?: "https://www.youtube.com/results?search_query=" + Uri.encode(demoQuery.orEmpty())
     return Intent(Intent.ACTION_VIEW, Uri.parse(url))
 }
+
+fun demoIntent(exercise: Exercise): Intent = demoIntent(exercise.demoUrl, exercise.demoQuery)

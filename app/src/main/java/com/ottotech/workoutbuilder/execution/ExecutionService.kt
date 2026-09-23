@@ -63,6 +63,7 @@ class ExecutionService : Service() {
             ACTION_RESUME -> update { it.resume(now()) }
             ACTION_SKIP -> updateWithCues { it.skip(now()) }
             ACTION_COMPLETE -> updateWithCues { it.complete(now()) }
+            ACTION_TOGGLE_MUTE -> handleToggleMute()
             ACTION_STOP -> stopEverything()
         }
         return START_NOT_STICKY
@@ -164,6 +165,20 @@ class ExecutionService : Service() {
         }
     }
 
+    /**
+     * As [update], the plain `_state.value = ...` this replaced could lose a concurrent tick's
+     * write; `update {}` closes that window here too.
+     */
+    private fun handleToggleMute() {
+        var muted = false
+        _state.update {
+            muted = !it.muted
+            it.copy(muted = muted)
+        }
+        app.prefs.cuesMuted = muted
+        cues.muted = muted
+    }
+
     private fun play(cue: Cue) = cues.play(cue)
 
     private fun refreshNotification() {
@@ -198,6 +213,7 @@ class ExecutionService : Service() {
         const val ACTION_RESUME = "resume"
         const val ACTION_SKIP = "skip"
         const val ACTION_COMPLETE = "complete"
+        const val ACTION_TOGGLE_MUTE = "toggle_mute"
         const val ACTION_STOP = "stop"
         const val EXTRA_WORKOUT_ID = "workoutId"
         private const val TICK_MS = 100L
@@ -227,6 +243,7 @@ class ExecutionService : Service() {
         fun resume(context: Context) = command(context, ACTION_RESUME)
         fun skip(context: Context) = command(context, ACTION_SKIP)
         fun complete(context: Context) = command(context, ACTION_COMPLETE)
+        fun toggleMute(context: Context) = command(context, ACTION_TOGGLE_MUTE)
         fun stop(context: Context) = command(context, ACTION_STOP)
     }
 }
