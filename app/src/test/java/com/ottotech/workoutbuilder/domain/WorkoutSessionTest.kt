@@ -63,4 +63,20 @@ class WorkoutSessionTest {
         assertNull(session.current)
         assertTrue(cues.isEmpty(), "an empty workout must not play a finish tone")
     }
+
+    // ---- elapsed / remaining ----
+
+    @Test
+    fun `remaining time counts down from the segment duration`() {
+        val s = WorkoutSession.start(indexed(timed(30)), now = 1_000L).session
+        assertEquals(30_000L, s.remainingMs(1_000L))
+        assertEquals(20_000L, s.remainingMs(11_000L))
+    }
+
+    @Test
+    fun `a manual segment has no remaining time and counts elapsed upward`() {
+        val s = WorkoutSession.start(indexed(manual()), now = 1_000L).session
+        assertNull(s.remainingMs(5_000L))
+        assertEquals(4_000L, s.elapsedMs(5_000L))
+    }
 }

@@ -41,6 +41,18 @@ data class WorkoutSession(
 
     val isPaused: Boolean get() = pausedAt != null
 
+    /** Milliseconds actually spent on the current segment, excluding paused time. */
+    fun elapsedMs(now: Long): Long {
+        val end = pausedAt ?: now
+        return (end - startedAt - pausedTotal).coerceAtLeast(0L)
+    }
+
+    /** Milliseconds left on the current segment, or null when it has no duration. */
+    fun remainingMs(now: Long): Long? {
+        val duration = current?.durationSec ?: return null
+        return duration * 1000L - elapsedMs(now)
+    }
+
     companion object {
         fun start(segments: List<Segment>, now: Long): SessionTick =
             if (segments.isEmpty()) {
