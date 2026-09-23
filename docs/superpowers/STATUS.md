@@ -1,6 +1,6 @@
 # Project status
 
-**Last updated:** 2026-09-23
+**Last updated:** 2026-09-24
 
 ## Where things stand
 
@@ -11,7 +11,7 @@
 | **Plan 1B** — Home + Library screens | **Merged to `main`.** 76 tests green, verified on the emulator. |
 | **Plan 1C** — Builder + Library pick mode | **Merged to `main`.** 108 tests green, verified on the emulator. |
 | **Design correction pass** — scale, contrast, targets, Home | **Merged to `main`.** 116 tests green, verified on the emulator. |
-| Plan 1D — Execution + audio | Not started |
+| **Plan 1D** — Execution + audio | **Complete on `phase-1d-execution-audio`, not yet merged.** 141 tests green. Installed on the real phone (Samsung Galaxy S22) and ready for the user's hands-on verification pass (§5 of the design spec — pocket test, music ducking, headset button, lock screen, battery-saver survival), which is outstanding and owned by the user, not yet run. |
 | Phase 2 — AI Coach | Not started |
 
 `main` is the verified baseline. Branch from it for each plan.
@@ -102,6 +102,48 @@
   section, or setting a rest, with no name and no exercise ever added, all leave `hasContent`
   false. That draft closes on Back with no prompt. Deliberate: those are structural edits, not
   workout content.
+- **Cue tones are generated at runtime, not shipped as assets.** `CuePlayer.load()` computes the
+  three WAV files (`ToneWav`, ported from the reference web app's tone maths) and writes them into
+  `context.cacheDir` the first time they're needed. It checks the existing file's byte size against
+  the exact expected size before reusing it, not just whether the file exists — a process killed
+  mid-write would otherwise leave a truncated WAV that exists forever but never decodes, silencing
+  that cue permanently. A size mismatch triggers a rewrite instead.
+- **The execution timer lives in `ExecutionService`, a foreground service (`mediaPlayback` type
+  in the manifest); the UI owns no clock.** A Compose screen dies with the Activity, which is the
+  whole point of the phase — cues must keep firing with the screen off. The service ticks the pure
+  `WorkoutSession` domain model at 10 Hz and the screen only observes the result. Its `state`
+  `StateFlow` is deliberately on the companion object, not the instance: the screen navigates and
+  starts collecting *before* `startForegroundService` has actually constructed the service, so an
+  instance-scoped flow would be null at exactly the moment the UI needs it and the screen would sit
+  blank forever. A companion-level flow always exists and just holds an empty state until the
+  service fills it in.
+- **`ACTION_START` for a workout that's already running and unfinished is a deliberate no-op**,
+  not a restart. The ongoing notification's tap target re-fires `ACTION_START` every time it's
+  tapped; without this guard, checking on a running workout from the notification would restart it
+  from segment 1 instead of returning to where it is.
+- **The test phone is a Samsung Galaxy S22 (SM-S901E, Android 16, serial `R5CT81Z2SRP`).**
+  Samsung is one of the manufacturers the spec's highest-severity risk section names for
+  aggressively killing foreground services to save battery, so the battery-saver survival item in
+  the hands-on checklist (§5, item 11) is a live, unresolved question on this specific device —
+  its outcome decides whether a deferred battery-optimization-exemption prompt becomes its own
+  follow-up plan.
+- **`adb shell input keyevent 85` (the media-button keycode) cannot reach the app on the
+  emulator** — a system telecom session holds `FLAG_EXCLUSIVE_GLOBAL_PRIORITY` on it there.
+  Headset play/pause/skip must be verified on real hardware, not the emulator.
+- **In Git Bash on this machine, adb commands containing an on-device path (e.g. `/sdcard/ui.xml`)
+  get silently mangled** by MSYS path conversion before they reach adb. Prefix the command with
+  `MSYS_NO_PATHCONV=1`.
+- **`dumpsys activity activities | grep -c "ActivityRecord.*MainActivity"` does not count Activity
+  instances** — it returns roughly a dozen matches even in a healthy single-instance state, because
+  the string appears in unrelated log lines too. To check for accidental multiple instances, read
+  the `Hist #N:` back-stack entries and the task's `sz=` field instead.
+- **The real phone's screen locks itself (screen timeout, then a secure PIN/pattern bouncer)
+  after a period of inactivity, and adb cannot dismiss that bouncer.** `wm dismiss-keyguard` only
+  clears a non-secure keyguard; once Samsung's lock has escalated to `Window{... Bouncer}` (visible
+  in `dumpsys window`), screenshots taken over adb come back solid black even though the screen is
+  reported `Awake`, and only entering the real PIN/pattern on the device clears it. Don't attempt to
+  guess or brute-force it over adb — repeated failed attempts risk Samsung/Knox lockout escalation.
+  Anyone driving this phone via adb after a gap should expect to physically unlock it first.
 
 Useful verification one-liner after a test run:
 
@@ -120,7 +162,10 @@ done
   on the Pixel 8 Pro AVD.
 - **1D is different.** It proves audio cues survive the screen being off and the phone
   being in a pocket, and that manufacturer battery-savers don't kill the foreground
-  service. **An emulator cannot verify any of that — use a real phone.**
+  service. **An emulator cannot verify any of that — use a real phone.** The build is installed
+  on the Samsung Galaxy S22 test phone and ready; the hands-on pass itself (pocket test, music
+  ducking, headset button, lock screen, battery-saver survival) has not been run yet and is the
+  user's to do.
 
 ## Known blemish
 
