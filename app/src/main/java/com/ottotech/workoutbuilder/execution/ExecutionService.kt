@@ -11,6 +11,7 @@ import com.ottotech.workoutbuilder.domain.SegmentCompiler
 import com.ottotech.workoutbuilder.domain.WorkoutSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -18,11 +19,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 data class ExecutionState(
     val workoutName: String = "",
+    /** Empty when no workout has ever been started. Lets [ExecutionService.begin] tell a
+     *  "return to the workout already running" ACTION_START apart from a genuinely new one. */
+    val workoutId: String = "",
     val session: WorkoutSession? = null,
     val muted: Boolean = false,
 )
@@ -62,14 +67,36 @@ class ExecutionService : Service() {
 
     private fun now() = SystemClock.elapsedRealtime()
 
+    /** The single running clock loop, so a second ACTION_START can never stack a duplicate. */
+    private var clockJob: Job? = null
+
     private fun begin(workoutId: String) {
+        val current = _state.value
+        val alreadyRunningThisWorkout =
+            current.session?.let { !it.finished } == true && current.workoutId == workoutId
+        if (alreadyRunningThisWorkout) {
+            // The notification's contentIntent re-enters this route on every tap, which fires
+            // ACTION_START again. Tapping the notification to check on a workout must return
+            // to it as it is, not restart it from segment 1 — so this is a deliberate no-op.
+            return
+        }
+
+        // Anything else — no session yet, a finished one, or a different workout id — starts
+        // fresh. Cancel whatever clock loop is running first so exactly one is ever ticking.
+        clockJob?.cancel()
         startForeground(ExecutionNotification.ID, ExecutionNotification.build(this, "Starting…", "", paused = false))
-        scope.launch {
+        clockJob = scope.launch {
             val workout = app.workouts.load(workoutId) ?: run { stopEverything(); return@launch }
             val library = app.exercises.observeAll().first().associateBy { it.id }
             val segments = SegmentCompiler.compile(workout, library)
-            val (session, _) = WorkoutSession.start(segments, now())
-            _state.value = ExecutionState(workout.name, session, app.prefs.cuesMuted)
+            val (session, cues) = WorkoutSession.start(segments, now())
+            _state.value = ExecutionState(
+                workoutName = workout.name,
+                workoutId = workoutId,
+                session = session,
+                muted = app.prefs.cuesMuted,
+            )
+            cues.forEach { play(it) } // the opening GO — start() emits it for any non-empty workout
             refreshNotification()
             runClock()
         }
@@ -86,19 +113,50 @@ class ExecutionService : Service() {
         }
     }
 
+    /**
+     * Both this and [updateWithCues] read-modify-write the shared, process-wide [_state]:
+     * [onStartCommand] calls them synchronously on the main thread, and [runClock] calls
+     * [updateWithCues] ~10x/second on [Dispatchers.Default]. A plain `_state.value = ...`
+     * read-then-assign is not atomic, so a pause landing in the same window as a tick can be
+     * silently overwritten by it. `MutableStateFlow.update` retries its block under
+     * contention until its compare-and-set wins, closing that window.
+     */
     private inline fun update(transform: (WorkoutSession) -> WorkoutSession) {
-        val session = _state.value.session ?: return
-        _state.value = _state.value.copy(session = transform(session))
-        refreshNotification()
+        var applied = false
+        _state.update { current ->
+            applied = false
+            val session = current.session ?: return@update current
+            applied = true
+            current.copy(session = transform(session))
+        }
+        if (applied) refreshNotification()
     }
 
+    /**
+     * As [update], but for transforms that can also emit cues. `update`'s block can run more
+     * than once under contention, so cues are not played from inside it — [pendingCues] is
+     * simply overwritten by whichever invocation of the block runs last, and that last
+     * invocation is always the one immediately before the winning compare-and-set (the loop
+     * returns as soon as one succeeds). Cues are only played once that block has returned, so
+     * exactly the cues belonging to the transition that actually got committed play, exactly
+     * once — never one from an invocation whose result was discarded and retried.
+     */
     private inline fun updateWithCues(transform: (WorkoutSession) -> com.ottotech.workoutbuilder.domain.SessionTick) {
-        val session = _state.value.session ?: return
-        val (next, cues) = transform(session)
-        if (next == session && cues.isEmpty()) return
-        _state.value = _state.value.copy(session = next)
-        cues.forEach { play(it) }
-        refreshNotification()
+        var applied = false
+        var pendingCues: List<Cue> = emptyList()
+        _state.update { current ->
+            applied = false
+            val session = current.session ?: return@update current
+            val (next, cues) = transform(session)
+            if (next == session && cues.isEmpty()) return@update current
+            applied = true
+            pendingCues = cues
+            current.copy(session = next)
+        }
+        if (applied) {
+            pendingCues.forEach { play(it) }
+            refreshNotification()
+        }
     }
 
     /** Replaced with real audio in Task 4. */
