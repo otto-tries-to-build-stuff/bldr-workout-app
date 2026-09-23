@@ -25,6 +25,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -60,8 +63,14 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
         onDispose { view.keepScreenOn = false }
     }
 
+    // A running workout asks before quitting; a finished one (or the brief window before the
+    // service has published its first state) has nothing left to confirm — Back there does
+    // exactly what Done/the close button does, so it never leaves the service running with no
+    // UI able to stop it.
     var confirmExit by remember { mutableStateOf(false) }
-    BackHandler { confirmExit = true }
+    BackHandler {
+        if (session == null || session.finished) onExit() else confirmExit = true
+    }
 
     if (session == null) {
         Box(Modifier.fillMaxSize().background(ExecutionColors.background))
@@ -173,7 +182,10 @@ private fun ExecutionHeader(
             modifier = Modifier
                 .size(Dimens.minTouchTarget)
                 .clip(RoundedCornerShape(Dimens.radiusChip))
-                .clickable(onClick = onToggleMute),
+                .clickable(onClick = onToggleMute)
+                // The glyph alone is silent to a screen reader; the label names both the
+                // action and the current state, like a physical mute button's own label would.
+                .semantics { contentDescription = if (muted) "Unmute cues" else "Mute cues" },
             contentAlignment = Alignment.Center,
         ) {
             MuteGlyph(muted = muted, color = ExecutionColors.onBackground)
@@ -182,10 +194,18 @@ private fun ExecutionHeader(
             modifier = Modifier
                 .size(Dimens.minTouchTarget)
                 .clip(RoundedCornerShape(Dimens.radiusChip))
-                .clickable(onClick = onClose),
+                .clickable(onClick = onClose)
+                .semantics { contentDescription = "Quit workout" },
             contentAlignment = Alignment.Center,
         ) {
-            Text("✕", style = AppType.cardTitle, color = ExecutionColors.onBackground)
+            // Cleared so TalkBack announces the Box's "Quit workout" label instead of the
+            // glyph character itself.
+            Text(
+                "✕",
+                style = AppType.cardTitle,
+                color = ExecutionColors.onBackground,
+                modifier = Modifier.clearAndSetSemantics {},
+            )
         }
     }
 }
