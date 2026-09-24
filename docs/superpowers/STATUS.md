@@ -13,7 +13,7 @@
 | **Design correction pass** — scale, contrast, targets, Home | **Merged to `main`.** 116 tests green, verified on the emulator. |
 | **Plan 1D** — Execution + audio | **Complete on `phase-1d-execution-audio`, not yet merged.** 141 tests green. Installed on the real phone (Samsung Galaxy S22) and ready for the user's hands-on verification pass (§5 of the design spec — pocket test, music ducking, headset button, lock screen, battery-saver survival), which is outstanding and owned by the user, not yet run. |
 | **Edit & delete workouts** | **Complete on `edit-delete-workouts`** (branched from the 1D branch, so it carries 1D too). 144 tests green, verified on the emulator. Not yet merged — waits on the 1D hands-on pass. |
-| Phase 2 — AI Coach | Not started |
+| Phase 2 — AI Coach | Not started. **Step 7's viability check is done — see below.** |
 
 `main` is the verified baseline. Branch from it for each plan.
 
@@ -160,6 +160,25 @@ for f in app/build/test-results/testDebugUnitTest/*.xml; do
   echo "$n: $t tests, $fl failures"
 done
 ```
+
+## Phase 2 SDK viability spike (2026-09-24) — passed
+
+Spec §9 made "`anthropic-java` on Android" the first task of Phase 2. Checked on the Pixel 8 Pro
+emulator in a throwaway branch (deleted; nothing merged):
+
+- **It works.** `anthropic-java:2.34.0` built into the app, and a real `messages().create` against
+  `claude-opus-5` with a deliberately invalid key came back as a typed `UnauthorizedException`
+  (401, `authentication_error`) — so OkHttp, TLS, Jackson and the SDK's error mapping all run on
+  Android. **Use the SDK; the OkHttp fallback is not needed.**
+- **Packaging needs one exclusion block.** The SDK pulls in Apache `httpclient5` / `httpcore5`,
+  whose duplicate `META-INF/DEPENDENCIES` breaks `mergeDebugJavaResource`. Fix:
+  `packaging { resources { excludes += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE*",
+  "META-INF/NOTICE*", "META-INF/INDEX.LIST") } }`.
+- **Debug APK grows 12.7 MB → 21.6 MB** (unminified; R8 is off in this project).
+- **First call pays a ~4 s one-time warm-up** (class loading); the next call took ~1.1 s. Build the
+  client when the Coach screen opens, not on the Generate tap.
+- **Spec §9 still names `claude-opus-4-8`.** Current default is `claude-opus-5` (same $5/$25
+  price; thinking is adaptive by default). Switching is proposed, pending the user's OK.
 
 ## Device requirements per plan
 
