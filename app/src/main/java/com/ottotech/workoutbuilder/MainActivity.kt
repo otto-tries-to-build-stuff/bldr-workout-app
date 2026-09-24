@@ -1,16 +1,21 @@
 package com.ottotech.workoutbuilder
 
 import android.os.Bundle
+import android.graphics.Color
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ottotech.workoutbuilder.ui.AppNav
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -41,7 +46,15 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            WorkoutTheme {
+            val mode by app.prefs.themeMode.collectAsStateWithLifecycle()
+            val dark = mode.isDark(isSystemInDarkTheme())
+            // Bar icons must follow the app's theme, not the phone's, or a Light choice on a dark
+            // phone leaves white icons on a white status bar.
+            LaunchedEffect(dark) {
+                val bars = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark }
+                enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
+            }
+            WorkoutTheme(dark = dark) {
                 Box(Modifier.fillMaxSize().background(LocalAppColors.current.background)) {
                     if (ready) AppNav()
                 }

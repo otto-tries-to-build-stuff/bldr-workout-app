@@ -8,6 +8,7 @@ import com.ottotech.workoutbuilder.WorkoutApp
 import com.ottotech.workoutbuilder.ai.ApiKeyFormat
 import com.ottotech.workoutbuilder.data.ApiKeyStore
 import com.ottotech.workoutbuilder.data.AppPrefs
+import com.ottotech.workoutbuilder.domain.ThemeMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,11 +20,12 @@ data class SettingsUiState(
     val draftKey: String = "",
     val draftError: String? = null,
     val soundOn: Boolean,
+    val theme: ThemeMode,
 )
 
 class SettingsViewModel(private val keys: ApiKeyStore, private val prefs: AppPrefs) : ViewModel() {
 
-    private val _state = MutableStateFlow(SettingsUiState(hasKey = keys.hasKey, soundOn = !prefs.cuesMuted))
+    private val _state = MutableStateFlow(SettingsUiState(hasKey = keys.hasKey, soundOn = !prefs.cuesMuted, theme = prefs.themeMode.value))
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
 
     fun onDraftKey(text: String) = _state.update { it.copy(draftKey = text, draftError = null) }
@@ -46,6 +48,12 @@ class SettingsViewModel(private val keys: ApiKeyStore, private val prefs: AppPre
     fun onSoundOn(on: Boolean) {
         prefs.cuesMuted = !on
         _state.update { it.copy(soundOn = on) }
+    }
+
+    /** Applies immediately: MainActivity observes the same preference. */
+    fun onTheme(mode: ThemeMode) {
+        prefs.setThemeMode(mode)
+        _state.update { it.copy(theme = mode) }
     }
 
     companion object {

@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.ui.components.AppTextField
+import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
@@ -42,11 +43,12 @@ import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
+import com.ottotech.workoutbuilder.domain.ThemeMode
 
 private const val KEYS_URL = "https://console.anthropic.com/settings/keys"
 
 /**
- * Spec §6.7, trimmed to what Phase 2 needs: the Coach's API key and the cue sound switch.
+ * Spec §6.7: the Coach's API key, the theme and the cue sound switch (keep-screen-on is deferred).
  * The saved key is never shown back, not even masked — the field only takes a new one.
  */
 @Composable
@@ -121,6 +123,16 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     style = AppType.cardMeta,
                     color = colors.textMuted,
                 )
+            }
+
+            item { Spacer(Modifier.height(8.dp)) }
+            item { SectionLabel("Appearance") }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ThemeMode.entries.forEach { mode ->
+                        Chip(mode.label, selected = state.theme == mode, onClick = { viewModel.onTheme(mode) })
+                    }
+                }
             }
 
             item { Spacer(Modifier.height(8.dp)) }
