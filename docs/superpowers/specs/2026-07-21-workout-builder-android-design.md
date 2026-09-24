@@ -502,8 +502,11 @@ or external storage.
   updates can add exercises without wiping custom ones or duplicating existing rows.
 - The eight Court Speed exercises carry their verified `demoUrl` values from
   `web-app-reference/HIIT Workout.html`.
-- **API key** in `EncryptedSharedPreferences` — separate from the database, excluded from
-  Android backup (`allowBackup="false"`), never logged.
+- **API key** encrypted with an AES-GCM key held in the Android Keystore, ciphertext stored in
+  plain `SharedPreferences` — separate from the database, excluded from Android backup
+  (`allowBackup="false"`), never logged. *(Was `EncryptedSharedPreferences`; its library,
+  `androidx.security:security-crypto`, has since been deprecated. Using the Keystore directly is
+  ~40 lines and adds no dependency.)*
 
 ---
 
@@ -511,10 +514,11 @@ or external storage.
 
 | | |
 |---|---|
-| Model | `claude-opus-4-8` |
-| Thinking | `{"type": "adaptive"}` |
+| Model | `claude-opus-5` *(was `claude-opus-4-8`; switched 2026-09-24 at the user's choice — same price, newer)* |
+| Thinking | `{"type": "adaptive"}` — Opus 5's default; sent explicitly anyway so intent is visible |
 | Effort | `output_config.effort = "medium"` — tunable if quality or latency needs adjusting |
-| Max tokens | 8000, non-streaming |
+| Max tokens | 16000, non-streaming — adaptive thinking spends from the same budget, so 8000 risked truncation |
+| Refusal fallback | Server-side `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`), so a safety-classifier refusal is retried on a fallback model by the API instead of costing the user a generation |
 | Output | **Structured outputs** via `output_config.format` with a JSON schema |
 | Caching | `cache_control: {"type": "ephemeral"}` on the library block in the system prompt |
 | Expected cost | ~5–15¢ per generated workout |
@@ -579,10 +583,11 @@ item. Failure shows *"Couldn't build that one"* with a Regenerate action.
 
 ### SDK
 
-Official `com.anthropic:anthropic-java` (Kotlin uses the Java SDK). **Unverified on Android** —
-the library targets server environments and pulls in OkHttp and Jackson. Viability is proven as
-the first task of Phase 2. Documented fallback: direct HTTPS via OkHttp + `kotlinx.serialization`
-against `POST /v1/messages`, approximately 100 lines.
+Official `com.anthropic:anthropic-java` (Kotlin uses the Java SDK). **Verified on Android
+2026-09-24** (see `STATUS.md`, "Phase 2 SDK viability spike"): a real call reached the API and
+came back as a typed exception. Needs a `packaging { resources { excludes … } }` block for
+duplicate `META-INF` files, adds ~9 MB to the debug APK, and pays a ~4 s one-time warm-up on the
+first call — so the client is built when the Coach screen opens, not on the Generate tap.
 
 ---
 
