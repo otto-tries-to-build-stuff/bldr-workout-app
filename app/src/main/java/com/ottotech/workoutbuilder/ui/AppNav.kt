@@ -60,11 +60,17 @@ object Routes {
     fun builder(workoutId: String? = null) = if (workoutId == null) "builder" else "builder?workoutId=$workoutId"
 }
 
-/*
- * Every back action is wrapped in dropUnlessResumed: a second tap on "‹" during the exit
+/**
+ * Back, ignored once this destination has started leaving. A second tap on "‹" during the exit
  * transition would otherwise pop the destination underneath too — and popping Home leaves an
- * empty back stack, i.e. a blank screen.
+ * empty back stack, i.e. a blank screen. Use this for every back action.
  */
+@Composable
+private fun NavHostController.popOnce(): () -> Unit = dropUnlessResumed { popBackStack() }
+
+/** Forward navigation with the same guard, so a double tap cannot open a screen twice. */
+@Composable
+private fun NavHostController.navigateOnce(route: String): () -> Unit = dropUnlessResumed { navigate(route) }
 
 /**
  * Switching bottom-nav tabs must not stack destinations — otherwise Back walks through
@@ -90,11 +96,12 @@ fun AppNav() {
                 HomeScreen(
                     onStartWorkout = { workoutId -> nav.navigate(Routes.execution(workoutId)) },
                     onEditWorkout = { workoutId -> nav.navigate(Routes.builder(workoutId)) },
-                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                    onOpenSettings = nav.navigateOnce(Routes.SETTINGS),
                     onBuild = { showBuildSheet = true },
                 )
             }
 
+            val openCoach = nav.navigateOnce(Routes.COACH)
             if (showBuildSheet) {
                 BuildSheet(
                     onDismiss = { showBuildSheet = false },
@@ -104,7 +111,7 @@ fun AppNav() {
                     },
                     onAskCoach = {
                         showBuildSheet = false
-                        nav.navigate(Routes.COACH)
+                        openCoach()
                     },
                 )
             }
@@ -145,7 +152,7 @@ fun AppNav() {
             CategoryScreen(
                 muscle = muscle,
                 viewModel = libraryVm,
-                onBack = dropUnlessResumed { nav.popBackStack() },
+                onBack = nav.popOnce(),
                 onOpenExercise = { nav.navigate(Routes.exercise(it)) },
             )
         }
@@ -161,7 +168,7 @@ fun AppNav() {
             ExerciseDetailScreen(
                 exerciseId = entry.arguments?.getString("exerciseId").orEmpty(),
                 viewModel = libraryVm,
-                onBack = dropUnlessResumed { nav.popBackStack() },
+                onBack = nav.popOnce(),
             )
         }
 
@@ -174,7 +181,7 @@ fun AppNav() {
             val builderVm: BuilderViewModel = viewModel(factory = BuilderViewModel.Factory)
             BuilderScreen(
                 viewModel = builderVm,
-                onClose = dropUnlessResumed { nav.popBackStack() },
+                onClose = nav.popOnce(),
                 onAddExercise = { sectionId ->
                     builderVm.beginPick(sectionId)
                     nav.navigate(Routes.PICK_LIBRARY)
@@ -187,15 +194,15 @@ fun AppNav() {
             val coachVm: CoachViewModel = viewModel(factory = CoachViewModel.Factory)
             CoachScreen(
                 viewModel = coachVm,
-                onBack = dropUnlessResumed { nav.popBackStack() },
-                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onBack = nav.popOnce(),
+                onOpenSettings = nav.navigateOnce(Routes.SETTINGS),
                 onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
             )
         }
 
         composable(Routes.SETTINGS) {
             val settingsVm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
-            SettingsScreen(viewModel = settingsVm, onBack = dropUnlessResumed { nav.popBackStack() })
+            SettingsScreen(viewModel = settingsVm, onBack = nav.popOnce())
         }
 
         composable(Routes.PICK_LIBRARY) {
@@ -235,7 +242,7 @@ fun AppNav() {
             CategoryScreen(
                 muscle = muscle,
                 viewModel = pickVm,
-                onBack = dropUnlessResumed { nav.popBackStack() },
+                onBack = nav.popOnce(),
                 onOpenExercise = { exerciseId ->
                     builderVm.onExercisePicked(exerciseId)
                     nav.popBackStack(Routes.BUILDER, inclusive = false)

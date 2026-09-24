@@ -78,7 +78,7 @@ class CoachClient(apiKey: String) {
             val why = response.stopDetails().flatMap { it.explanation() }.orElse(null)
             CoachReply.Refused(why ?: "The Coach declined that request.")
         } else {
-            // Not Stream.toList(): that is Java 16 / Android API 34, and minSdk is 26.
+            // Kotlin collection ops, not Java streams: Stream.toList() needs API 34; minSdk is 26.
             val text = response.content().mapNotNull { block -> block.text().map { it.text() }.orElse(null) }.joinToString("")
             if (text.isBlank()) CoachReply.Failed(FailureKind.OTHER) else CoachReply.Json(text)
         }
@@ -100,8 +100,8 @@ class CoachClient(apiKey: String) {
             .systemOfTextBlockParams(
                 listOf(TextBlockParam.builder().text(system).cacheControl(CacheControlEphemeral.builder().build()).build()),
             )
-            // Server-side refusal fallback (spec §9). Sent as raw header/body because the
-            // typed builder may not expose it yet.
+            // Server-side refusal fallback (spec §9). Sent as a raw header/body field: the SDK's
+            // MessageCreateParams builder (2.34.0) has no typed setter for it.
             .putAdditionalHeader("anthropic-beta", "server-side-fallback-2026-07-01")
             .putAdditionalBodyProperty("fallbacks", JsonValue.from("default"))
         turns.forEach { if (it.fromUser) builder.addUserMessage(it.text) else builder.addAssistantMessage(it.text) }

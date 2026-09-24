@@ -42,6 +42,7 @@ import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
+import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -107,7 +108,7 @@ private fun NoKey(onOpenSettings: () -> Unit) {
                 )
             }
         }
-        PrimaryButton("OPEN SETTINGS", enabled = true, onClick = onOpenSettings)
+        PrimaryButton("OPEN SETTINGS", onClick = onOpenSettings)
     }
 }
 
@@ -125,7 +126,7 @@ private fun ColumnScope.ComposeGoal(state: CoachUiState, viewModel: CoachViewMod
                 onValueChange = viewModel::onGoal,
                 placeholder = "What are you training for?",
                 textStyle = AppType.cardTitle,
-                singleLine = false,
+                minLines = 4,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -284,37 +285,21 @@ private fun Problem(phase: CoachPhase.Problem, viewModel: CoachViewModel, onOpen
         verticalArrangement = Arrangement.spacedBy(Dimens.gap),
     ) {
         Text(phase.message, style = AppType.cardTitle, color = colors.onBackground)
-        if (phase.canRetry) PrimaryButton("TRY AGAIN", enabled = true, onClick = viewModel::retry)
-        if (phase.keyProblem) PrimaryButton("OPEN SETTINGS", enabled = true, onClick = onOpenSettings)
-        TextAction("Back to my goal", enabled = true, onClick = viewModel::backToCompose)
+        if (phase.canRetry) PrimaryButton("TRY AGAIN", onClick = viewModel::retry)
+        if (phase.keyProblem) PrimaryButton("OPEN SETTINGS", onClick = onOpenSettings)
+        TextAction("Back to my goal", onClick = viewModel::backToCompose)
     }
 }
 
-/** Disabled = surface with muted text, matching the Builder's Save button. */
+/** The screen's full-width primary action, at the primary-button size. */
 @Composable
-private fun PrimaryButton(text: String, enabled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = LocalAppColors.current
+private fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     InverseButton(
         text = text,
         height = Dimens.primaryButtonHeight,
         style = AppType.primaryButton,
-        container = if (enabled) colors.surfaceInverse else colors.surface,
-        content = if (enabled) colors.onSurfaceInverse else colors.textMuted,
-        onClick = { if (enabled) onClick() },
+        enabled = enabled,
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
     )
-}
-
-@Composable
-private fun TextAction(text: String, enabled: Boolean, onClick: () -> Unit) {
-    val colors = LocalAppColors.current
-    Box(
-        Modifier
-            .defaultMinSize(minWidth = Dimens.minTouchTarget, minHeight = Dimens.minTouchTarget)
-            .clip(RoundedCornerShape(Dimens.radiusChip))
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(text, style = AppType.chip, color = if (enabled) colors.onBackground else colors.textMuted)
-    }
 }

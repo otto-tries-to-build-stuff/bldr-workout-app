@@ -22,8 +22,8 @@ class CoachSessionTest {
         "sets":null,"reps":null,"note":null}]}]}"""
 
     private fun previewOf(name: String): CoachPhase.Preview {
-        val sent = assertNotNull(session.start("goal"))
-        return assertIs<CoachPhase.Preview>(session.onReply(sent, CoachReply.Json(json(name)), library))
+        assertNotNull(session.start("goal"))
+        return assertIs<CoachPhase.Preview>(session.onReply(CoachReply.Json(json(name)), library))
     }
 
     @Test
@@ -36,8 +36,8 @@ class CoachSessionTest {
     @Test
     fun `a failed tweak keeps the last good draft on screen with a notice`() {
         val good = previewOf("Leg Day")
-        val sent = assertNotNull(session.tweak("more core"))
-        val after = assertIs<CoachPhase.Preview>(session.onReply(sent, CoachReply.Refused("declined"), library))
+        assertNotNull(session.tweak("more core"))
+        val after = assertIs<CoachPhase.Preview>(session.onReply(CoachReply.Refused("declined"), library))
         assertEquals(good.result, after.result)
         assertEquals("declined", after.notice)
     }
@@ -45,8 +45,8 @@ class CoachSessionTest {
     @Test
     fun `a failed regenerate also keeps the last good draft`() {
         val good = previewOf("Leg Day")
-        val sent = assertNotNull(session.regenerate())
-        val after = assertIs<CoachPhase.Preview>(session.onReply(sent, CoachReply.Failed(FailureKind.BUSY), library))
+        assertNotNull(session.regenerate())
+        val after = assertIs<CoachPhase.Preview>(session.onReply(CoachReply.Failed(FailureKind.BUSY), library))
         assertEquals(good.result, after.result)
         assertNotNull(after.notice)
     }
@@ -54,8 +54,8 @@ class CoachSessionTest {
     @Test
     fun `after a failed tweak the next tweak still refines the last good draft`() {
         previewOf("Leg Day")
-        val failed = assertNotNull(session.tweak("more core"))
-        session.onReply(failed, CoachReply.Failed(FailureKind.NO_NETWORK), library)
+        assertNotNull(session.tweak("more core"))
+        session.onReply(CoachReply.Failed(FailureKind.NO_NETWORK), library)
         val again = assertNotNull(session.tweak("more core"))
         assertEquals(3, again.turns.size)
         assertTrue(again.turns.last().fromUser)
@@ -63,17 +63,17 @@ class CoachSessionTest {
 
     @Test
     fun `a rejected key offers both retry and settings`() {
-        val sent = assertNotNull(session.start("goal"))
-        val problem = assertIs<CoachPhase.Problem>(session.onReply(sent, CoachReply.Failed(FailureKind.BAD_KEY), library))
+        assertNotNull(session.start("goal"))
+        val problem = assertIs<CoachPhase.Problem>(session.onReply(CoachReply.Failed(FailureKind.BAD_KEY), library))
         assertTrue(problem.canRetry)
         assertTrue(problem.keyProblem)
     }
 
     @Test
     fun `a request the API rejects shows its reason and does not offer a pointless retry`() {
-        val sent = assertNotNull(session.start("goal"))
+        assertNotNull(session.start("goal"))
         val problem = assertIs<CoachPhase.Problem>(
-            session.onReply(sent, CoachReply.Failed(FailureKind.REJECTED, "Your credit balance is too low."), library),
+            session.onReply(CoachReply.Failed(FailureKind.REJECTED, "Your credit balance is too low."), library),
         )
         assertTrue("credit balance" in problem.message)
         assertEquals(false, problem.canRetry)

@@ -36,58 +36,53 @@ sealed interface CoachPhase {
  */
 class CoachSession(private val newId: () -> String, private val now: () -> Instant) {
 
-    var inFlight = false
-        private set
+    private var inFlight = false
 
-    /** What the last request sent; Retry re-sends it. */
+    /** What the last request sent; Retry re-sends it. Always ends on a user turn. */
     private var sent: CoachConversation? = null
-    private var fromPreview = false
 
-    private var lastPreview: CoachPhase.Preview? = null
-    private var lastPreviewConversation: CoachConversation? = null
+    /** The last good draft and the conversation that produced it; null until one exists. */
+    private var lastGood: Pair<CoachPhase.Preview, CoachConversation>? = null
 
     fun start(request: String): CoachConversation? {
         if (inFlight) return null
-        lastPreview = null
-        lastPreviewConversation = null
-        return begin(CoachConversation.start(request), fromPreview = false)
+        lastGood = null
+        return begin(CoachConversation.start(request))
     }
 
-    fun regenerate(): CoachConversation? =
-        lastPreviewConversation?.takeUnless { inFlight }?.let { begin(it.forRegenerate(), fromPreview = true) }
+    fun regenerate(): CoachConversation? = lastGood?.let { begin(it.second.forRegenerate()) }
 
-    fun tweak(instruction: String): CoachConversation? =
-        lastPreviewConversation?.takeUnless { inFlight }?.let { begin(it.tweak(instruction), fromPreview = true) }
+    fun tweak(instruction: String): CoachConversation? = lastGood?.let { begin(it.second.tweak(instruction)) }
 
-    fun retry(): CoachConversation? =
-        sent?.takeUnless { inFlight }?.let { begin(it.forRegenerate(), fromPreview) }
+    fun retry(): CoachConversation? = sent?.let(::begin)
 
-    private fun begin(conversation: CoachConversation, fromPreview: Boolean): CoachConversation {
+    /** The one place the one-request-at-a-time rule lives. */
+    private fun begin(conversation: CoachConversation): CoachConversation? {
+        if (inFlight) return null
         inFlight = true
         sent = conversation
-        this.fromPreview = fromPreview
         return conversation
     }
 
-    fun onReply(sent: CoachConversation, reply: CoachReply, library: List<Exercise>): CoachPhase {
+    fun onReply(reply: CoachReply, library: List<Exercise>): CoachPhase {
         inFlight = false
         val problem = when (reply) {
             is CoachReply.Json -> when (val r = CoachResponseMapper.map(reply.text, library, newId, now())) {
-                is CoachResult.Ok -> return preview(sent.withReply(reply.text), r, library)
+                is CoachResult.Ok -> return preview(checkNotNull(sent).withReply(reply.text), r, library)
                 is CoachResult.Invalid -> CoachPhase.Problem("Couldn't build that one.", canRetry = true, keyProblem = false)
             }
             is CoachReply.Refused -> CoachPhase.Problem(reply.message, canRetry = false, keyProblem = false)
             is CoachReply.Failed -> problemFor(reply)
         }
-        val keep = lastPreview
-        return if (fromPreview && keep != null) keep.copy(notice = problem.message) else problem
+        // A draft exists only while refining it (start() clears it), so this is "a Tweak or
+        // Regenerate failed": keep the draft, with the reason.
+        return lastGood?.first?.copy(notice = problem.message) ?: problem
     }
 
     private fun preview(conversation: CoachConversation, result: CoachResult.Ok, library: List<Exercise>): CoachPhase.Preview {
         val all = (library + result.newExercises).associateBy { it.id }
         val p = CoachPhase.Preview(result, WorkoutSummarizer.summarize(result.workout, all), all.mapValues { it.value.name })
-        lastPreview = p
-        lastPreviewConversation = conversation
+        lastGood = p to conversation
         return p
     }
 

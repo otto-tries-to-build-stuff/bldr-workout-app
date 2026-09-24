@@ -19,21 +19,27 @@ import javax.crypto.spec.GCMParameterSpec
  *
  * If the Keystore key is lost (e.g. the user cleared credentials), decryption fails and the
  * stored ciphertext is discarded: the user simply re-enters the key.
+ *
+ * The plaintext is kept in memory after the first read. This is the app-wide instance, so the
+ * Keystore (a binder call per decrypt) is touched once per process, not on every screen open.
  */
 class ApiKeyStore(context: Context) {
 
     private val prefs = context.getSharedPreferences("secure", Context.MODE_PRIVATE)
 
+    @Volatile private var cached: String? = null
+
     val hasKey: Boolean get() = get() != null
 
     fun get(): String? {
+        cached?.let { return it }
         val stored = prefs.getString(KEY_CIPHERTEXT, null) ?: return null
         return try {
             val bytes = Base64.decode(stored, Base64.NO_WRAP)
             val iv = bytes.copyOfRange(0, IV_BYTES)
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.DECRYPT_MODE, secretKey(), GCMParameterSpec(TAG_BITS, iv))
-            String(cipher.doFinal(bytes, IV_BYTES, bytes.size - IV_BYTES), Charsets.UTF_8)
+            String(cipher.doFinal(bytes, IV_BYTES, bytes.size - IV_BYTES), Charsets.UTF_8).also { cached = it }
         } catch (e: Exception) {
             clear()
             null
@@ -45,9 +51,11 @@ class ApiKeyStore(context: Context) {
         cipher.init(Cipher.ENCRYPT_MODE, secretKey())
         val payload = cipher.iv + cipher.doFinal(key.toByteArray(Charsets.UTF_8))
         prefs.edit().putString(KEY_CIPHERTEXT, Base64.encodeToString(payload, Base64.NO_WRAP)).apply()
+        cached = key
     }
 
     fun clear() {
+        cached = null
         prefs.edit().remove(KEY_CIPHERTEXT).apply()
     }
 

@@ -52,20 +52,23 @@ class CoachViewModel(
 
     private val session = CoachSession(newId = { UUID.randomUUID().toString() }, now = Instant::now)
 
-    /** Built for one key; rebuilt when the saved key changes (e.g. after a rejected key is replaced). */
-    @Volatile private var client: Pair<String, CoachClient>? = null
+    /**
+     * Built for one key; replaced when the saved key changes (e.g. after a rejected key is
+     * replaced). Assigned on the main thread and built lazily (synchronised), so a request made
+     * during the ~4 s warm-up waits for the same client instead of building a second one.
+     */
+    private var client: Pair<String, Lazy<CoachClient>>? = null
 
-    private fun clientFor(key: String): CoachClient =
-        client?.takeIf { it.first == key }?.second ?: CoachClient(key).also { client = key to it }
+    private fun clientFor(key: String): Lazy<CoachClient> =
+        client?.takeIf { it.first == key }?.second ?: lazy { CoachClient(key) }.also { client = key to it }
 
-    init { refreshKey() }
-
-    /** Called on resume too — the user may come back from Settings with a key. */
+    /** Called on every resume, including the first — the user may come back from Settings with a key. */
     fun refreshKey() {
         val key = keys.get()
         _state.update { it.copy(hasKey = key != null) }
         if (key != null && client?.first != key) {
-            viewModelScope.launch(Dispatchers.IO) { clientFor(key).warmUp() }
+            val pending = clientFor(key)
+            viewModelScope.launch(Dispatchers.IO) { pending.value.warmUp() }
         }
     }
 
@@ -110,15 +113,16 @@ class CoachViewModel(
     private fun request(pick: () -> CoachConversation?) {
         val key = keys.get() ?: return _state.update { it.copy(hasKey = false) }
         val next = pick() ?: return
+        val coach = clientFor(key)
         _state.update { it.copy(phase = CoachPhase.Loading) }
         viewModelScope.launch {
             val library = exercises.observeAll().first()
             val reply = withContext(Dispatchers.IO) {
-                clientFor(key).generate(CoachPrompt.system(library), next.turns)
+                coach.value.generate(CoachPrompt.system(library), next.turns)
             }
             if (reply is CoachReply.Failed) Log.w(TAG, "Coach request failed: ${reply.kind} ${reply.detail.orEmpty()}")
             if (reply is CoachReply.Refused) Log.w(TAG, "Coach refused: ${reply.message}")
-            val phase = session.onReply(next, reply, library)
+            val phase = session.onReply(reply, library)
             _state.update {
                 // A tweak that produced a fresh draft is done; one that failed stays in the box.
                 val tweakDone = phase is CoachPhase.Preview && phase.notice == null

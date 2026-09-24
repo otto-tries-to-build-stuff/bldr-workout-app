@@ -50,10 +50,9 @@ object CoachResponseMapper {
         val invented = LinkedHashMap<String, Exercise>()
         val reasons = mutableListOf<String>()
 
-        fun resolve(item: JsonNode): String {
+        fun resolve(item: JsonNode, name: String): String {
             val id = item.path("exerciseId").textOrNull()
             if (id != null && id in byId) return id
-            val name = item.path("exerciseName").asText().trim()
             byName[name.normalisedName()]?.let { return it.id }
             val customId = customIdFor(name)
             invented.getOrPut(customId) { invent(customId, name, item) }
@@ -70,14 +69,15 @@ object CoachResponseMapper {
                 val duration = item.path("durationSec").intOrNull()
                 val sets = item.path("sets").intOrNull()
                 val reps = item.path("reps").intOrNull()
-                if (item.path("exerciseName").asText().isBlank()) reasons += "$where: missing a name"
+                val name = item.path("exerciseName").asText().trim()
+                if (name.isEmpty()) reasons += "$where: missing a name"
                 if (mode == ItemMode.TIMED && (duration == null || duration <= 0)) reasons += "$where: needs a duration"
                 if (mode == ItemMode.REPS && (sets == null || sets <= 0 || reps == null || reps <= 0)) {
                     reasons += "$where: needs sets and reps"
                 }
                 WorkoutItem(
                     id = newId(),
-                    exerciseId = if (item.path("exerciseName").asText().isBlank()) "" else resolve(item),
+                    exerciseId = if (name.isEmpty()) "" else resolve(item, name),
                     mode = mode,
                     durationSec = duration.takeIf { mode == ItemMode.TIMED },
                     sets = sets.takeIf { mode == ItemMode.REPS },

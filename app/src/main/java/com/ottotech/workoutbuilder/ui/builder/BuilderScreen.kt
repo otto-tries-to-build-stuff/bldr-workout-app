@@ -189,13 +189,10 @@ fun BuilderScreen(
 
 @Composable
 private fun SaveButton(enabled: Boolean, onClick: () -> Unit) {
-    val colors = LocalAppColors.current
-    // Disabled = surface with muted text; enabled = the inverse accent. No ripple when disabled.
     InverseButton(
         text = "SAVE WORKOUT",
-        container = if (enabled) colors.surfaceInverse else colors.surface,
-        content = if (enabled) colors.onSurfaceInverse else colors.textMuted,
-        onClick = { if (enabled) onClick() },
+        enabled = enabled,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Dimens.screenPadding)

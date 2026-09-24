@@ -38,6 +38,7 @@ import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
+import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -80,7 +81,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                                 Text("Key saved", style = AppType.cardTitle, color = colors.onBackground)
                                 Text("Stored encrypted on this phone", style = AppType.cardMeta, color = colors.textMuted)
                             }
-                            TextAction("Remove") { confirmRemove = true }
+                            TextAction("Remove", onClick = { confirmRemove = true })
                         }
                     }
                 }
@@ -107,9 +108,9 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     )
                 }
                 item {
-                    TextAction("Get a key at console.anthropic.com") {
+                    TextAction("Get a key at console.anthropic.com", onClick = {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(KEYS_URL)))
-                    }
+                    })
                 }
             }
 
@@ -156,19 +157,5 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             onConfirm = { confirmRemove = false; viewModel.removeKey() },
             onDismiss = { confirmRemove = false },
         )
-    }
-}
-
-/** A text-only action with a full 48 dp touch target. */
-@Composable
-private fun TextAction(text: String, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .defaultMinSize(minWidth = Dimens.minTouchTarget, minHeight = Dimens.minTouchTarget)
-            .clip(RoundedCornerShape(Dimens.radiusChip))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(text, style = AppType.chip, color = LocalAppColors.current.onBackground)
     }
 }

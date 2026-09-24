@@ -72,22 +72,27 @@ fun InverseButton(
     style: TextStyle = AppType.buildButton,
     container: Color = LocalAppColors.current.surfaceInverse,
     content: Color = LocalAppColors.current.onSurfaceInverse,
+    /** Disabled = `surface` with muted text and no ripple, whatever [container] / [content] say. */
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
+    val colors = LocalAppColors.current
+    val fill = if (enabled) container else colors.surface
+    val ink = if (enabled) content else colors.textMuted
     Row(
         modifier = modifier
             .height(height)
             .clip(RoundedCornerShape(Dimens.radiusButton))
-            .background(container)
-            .clickable(onClick = onClick),
+            .background(fill)
+            .clickable(enabled = enabled, onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leadingGlyph != null) {
-            Text(leadingGlyph, style = style, color = content)
+            Text(leadingGlyph, style = style, color = ink)
             Spacer(Modifier.width(7.dp))
         }
-        Text(text, style = style, color = content)
+        Text(text, style = style, color = ink)
     }
 }
 
@@ -146,11 +151,10 @@ fun AppTextField(
     /** Hides the text as dots — for secrets such as the API key. */
     masked: Boolean = false,
     /**
-     * Multi-line fields grow downward from the top rather than centring one line, and open at
-     * four lines tall — the text field itself, not just its grey box, so a tap anywhere in the
-     * box focuses it.
+     * Above 1 the field is multi-line: it grows downward from the top, and opens this many lines
+     * tall — the text field itself, not just its grey box, so a tap anywhere in the box focuses it.
      */
-    singleLine: Boolean = true,
+    minLines: Int = 1,
 ) {
     val colors = LocalAppColors.current
     Row(
@@ -158,8 +162,8 @@ fun AppTextField(
             .heightIn(min = Dimens.searchFieldHeight)
             .clip(RoundedCornerShape(Dimens.radiusButton))
             .background(colors.surface)
-            .padding(horizontal = 13.dp, vertical = if (singleLine) 0.dp else 12.dp),
-        verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
+            .padding(horizontal = 13.dp, vertical = if (minLines == 1) 0.dp else 12.dp),
+        verticalAlignment = if (minLines == 1) Alignment.CenterVertically else Alignment.Top,
     ) {
         if (leading != null) {
             leading()
@@ -172,8 +176,8 @@ fun AppTextField(
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                singleLine = singleLine,
-                minLines = if (singleLine) 1 else 4,
+                singleLine = minLines == 1,
+                minLines = minLines,
                 visualTransformation = if (masked) PasswordVisualTransformation() else VisualTransformation.None,
                 textStyle = textStyle.copy(color = colors.onSurface),
                 cursorBrush = SolidColor(colors.onSurface),
@@ -245,4 +249,24 @@ fun ConfirmDialog(
             TextButton(onClick = onDismiss) { Text(dismissLabel, style = AppType.chip, color = content) }
         },
     )
+}
+
+/** A text-only action — a link or a secondary command — with a full 48 dp touch target. */
+@Composable
+fun TextAction(
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    color: Color = LocalAppColors.current.onBackground,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier
+            .defaultMinSize(minWidth = Dimens.minTouchTarget, minHeight = Dimens.minTouchTarget)
+            .clip(RoundedCornerShape(Dimens.radiusChip))
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Text(text, style = AppType.chip, color = if (enabled) color else LocalAppColors.current.textMuted)
+    }
 }

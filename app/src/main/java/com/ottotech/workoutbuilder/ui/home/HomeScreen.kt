@@ -38,6 +38,7 @@ import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
+import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -151,15 +152,7 @@ private fun Header(onOpenSettings: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(overline, style = AppType.overline, color = colors.textMuted)
-            Box(
-                modifier = Modifier
-                    .size(width = 88.dp, height = Dimens.minTouchTarget)
-                    .clip(RoundedCornerShape(Dimens.radiusChip))
-                    .clickable(onClick = onOpenSettings),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                Text("Settings", style = AppType.chip, color = colors.textMuted)
-            }
+            TextAction("Settings", color = colors.textMuted, onClick = onOpenSettings)
         }
         Text("YOUR\nWORKOUTS", style = AppType.screenTitle, color = colors.onBackground)
         Spacer(Modifier.height(6.dp))
