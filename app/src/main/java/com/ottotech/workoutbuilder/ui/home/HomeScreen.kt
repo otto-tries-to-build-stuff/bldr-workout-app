@@ -60,6 +60,7 @@ import java.util.Locale
 fun HomeScreen(
     onStartWorkout: (String) -> Unit,
     onEditWorkout: (String) -> Unit,
+    onOpenSettings: () -> Unit,
     onBuild: () -> Unit,
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
@@ -84,7 +85,7 @@ fun HomeScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.gap),
         ) {
-            item { Header() }
+            item { Header(onOpenSettings) }
 
             // While loading, the header stands alone rather than flashing an empty state.
             // In practice this is at most one frame — MainActivity gates on seeding.
@@ -134,7 +135,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun Header() {
+private fun Header(onOpenSettings: () -> Unit) {
     val colors = LocalAppColors.current
     val overline = remember {
         LocalDate.now()
@@ -142,8 +143,24 @@ private fun Header() {
             .uppercase(Locale.getDefault())
     }
     Column {
-        Text(overline, style = AppType.overline, color = colors.textMuted)
-        Spacer(Modifier.height(8.dp))
+        // The Settings link sits on the date line so the title keeps its full width. Its 48 dp
+        // box is taller than the overline; the row absorbs that instead of the title spacing.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(overline, style = AppType.overline, color = colors.textMuted)
+            Box(
+                modifier = Modifier
+                    .size(width = 88.dp, height = Dimens.minTouchTarget)
+                    .clip(RoundedCornerShape(Dimens.radiusChip))
+                    .clickable(onClick = onOpenSettings),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Text("Settings", style = AppType.chip, color = colors.textMuted)
+            }
+        }
         Text("YOUR\nWORKOUTS", style = AppType.screenTitle, color = colors.onBackground)
         Spacer(Modifier.height(6.dp))
     }

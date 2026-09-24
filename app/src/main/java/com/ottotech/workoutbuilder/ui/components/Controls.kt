@@ -28,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ottotech.workoutbuilder.ui.theme.AppType
@@ -141,6 +143,10 @@ fun AppTextField(
     modifier: Modifier = Modifier,
     leading: (@Composable () -> Unit)? = null,
     textStyle: TextStyle = AppType.heroMeta,
+    /** Hides the text as dots — for secrets such as the API key. */
+    masked: Boolean = false,
+    /** Multi-line fields grow downward from the top rather than centring one line. */
+    singleLine: Boolean = true,
 ) {
     val colors = LocalAppColors.current
     Row(
@@ -148,8 +154,8 @@ fun AppTextField(
             .heightIn(min = Dimens.searchFieldHeight)
             .clip(RoundedCornerShape(Dimens.radiusButton))
             .background(colors.surface)
-            .padding(horizontal = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = 13.dp, vertical = if (singleLine) 0.dp else 12.dp),
+        verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
     ) {
         if (leading != null) {
             leading()
@@ -162,7 +168,8 @@ fun AppTextField(
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                singleLine = true,
+                singleLine = singleLine,
+                visualTransformation = if (masked) PasswordVisualTransformation() else VisualTransformation.None,
                 textStyle = textStyle.copy(color = colors.onSurface),
                 cursorBrush = SolidColor(colors.onSurface),
                 modifier = Modifier.fillMaxWidth(),

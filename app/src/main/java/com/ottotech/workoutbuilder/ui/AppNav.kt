@@ -34,6 +34,8 @@ import com.ottotech.workoutbuilder.ui.library.ExerciseDetailScreen
 import com.ottotech.workoutbuilder.ui.library.FiltersSheet
 import com.ottotech.workoutbuilder.ui.library.LibraryScreen
 import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
+import com.ottotech.workoutbuilder.ui.settings.SettingsScreen
+import com.ottotech.workoutbuilder.ui.settings.SettingsViewModel
 
 object Routes {
     const val HOME = "home"
@@ -45,6 +47,7 @@ object Routes {
     const val PICK_LIBRARY = "pick"
     const val PICK_CATEGORY = "pick/{muscle}"
     const val EXECUTION = "execution/{workoutId}"
+    const val SETTINGS = "settings"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
@@ -78,6 +81,7 @@ fun AppNav() {
                 HomeScreen(
                     onStartWorkout = { workoutId -> nav.navigate(Routes.execution(workoutId)) },
                     onEditWorkout = { workoutId -> nav.navigate(Routes.builder(workoutId)) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
                     onBuild = { showBuildSheet = true },
                 )
             }
@@ -166,6 +170,11 @@ fun AppNav() {
                 },
                 onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
             )
+        }
+
+        composable(Routes.SETTINGS) {
+            val settingsVm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+            SettingsScreen(viewModel = settingsVm, onBack = { nav.popBackStack() })
         }
 
         composable(Routes.PICK_LIBRARY) {
