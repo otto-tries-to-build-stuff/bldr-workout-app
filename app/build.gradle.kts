@@ -37,6 +37,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // The SDK pulls in Apache httpclient5/httpcore5, whose duplicate META-INF files otherwise
+    // fail mergeDebugJavaResource.
+    packaging {
+        resources {
+            excludes += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*", "META-INF/INDEX.LIST")
+        }
+    }
 }
 
 dependencies {
@@ -54,6 +62,10 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // Official Anthropic SDK (Java; Kotlin uses it directly). Verified on Android 2026-09-24 —
+    // see STATUS.md. Also supplies Jackson, which CoachResponseMapper parses with.
+    implementation("com.anthropic:anthropic-java:2.34.0")
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 
