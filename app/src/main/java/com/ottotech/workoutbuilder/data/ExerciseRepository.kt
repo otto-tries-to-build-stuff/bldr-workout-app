@@ -32,5 +32,18 @@ class ExerciseRepository(private val dao: ExerciseDao) {
 
     suspend fun setDemoUrl(id: String, url: String?) = dao.setDemoUrl(id, url)
 
+    /**
+     * Coach-invented exercises. Ids derive from the name (CoachResponseMapper.customIdFor), so
+     * saving the same invention twice replaces the row instead of adding a second one.
+     *
+     * REPLACE deletes then inserts the exercise row; exercise_tags cascades on that delete, so
+     * stale tags cannot linger. workout_items has no foreign key to exercises, so no workout
+     * loses an item when its custom exercise is re-saved.
+     */
+    suspend fun upsertCustom(exercises: List<Exercise>) {
+        if (exercises.isEmpty()) return
+        dao.insertAll(exercises = exercises.map { it.toEntity() }, tags = exercises.flatMap { it.toTagEntities() })
+    }
+
     suspend fun count(): Int = dao.count()
 }
