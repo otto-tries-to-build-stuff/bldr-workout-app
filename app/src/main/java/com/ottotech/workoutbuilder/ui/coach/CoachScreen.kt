@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ottotech.workoutbuilder.ai.CoachPhase
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TagVocabulary
 import com.ottotech.workoutbuilder.ui.components.AppTextField
@@ -197,6 +198,18 @@ private fun ColumnScope.Preview(
                     style = AppType.cardMeta,
                     color = colors.textMuted,
                 )
+            }
+        }
+        phase.notice?.let { notice ->
+            // A failed Tweak or Regenerate: the draft below is still the last good one.
+            item {
+                HairlineCard(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(Dimens.cardPadding)) {
+                        Text("That didn't work — your draft is unchanged.", style = AppType.cardTitle, color = colors.onBackground)
+                        Spacer(Modifier.height(4.dp))
+                        Text(notice, style = AppType.cardMeta, color = colors.textMuted)
+                    }
+                }
             }
         }
         items(workout.sections, key = { it.id }) { section ->

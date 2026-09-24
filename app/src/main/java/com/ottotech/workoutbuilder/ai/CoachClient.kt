@@ -15,15 +15,41 @@ import com.anthropic.models.messages.OutputConfig
 import com.anthropic.models.messages.StopReason
 import com.anthropic.models.messages.TextBlockParam
 import com.anthropic.models.messages.ThinkingConfigAdaptive
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 
 sealed interface CoachReply {
     data class Json(val text: String) : CoachReply
     data class Refused(val message: String) : CoachReply
-    data class Failed(val kind: FailureKind) : CoachReply
+    /** [detail] is the API's own error message when it sent one — shown for [FailureKind.REJECTED], logged always. */
+    data class Failed(val kind: FailureKind, val detail: String? = null) : CoachReply
 }
 
-enum class FailureKind { NO_NETWORK, BAD_KEY, BUSY, OTHER }
+/** [REJECTED] is a 4xx the API explained (bad request, no credit…): retrying the same request won't help. */
+enum class FailureKind { NO_NETWORK, BAD_KEY, BUSY, REJECTED, OTHER }
+
+/**
+ * Sorts whatever the SDK threw into something the screen can say. Catches everything: an
+ * uncaught exception here would escape the view model's coroutine and crash the app — e.g. a
+ * captive-portal HTML page makes the SDK throw AnthropicInvalidDataException.
+ */
+object CoachFailures {
+    fun classify(e: Exception): CoachReply.Failed = when (e) {
+        is UnauthorizedException, is PermissionDeniedException -> CoachReply.Failed(FailureKind.BAD_KEY)
+        is RateLimitException -> CoachReply.Failed(FailureKind.BUSY)
+        is AnthropicServiceException ->
+            if (e.statusCode() >= 500) CoachReply.Failed(FailureKind.BUSY)
+            else CoachReply.Failed(FailureKind.REJECTED, apiMessage(e))
+        is AnthropicIoException -> CoachReply.Failed(FailureKind.NO_NETWORK)
+        else -> CoachReply.Failed(FailureKind.OTHER, e.javaClass.simpleName)
+    }
+
+    private fun apiMessage(e: AnthropicServiceException): String? = try {
+        e.body().convert(JsonNode::class.java)?.path("error")?.path("message")?.asText()?.ifBlank { null }
+    } catch (_: Exception) {
+        null
+    } ?: "HTTP ${e.statusCode()}"
+}
 
 /**
  * One Coach request per call (spec §9): Claude Opus 5, adaptive thinking, medium effort,
@@ -56,16 +82,8 @@ class CoachClient(apiKey: String) {
             val text = response.content().mapNotNull { block -> block.text().map { it.text() }.orElse(null) }.joinToString("")
             if (text.isBlank()) CoachReply.Failed(FailureKind.OTHER) else CoachReply.Json(text)
         }
-    } catch (e: UnauthorizedException) {
-        CoachReply.Failed(FailureKind.BAD_KEY)
-    } catch (e: PermissionDeniedException) {
-        CoachReply.Failed(FailureKind.BAD_KEY)
-    } catch (e: RateLimitException) {
-        CoachReply.Failed(FailureKind.BUSY)
-    } catch (e: AnthropicServiceException) {
-        CoachReply.Failed(if (e.statusCode() >= 500) FailureKind.BUSY else FailureKind.OTHER)
-    } catch (e: AnthropicIoException) {
-        CoachReply.Failed(FailureKind.NO_NETWORK)
+    } catch (e: Exception) {
+        CoachFailures.classify(e)
     }
 
     private fun buildParams(system: String, turns: List<Turn>): MessageCreateParams {
