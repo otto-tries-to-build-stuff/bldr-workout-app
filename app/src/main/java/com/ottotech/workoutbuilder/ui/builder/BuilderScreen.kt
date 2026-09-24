@@ -19,9 +19,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,10 +38,10 @@ import com.ottotech.workoutbuilder.domain.Rest
 import com.ottotech.workoutbuilder.domain.RestSlot
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TrainingType
-import com.ottotech.workoutbuilder.domain.WorkoutDraft
 import com.ottotech.workoutbuilder.domain.WorkoutItem
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
+import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
@@ -63,7 +61,7 @@ fun BuilderScreen(
     val colors = LocalAppColors.current
 
     var confirmDiscard by remember { mutableStateOf(false) }
-    val dirty = WorkoutDraft.hasContent(state.workout)
+    val dirty = state.hasUnsavedChanges
 
     // One exit path for both the header chevron and the system Back gesture, so they cannot
     // diverge. An untouched draft closes straight away — prompting on an empty form is noise.
@@ -77,7 +75,10 @@ fun BuilderScreen(
             .background(colors.background)
             .statusBarsPadding(),
     ) {
-        ScreenHeader(title = "Build", onBack = requestClose)
+        ScreenHeader(title = if (state.isEditing) "Edit" else "Build", onBack = requestClose)
+        // An edit renders no form until its saved workout arrives (a few ms), so there is never
+        // a blank draft on screen to type into and lose.
+        if (state.isLoading) return@Column
 
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -170,31 +171,17 @@ fun BuilderScreen(
         SaveButton(enabled = state.canSave, onClick = { viewModel.save(onSaved) })
 
         if (confirmDiscard) {
-            AlertDialog(
-                onDismissRequest = { confirmDiscard = false },
-                // `background` was nearly indistinguishable from the AlertDialog scrim on top
-                // of it in dark mode (both ~#0B0B0D) — see the final review's screenshot.
-                // `surface` gives the dialog a visible edge in both themes; body text stays AA
-                // (dark textMuted #9A9A9A on #18181C is 6.4:1, light #6B6B6B on #F1F1EF is 4.7:1).
-                containerColor = colors.surface,
-                title = { Text("Discard this workout?", style = AppType.cardTitle, color = colors.onBackground) },
-                text = {
-                    Text(
-                        "It hasn't been saved. Everything you've added will be lost.",
-                        style = AppType.cardMeta,
-                        color = colors.textMuted,
-                    )
+            ConfirmDialog(
+                title = if (state.isEditing) "Discard your changes?" else "Discard this workout?",
+                body = if (state.isEditing) {
+                    "The saved workout stays as it was."
+                } else {
+                    "It hasn't been saved. Everything you've added will be lost."
                 },
-                confirmButton = {
-                    TextButton(onClick = { confirmDiscard = false; onClose() }) {
-                        Text("Discard", style = AppType.chip, color = colors.onBackground)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { confirmDiscard = false }) {
-                        Text("Keep editing", style = AppType.chip, color = colors.onBackground)
-                    }
-                },
+                confirmLabel = "Discard",
+                dismissLabel = "Keep editing",
+                onConfirm = { confirmDiscard = false; onClose() },
+                onDismiss = { confirmDiscard = false },
             )
         }
     }

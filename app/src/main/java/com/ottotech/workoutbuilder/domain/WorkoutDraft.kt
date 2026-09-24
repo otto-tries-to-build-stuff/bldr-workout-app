@@ -122,6 +122,14 @@ object WorkoutDraft {
         workout.name.isNotBlank() || workout.sections.any { it.items.isNotEmpty() }
 
     /**
+     * Would closing the Builder now lose anything? For a new draft ([original] null) that is
+     * [hasContent]. For an edit of a saved workout it is any difference from what was loaded —
+     * there, even a structure-only edit changes something the user already has.
+     */
+    fun hasUnsavedChanges(original: Workout?, draft: Workout): Boolean =
+        if (original == null) hasContent(draft) else draft != original
+
+    /**
      * Human-readable reasons the workout cannot be saved yet, empty when it is ready. The
      * Builder disables SAVE and shows all of them while this is non-empty.
      */

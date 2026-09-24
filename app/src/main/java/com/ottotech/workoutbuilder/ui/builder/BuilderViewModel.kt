@@ -2,6 +2,7 @@ package com.ottotech.workoutbuilder.ui.builder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -30,8 +31,15 @@ data class BuilderUiState(
     val exercises: Map<String, Exercise> = emptyMap(),
     val saveBlockers: List<String> = emptyList(),
     val canUndo: Boolean = false,
+    /** Editing a saved workout rather than building a new one. */
+    val isEditing: Boolean = false,
+    /** An edit whose saved workout has not arrived yet; the screen shows no form until it has. */
+    val isLoading: Boolean = false,
+    /** The saved workout as loaded, null for a new one. */
+    val original: Workout? = null,
 ) {
     val canSave: Boolean get() = saveBlockers.isEmpty()
+    val hasUnsavedChanges: Boolean get() = WorkoutDraft.hasUnsavedChanges(original, workout)
 
     /** Name for an item's exercise, tolerant of a since-deleted custom exercise. */
     fun exerciseName(id: String): String = exercises[id]?.name ?: "Removed exercise"
@@ -45,10 +53,14 @@ data class BuilderUiState(
  * immutable objects, so stashing the previous one and restoring it is both simpler and
  * exactly correct. Any non-delete edit clears the snapshot so Undo never resurrects stale
  * state after further changes.
+ *
+ * With an [editingId] it loads that saved workout into the draft instead. Saving upserts by
+ * id, so the edit replaces the saved workout in place and keeps its history.
  */
 class BuilderViewModel(
     private val workouts: WorkoutRepository,
     exercises: ExerciseRepository,
+    private val editingId: String? = null,
 ) : ViewModel() {
 
     // Seed with one empty section so the screen opens on something to fill in rather than a
@@ -61,21 +73,47 @@ class BuilderViewModel(
     )
     private val undo = MutableStateFlow<Workout?>(null)
 
+    /**
+     * The saved workout being edited and whether it has loaded. One flow, so the loaded
+     * workout, the draft and the end of loading always change together.
+     */
+    private val loaded = MutableStateFlow(Loaded(original = null, done = editingId == null))
+
+    private data class Loaded(val original: Workout?, val done: Boolean)
+
+    init {
+        if (editingId != null) {
+            viewModelScope.launch {
+                // A workout deleted meanwhile falls back to the blank draft rather than a form
+                // that never appears.
+                val saved = workouts.load(editingId)
+                if (saved != null) draft.value = saved
+                loaded.value = Loaded(original = saved, done = true)
+            }
+        }
+    }
+
     /** The section awaiting an exercise while the Library pick flow is open. */
     private var pendingSectionId: String? = null
 
     val state: StateFlow<BuilderUiState> =
-        combine(draft, exercises.observeAll(), undo) { workout, library, undoSnapshot ->
-            BuilderUiState(
-                workout = workout,
-                exercises = library.associateBy { it.id },
-                saveBlockers = WorkoutDraft.saveBlockers(workout),
-                canUndo = undoSnapshot != null,
-            )
+        combine(draft, exercises.observeAll(), undo, loaded) { workout, library, undoSnapshot, load ->
+            uiState(workout, library.associateBy { it.id }, undoSnapshot != null, load)
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
-            BuilderUiState(workout = draft.value, saveBlockers = WorkoutDraft.saveBlockers(draft.value)),
+            uiState(draft.value, emptyMap(), canUndo = false, loaded.value),
+        )
+
+    private fun uiState(workout: Workout, exercises: Map<String, Exercise>, canUndo: Boolean, load: Loaded) =
+        BuilderUiState(
+            workout = workout,
+            exercises = exercises,
+            saveBlockers = WorkoutDraft.saveBlockers(workout),
+            canUndo = canUndo,
+            isEditing = editingId != null,
+            isLoading = !load.done,
+            original = load.original,
         )
 
     // Non-delete edits clear the undo snapshot; delete edits set it.
@@ -152,7 +190,8 @@ class BuilderViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as WorkoutApp
-                BuilderViewModel(app.workouts, app.exercises)
+                // The Builder route's optional nav argument arrives through SavedStateHandle.
+                BuilderViewModel(app.workouts, app.exercises, createSavedStateHandle().get<String>("workoutId"))
             }
         }
     }

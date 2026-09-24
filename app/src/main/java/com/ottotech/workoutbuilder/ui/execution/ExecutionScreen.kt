@@ -9,9 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +36,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.ottotech.workoutbuilder.domain.ItemMode
 import com.ottotech.workoutbuilder.domain.Segment
 import com.ottotech.workoutbuilder.domain.SegmentKind
+import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.demoIntent
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
@@ -416,29 +415,18 @@ private fun ControlButton(text: String, filled: Boolean, onClick: () -> Unit, mo
     }
 }
 
-/** "Quit this workout?" confirmation, styled after `BuilderScreen`'s discard dialog. */
+/** "Quit this workout?" confirmation, in the execution screen's always-dark palette. */
 @Composable
 private fun DiscardWorkoutDialog(onKeepGoing: () -> Unit, onQuit: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onKeepGoing,
-        containerColor = ExecutionColors.card,
-        title = { Text("Quit this workout?", style = AppType.cardTitle, color = ExecutionColors.onBackground) },
-        text = {
-            Text(
-                "Your progress won't be saved.",
-                style = AppType.cardMeta,
-                color = ExecutionColors.textMuted,
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onQuit) {
-                Text("Quit", style = AppType.chip, color = ExecutionColors.onBackground)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onKeepGoing) {
-                Text("Keep going", style = AppType.chip, color = ExecutionColors.onBackground)
-            }
-        },
+    ConfirmDialog(
+        title = "Quit this workout?",
+        body = "Your progress won't be saved.",
+        confirmLabel = "Quit",
+        dismissLabel = "Keep going",
+        onConfirm = onQuit,
+        onDismiss = onKeepGoing,
+        container = ExecutionColors.card,
+        content = ExecutionColors.onBackground,
+        muted = ExecutionColors.textMuted,
     )
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val loading: Boolean = true,
@@ -28,7 +29,7 @@ data class HomeUiState(
  * flows and holds the result.
  */
 class HomeViewModel(
-    workouts: WorkoutRepository,
+    private val workouts: WorkoutRepository,
     exercises: ExerciseRepository,
 ) : ViewModel() {
 
@@ -41,6 +42,11 @@ class HomeViewModel(
                 workouts = WorkoutSummarizer.sortedForHome(summaries),
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+
+    /** The list re-emits from the database, so the card disappears on its own. */
+    fun delete(id: String) {
+        viewModelScope.launch { workouts.delete(id) }
+    }
 
     companion object {
         val Factory = viewModelFactory {

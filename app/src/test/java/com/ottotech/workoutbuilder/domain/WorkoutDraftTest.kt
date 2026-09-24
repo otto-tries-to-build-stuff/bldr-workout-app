@@ -293,4 +293,27 @@ class WorkoutDraftTest {
         )
         assertTrue(WorkoutDraft.hasContent(withItem))
     }
+
+    // ---- hasUnsavedChanges ----
+
+    @Test
+    fun `a new draft falls back to hasContent`() {
+        val fresh = WorkoutDraft.addSection(blank(), "s1")
+        assertFalse(WorkoutDraft.hasUnsavedChanges(original = null, draft = fresh))
+        assertTrue(WorkoutDraft.hasUnsavedChanges(original = null, draft = WorkoutDraft.rename(fresh, "Leg Day")))
+    }
+
+    @Test
+    fun `an edited workout that is unchanged has no unsaved changes`() {
+        val saved = WorkoutDraft.rename(oneItem(), "Leg Day")
+        assertFalse(WorkoutDraft.hasUnsavedChanges(original = saved, draft = saved))
+    }
+
+    @Test
+    fun `any edit to a saved workout counts, including structure-only ones`() {
+        // Unlike a new draft, adding an empty section to a saved workout is a real change to it.
+        val saved = WorkoutDraft.rename(oneItem(), "Leg Day")
+        assertTrue(WorkoutDraft.hasUnsavedChanges(saved, WorkoutDraft.addSection(saved, "s2")))
+        assertTrue(WorkoutDraft.hasUnsavedChanges(saved, WorkoutDraft.setDuration(saved, "s", "i", 45)))
+    }
 }

@@ -40,7 +40,8 @@ object Routes {
     const val LIBRARY = "library"
     const val CATEGORY = "library/{muscle}"
     const val EXERCISE = "exercise/{exerciseId}"
-    const val BUILDER = "builder"
+    /** New workout without the argument, edit of a saved one with it. */
+    const val BUILDER = "builder?workoutId={workoutId}"
     const val PICK_LIBRARY = "pick"
     const val PICK_CATEGORY = "pick/{muscle}"
     const val EXECUTION = "execution/{workoutId}"
@@ -49,6 +50,7 @@ object Routes {
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
     fun pickCategory(muscle: Muscle) = "pick/${muscle.name}"
     fun execution(workoutId: String) = "execution/$workoutId"
+    fun builder(workoutId: String? = null) = if (workoutId == null) "builder" else "builder?workoutId=$workoutId"
 }
 
 /**
@@ -75,6 +77,7 @@ fun AppNav() {
             AppScaffold(tab = Tab.HOME, onSelectTab = { if (it == Tab.LIBRARY) nav.switchTab(Routes.LIBRARY) }) {
                 HomeScreen(
                     onStartWorkout = { workoutId -> nav.navigate(Routes.execution(workoutId)) },
+                    onEditWorkout = { workoutId -> nav.navigate(Routes.builder(workoutId)) },
                     onBuild = { showBuildSheet = true },
                 )
             }
@@ -84,7 +87,7 @@ fun AppNav() {
                     onDismiss = { showBuildSheet = false },
                     onBuildYourself = {
                         showBuildSheet = false
-                        nav.navigate(Routes.BUILDER)
+                        nav.navigate(Routes.builder())
                     },
                     // TODO(Plan 2): navigate to the Coach.
                     onAskCoach = { showBuildSheet = false },
@@ -147,7 +150,12 @@ fun AppNav() {
             )
         }
 
-        composable(Routes.BUILDER) {
+        composable(
+            route = Routes.BUILDER,
+            arguments = listOf(
+                navArgument("workoutId") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
+        ) {
             val builderVm: BuilderViewModel = viewModel(factory = BuilderViewModel.Factory)
             BuilderScreen(
                 viewModel = builderVm,

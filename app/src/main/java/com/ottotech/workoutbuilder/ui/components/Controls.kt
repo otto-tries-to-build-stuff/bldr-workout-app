@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -199,4 +201,36 @@ fun ScreenHeader(title: String, onBack: () -> Unit) {
         }
         Text(title.uppercase(), style = AppType.screenTitle, color = colors.onBackground)
     }
+}
+
+/**
+ * The app's one confirmation dialog. `surface` rather than `background` for the container:
+ * `background` was nearly indistinguishable from the scrim in dark mode (both ~#0B0B0D). Body
+ * text stays AA on it (dark textMuted #9A9A9A on #18181C is 6.4:1, light #6B6B6B on #F1F1EF is
+ * 4.7:1). Execution passes its own always-dark palette.
+ */
+@Composable
+fun ConfirmDialog(
+    title: String,
+    body: String,
+    confirmLabel: String,
+    dismissLabel: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    container: Color = LocalAppColors.current.surface,
+    content: Color = LocalAppColors.current.onBackground,
+    muted: Color = LocalAppColors.current.textMuted,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = container,
+        title = { Text(title, style = AppType.cardTitle, color = content) },
+        text = { Text(body, style = AppType.cardMeta, color = muted) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text(confirmLabel, style = AppType.chip, color = content) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(dismissLabel, style = AppType.chip, color = content) }
+        },
+    )
 }

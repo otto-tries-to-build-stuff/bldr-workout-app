@@ -12,6 +12,7 @@
 | **Plan 1C** — Builder + Library pick mode | **Merged to `main`.** 108 tests green, verified on the emulator. |
 | **Design correction pass** — scale, contrast, targets, Home | **Merged to `main`.** 116 tests green, verified on the emulator. |
 | **Plan 1D** — Execution + audio | **Complete on `phase-1d-execution-audio`, not yet merged.** 141 tests green. Installed on the real phone (Samsung Galaxy S22) and ready for the user's hands-on verification pass (§5 of the design spec — pocket test, music ducking, headset button, lock screen, battery-saver survival), which is outstanding and owned by the user, not yet run. |
+| **Edit & delete workouts** | **Complete on `edit-delete-workouts`** (branched from the 1D branch, so it carries 1D too). 144 tests green, verified on the emulator. Not yet merged — waits on the 1D hands-on pass. |
 | Phase 2 — AI Coach | Not started |
 
 `main` is the verified baseline. Branch from it for each plan.
@@ -58,9 +59,15 @@
   in the `PICK_CATEGORY` composable — without it, the leaving frame re-runs
   `getBackStackEntry(PICK_LIBRARY)` during the exit transition and crashes (the same
   getBackStackEntry-during-exit hazard 1B flagged for the Library tab).
-- **The Builder creates new workouts only.** Editing a saved workout uses the same draft
-  functions and `save`, but has no entry point yet — Home rows are reserved for "start workout"
-  (Plan 1D). Loading a workout into the Builder is a seam for a later plan.
+- **Edit and Delete live behind a "⋯" menu on each Home card**, because tapping the card itself
+  starts the workout. Edit reuses the Builder via the optional `builder?workoutId=` route
+  argument, read from `SavedStateHandle`; saving upserts by id, so `createdAt` and
+  `lastPerformedAt` survive. An edit renders no form until the saved workout has loaded.
+  **Unsaved-changes rules differ by mode** (`WorkoutDraft.hasUnsavedChanges`): a new draft uses
+  `hasContent`, an edit uses "anything differs from what was loaded" — so a structure-only edit
+  to a saved workout *does* prompt. Delete asks first and has no undo.
+- **All confirmation dialogs go through `ConfirmDialog`** in `ui/components/Controls.kt`
+  (Builder discard, Home delete, Execution quit). Execution passes its always-dark palette.
 - **First launch takes ~10s** on a cold install while 101 exercises plus their tags seed.
   `MainActivity` gates the UI on it, so the launch theme shows until it finishes. Later
   launches are ~3s.
@@ -90,10 +97,8 @@
   didn't fit beside the Off / Timed / Manual chips at 48dp touch targets, so it wraps to a
   second line beneath them. Deliberate layout change, not a bug — don't squeeze it back onto
   the chip row.
-- **The empty-Home state can't currently be seen on a device.** Clearing app storage also
-  resets the seed flag, so Court Speed reseeds on next launch, and there's no delete-workout UI
-  yet to empty the list any other way. The empty state exists in code but is presently
-  unreachable outside a test.
+- **The empty-Home state is only reachable by deleting every workout** — clearing app storage
+  also resets the seed flag, so Court Speed reseeds on next launch.
 - **The Builder's discard confirmation checks `WorkoutDraft.hasContent`, not `sections.isEmpty()`.**
   Every new draft is seeded with one empty section, so `hasContent` deliberately ignores that
   seeded section and only counts a name or an actual exercise. Back and the header `‹` both ask
