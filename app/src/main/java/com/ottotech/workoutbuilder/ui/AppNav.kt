@@ -19,10 +19,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.ui.builder.BuilderScreen
 import com.ottotech.workoutbuilder.ui.builder.BuilderViewModel
+import com.ottotech.workoutbuilder.ui.coach.CoachScreen
+import com.ottotech.workoutbuilder.ui.coach.CoachViewModel
 import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.execution.ExecutionScreen
@@ -48,6 +51,7 @@ object Routes {
     const val PICK_CATEGORY = "pick/{muscle}"
     const val EXECUTION = "execution/{workoutId}"
     const val SETTINGS = "settings"
+    const val COACH = "coach"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
@@ -55,6 +59,12 @@ object Routes {
     fun execution(workoutId: String) = "execution/$workoutId"
     fun builder(workoutId: String? = null) = if (workoutId == null) "builder" else "builder?workoutId=$workoutId"
 }
+
+/*
+ * Every back action is wrapped in dropUnlessResumed: a second tap on "‹" during the exit
+ * transition would otherwise pop the destination underneath too — and popping Home leaves an
+ * empty back stack, i.e. a blank screen.
+ */
 
 /**
  * Switching bottom-nav tabs must not stack destinations — otherwise Back walks through
@@ -73,8 +83,7 @@ fun AppNav() {
     NavHost(navController = nav, startDestination = Routes.HOME) {
 
         composable(Routes.HOME) {
-            // The two Build destinations do not exist yet; the sheet is the seam they
-            // plug into. Left as no-ops rather than placeholder screens.
+            // The Build sheet forks to the two ways of making a workout: the Builder or the Coach.
             var showBuildSheet by rememberSaveable { mutableStateOf(false) }
 
             AppScaffold(tab = Tab.HOME, onSelectTab = { if (it == Tab.LIBRARY) nav.switchTab(Routes.LIBRARY) }) {
@@ -93,8 +102,10 @@ fun AppNav() {
                         showBuildSheet = false
                         nav.navigate(Routes.builder())
                     },
-                    // TODO(Plan 2): navigate to the Coach.
-                    onAskCoach = { showBuildSheet = false },
+                    onAskCoach = {
+                        showBuildSheet = false
+                        nav.navigate(Routes.COACH)
+                    },
                 )
             }
         }
@@ -134,7 +145,7 @@ fun AppNav() {
             CategoryScreen(
                 muscle = muscle,
                 viewModel = libraryVm,
-                onBack = { nav.popBackStack() },
+                onBack = dropUnlessResumed { nav.popBackStack() },
                 onOpenExercise = { nav.navigate(Routes.exercise(it)) },
             )
         }
@@ -150,7 +161,7 @@ fun AppNav() {
             ExerciseDetailScreen(
                 exerciseId = entry.arguments?.getString("exerciseId").orEmpty(),
                 viewModel = libraryVm,
-                onBack = { nav.popBackStack() },
+                onBack = dropUnlessResumed { nav.popBackStack() },
             )
         }
 
@@ -163,7 +174,7 @@ fun AppNav() {
             val builderVm: BuilderViewModel = viewModel(factory = BuilderViewModel.Factory)
             BuilderScreen(
                 viewModel = builderVm,
-                onClose = { nav.popBackStack() },
+                onClose = dropUnlessResumed { nav.popBackStack() },
                 onAddExercise = { sectionId ->
                     builderVm.beginPick(sectionId)
                     nav.navigate(Routes.PICK_LIBRARY)
@@ -172,9 +183,19 @@ fun AppNav() {
             )
         }
 
+        composable(Routes.COACH) {
+            val coachVm: CoachViewModel = viewModel(factory = CoachViewModel.Factory)
+            CoachScreen(
+                viewModel = coachVm,
+                onBack = dropUnlessResumed { nav.popBackStack() },
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
+            )
+        }
+
         composable(Routes.SETTINGS) {
             val settingsVm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
-            SettingsScreen(viewModel = settingsVm, onBack = { nav.popBackStack() })
+            SettingsScreen(viewModel = settingsVm, onBack = dropUnlessResumed { nav.popBackStack() })
         }
 
         composable(Routes.PICK_LIBRARY) {
@@ -214,7 +235,7 @@ fun AppNav() {
             CategoryScreen(
                 muscle = muscle,
                 viewModel = pickVm,
-                onBack = { nav.popBackStack() },
+                onBack = dropUnlessResumed { nav.popBackStack() },
                 onOpenExercise = { exerciseId ->
                     builderVm.onExercisePicked(exerciseId)
                     nav.popBackStack(Routes.BUILDER, inclusive = false)

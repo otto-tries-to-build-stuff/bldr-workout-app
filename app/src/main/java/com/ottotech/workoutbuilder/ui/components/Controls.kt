@@ -145,7 +145,11 @@ fun AppTextField(
     textStyle: TextStyle = AppType.heroMeta,
     /** Hides the text as dots — for secrets such as the API key. */
     masked: Boolean = false,
-    /** Multi-line fields grow downward from the top rather than centring one line. */
+    /**
+     * Multi-line fields grow downward from the top rather than centring one line, and open at
+     * four lines tall — the text field itself, not just its grey box, so a tap anywhere in the
+     * box focuses it.
+     */
     singleLine: Boolean = true,
 ) {
     val colors = LocalAppColors.current
@@ -169,6 +173,7 @@ fun AppTextField(
                 value = value,
                 onValueChange = onValueChange,
                 singleLine = singleLine,
+                minLines = if (singleLine) 1 else 4,
                 visualTransformation = if (masked) PasswordVisualTransformation() else VisualTransformation.None,
                 textStyle = textStyle.copy(color = colors.onSurface),
                 cursorBrush = SolidColor(colors.onSurface),
