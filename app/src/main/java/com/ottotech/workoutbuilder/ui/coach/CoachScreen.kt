@@ -1,5 +1,12 @@
 package com.ottotech.workoutbuilder.ui.coach
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,10 +32,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,6 +50,7 @@ import com.ottotech.workoutbuilder.ai.CoachPhase
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TagVocabulary
 import com.ottotech.workoutbuilder.ui.brand.BldrLoader
+import com.ottotech.workoutbuilder.ui.brand.rememberSystemAnimationsOn
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
@@ -46,6 +61,7 @@ import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
+import kotlinx.coroutines.delay
 
 private val LENGTHS = listOf(15, 30, 45, 60)
 
@@ -155,17 +171,53 @@ private fun ColumnScope.ComposeGoal(state: CoachUiState, viewModel: CoachViewMod
     )
 }
 
+/** Shown while the Coach drafts. Visual reassurance only: the request is one call with no real steps to report. */
+private val WorkingWords = listOf(
+    "Analyzing fitness objectives…",
+    "Evaluating movement patterns…",
+    "Selecting optimal exercises…",
+    "Calibrating volume and intensity…",
+    "Optimizing rest intervals…",
+    "Finalizing workout structure…",
+)
+private const val WorkingWordMillis = 3_000L
+
 @Composable
-private fun Loading() {
+private fun ColumnScope.Loading() {
     val colors = LocalAppColors.current
+    val animate = rememberSystemAnimationsOn()
+    // Steps through the words once and holds on the last: a loop would jump from "Finalizing" back to the start.
+    var index by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        repeat(WorkingWords.lastIndex) {
+            delay(WorkingWordMillis)
+            index++
+        }
+    }
     Column(
-        Modifier.fillMaxWidth().padding(horizontal = Dimens.screenPadding, vertical = 48.dp),
+        Modifier.fillMaxWidth().weight(1f).padding(horizontal = Dimens.screenPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.Center,
     ) {
-        BldrLoader()
+        BldrLoader(contentDescription = "Drafting your workout")
+        Spacer(Modifier.height(24.dp))
+        // Sized by invisible copies of every phrase, so a wrapping phrase never shifts the loader.
+        Box(contentAlignment = Alignment.TopCenter) {
+            WorkingWords.forEach {
+                Text(it, style = AppType.cardTitle, textAlign = TextAlign.Center, modifier = Modifier.alpha(0f).clearAndSetSemantics {})
+            }
+            AnimatedContent(
+                targetState = WorkingWords[index],
+                transitionSpec = {
+                    if (animate) fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+                    else EnterTransition.None togetherWith ExitTransition.None
+                },
+                label = "workingWords",
+            ) { words ->
+                Text(words, style = AppType.cardTitle, color = colors.onBackground, textAlign = TextAlign.Center)
+            }
+        }
         Spacer(Modifier.height(8.dp))
-        Text("Drafting your workout…", style = AppType.cardTitle, color = colors.onBackground)
         Text("This takes 15–30 seconds.", style = AppType.cardMeta, color = colors.textMuted)
     }
 }

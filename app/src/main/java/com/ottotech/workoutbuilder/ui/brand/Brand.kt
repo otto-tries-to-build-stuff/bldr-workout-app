@@ -177,7 +177,7 @@ private fun DrawScope.drawBars(color: Color, state: (Int) -> Pair<Float, Float>,
 
 /** False when the user has turned animations off (Developer options, or Accessibility → Remove animations). */
 @Composable
-private fun rememberSystemAnimationsOn(): Boolean {
+internal fun rememberSystemAnimationsOn(): Boolean {
     val context = LocalContext.current
     return remember {
         Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f
