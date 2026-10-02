@@ -17,7 +17,7 @@ Design source: the "BLDR Brand Kit" canvas in Claude. When the canvas changes, r
 | Launcher layers | `res/drawable/ic_launcher_foreground.xml`, `ic_launcher_monochrome.xml` | Adaptive icon; monochrome is the Android 13+ themed icon |
 | Icon background | `@color/bldr_icon_background` in `res/values/bldr_brand.xml` | Launcher only |
 | Notification icon | `res/drawable/ic_stat_bldr.xml` | `setSmallIcon` on every notification |
-| Fonts | `res/font/archivo_expanded_black.ttf`, `space_grotesk_*.ttf` | Via `BrandFonts` / `BrandType` |
+| Fonts | `res/font/archivo_expanded_black.ttf`, `space_grotesk_*.ttf` | Via `BrandFonts`, wired into `AppType` (`ui/theme/Type.kt`) |
 | Store and web masters | `brand/svg/`, `brand/png/` | Play Store listing (`bldr-play-store-icon-512.png`), web, socials |
 
 ## In Compose
@@ -29,7 +29,8 @@ BldrLogo(height = 28.dp)                                    // primary horizonta
 BldrLogo(height = 96.dp, variant = BldrLogoVariant.Stacked)
 BldrMark(height = 24.dp)
 BldrLoader(width = 64.dp)                                   // replaces a spinner
-Text("Push day", style = BrandType.display)
+Text("Push day", style = AppType.heroName)                  // every app style lives in AppType
+ScreenTitle("LIBRARY")                                      // Archivo title that shrinks to fit
 ```
 
 - Every graphic is one colour, tinted at the call site. Defaults to `LocalAppColors.current.onBackground`; pass `onSurfaceInverse` on inverse surfaces. Never hard-code a hex (house rule from `ui/theme/Colors.kt`).
@@ -40,13 +41,12 @@ Text("Push day", style = BrandType.display)
 
 - Clear space: keep space equal to the big plate's width on every side of the mark or logo.
 - Minimum sizes: mark 16dp tall, horizontal logo 24dp tall, stacked logo 56dp tall.
-- Headings: Archivo Expanded 900 (`BrandType`). Short lines only; never for body text.
+- Headings and big numbers: Archivo Expanded 900, only via `AppType.screenTitle`, `timerDigits` and `leadInDigits`. Short lines only; never for body text. It runs ~1.55x wider than Roboto, so titles go through `ScreenTitle` (auto-shrinks).
 - UI text: Space Grotesk 400, 500, 700 (`BrandFonts.SpaceGrotesk`).
 - Notification small icons must stay white on transparent. Android tints them.
 
-## Not done yet (decisions for later)
+## Decisions
 
-- `AppType` in `ui/theme/Type.kt` still uses the system font, with sizes tuned for Roboto. Moving to Archivo and Space Grotesk should be done in one pass across `AppType`, re-checking sizes and line heights, not screen by screen.
 - No splash theme, by decision (2026-10-02). On Android 12+ the system splash already shows the launcher icon on `windowBackground`. The real wait (first-launch seeding) shows `BldrLoader` instead, after a 300 ms delay so normal launches never flash it (`MainActivity.LaunchLoader`).
 
 ## Licences

@@ -93,9 +93,9 @@ fun RepsPanel(segment: Segment) {
         // Bounded and independently scrollable, so an unusually large sets value (the
         // Builder's stepper has no maximum) grows this list only up to MAX_VISIBLE_ROWS
         // rows before it scrolls internally, rather than growing the whole screen and
-        // pushing the watch-demo/up-next cards and the Pause/Done row off-screen.
-        // ExecutionScreen's outer Column is deliberately not scrollable itself — it relies
-        // on Spacer(Modifier.weight(1f)), which does not coexist with a scrollable parent.
+        // pushing the rest of the panel out of view. (ExecutionScreen scrolls this whole
+        // panel when space runs out, and pins the cards and the Pause/Done row below it; the
+        // height cap keeps this inner list from swallowing that scroll.)
         Column(
             Modifier
                 .fillMaxWidth()

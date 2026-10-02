@@ -38,6 +38,7 @@ import com.ottotech.workoutbuilder.ui.brand.BldrMark
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
+import com.ottotech.workoutbuilder.ui.components.ScreenTitle
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
 import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
@@ -157,7 +158,7 @@ private fun Header(onOpenSettings: () -> Unit) {
             Text(overline, style = AppType.overline, color = colors.textMuted, modifier = Modifier.weight(1f))
             TextAction("Settings", color = colors.textMuted, onClick = onOpenSettings)
         }
-        Text("YOUR\nWORKOUTS", style = AppType.screenTitle, color = colors.onBackground)
+        ScreenTitle("YOUR\nWORKOUTS", maxLines = 2)
         Spacer(Modifier.height(6.dp))
     }
 }

@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -27,11 +29,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -215,8 +221,27 @@ fun ScreenHeader(title: String, onBack: () -> Unit) {
             // heroName rather than a title style: a 40sp chevron overwhelms the word beside it.
             Text(text = "‹", style = AppType.heroName, color = colors.onBackground)
         }
-        Text(title.uppercase(), style = AppType.screenTitle, color = colors.onBackground)
+        ScreenTitle(title.uppercase(), Modifier.weight(1f))
     }
+}
+
+/**
+ * A screen title in Archivo Expanded. The face is wide, so the title shrinks to fit rather than
+ * clipping or breaking a word at large font sizes on narrow phones. The 14 sp floor is what
+ * "SHOULDERS" needs at the 200% font size on a 360 dp phone; past it, an ellipsis, never a cut.
+ */
+@Composable
+fun ScreenTitle(text: String, modifier: Modifier = Modifier, maxLines: Int = 1) {
+    val color = LocalAppColors.current.onBackground
+    BasicText(
+        text = text,
+        style = AppType.screenTitle,
+        color = { color },
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis,
+        autoSize = TextAutoSize.StepBased(minFontSize = 14.sp, maxFontSize = AppType.screenTitle.fontSize),
+        modifier = modifier.semantics { heading() },
+    )
 }
 
 /**

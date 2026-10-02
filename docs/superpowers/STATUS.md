@@ -14,7 +14,7 @@
 | **Plan 1D** — Execution + audio | **Complete on `phase-1d-execution-audio`, not yet merged.** 141 tests green. Installed on the real phone (Samsung Galaxy S22) and ready for the user's hands-on verification pass (§5 of the design spec — pocket test, music ducking, headset button, lock screen, battery-saver survival), which is outstanding and owned by the user, not yet run. |
 | **Edit & delete workouts** | **Complete on `edit-delete-workouts`** (branched from the 1D branch, so it carries 1D too). 144 tests green, verified on the emulator. Not yet merged — waits on the 1D hands-on pass. |
 | **Phase 2 — AI Coach** | **Built on `phase-2-ai-coach`** (branched from `edit-delete-workouts`, so it carries 1D and edit/delete too). 177 tests green; independent review done, its 4 important findings fixed. Verified on the emulator up to the network boundary: no-key gate, Settings round-trip, bad-key and no-network messages. **Outstanding, needs the user:** one real generation with their own key (plan Task 7 Step 5) — the first call that proves the request body (schema, refusal-fallback header) is accepted. |
-| **BLDR brand rollout** | **In progress on `bldr-brand`** (branched from `phase-2-ai-coach` after committing the Workout Overview / lead-in work and the brand drop). Plan: `plans/2026-10-02-bldr-brand-rollout.md`. Done: icon checked on the emulator (incl. themed icons); app renamed to BLDR. |
+| **BLDR brand rollout** | **In progress on `bldr-brand`** (branched from `phase-2-ai-coach` after committing the Workout Overview / lead-in work and the brand drop). Plan: `plans/2026-10-02-bldr-brand-rollout.md`. **Complete on `bldr-brand`, not yet merged.** 197 tests green. Icon (incl. themed icons), BLDR name, loader (Coach + first launch), logo on Home / Settings About / finish screen, and the Archivo + Space Grotesk type pass, all verified on the emulator at a Galaxy S22-sized screen (360 dp) at 1.0x, 1.3x, 1.6x and 2.0x font size. **Outstanding, needs the user:** a look on the real S22, and the Play Store assets below. |
 
 `main` is the verified baseline. Branch from it for each plan.
 
@@ -210,6 +210,18 @@ emulator in a throwaway branch (deleted; nothing merged):
 - **Themed icons only show on the Pixel home screen**, not in the app drawer, so test the
   monochrome layer with the icon placed on the home screen. The launcher's themed-icons switch
   can't be flipped over adb (permission denied); use Wallpaper & style → Home screen → Themed icons.
+- **Type is Archivo Expanded (titles, timer, lead-in) + Space Grotesk (everything else)**, all through `AppType`;
+  `AppTypeTest` fails if any style falls back to the system font or lacks an explicit line height. Archivo runs
+  ~1.55x wider than Roboto, so titles are 32 sp and go through `ScreenTitle` (auto-shrinks to 14 sp, then
+  ellipsis) and the timer is 38 sp and auto-shrinks inside the ring. SemiBold maps to Space Grotesk Medium.
+- **The execution screen's upper part (name, ring, Restart) scrolls when it doesn't fit**, so Watch demo, Up next
+  and Pause/Done stay pinned and reachable at large font sizes. Before, Pause/Done fell off-screen at 2.0x (and,
+  with the new type, from ~1.6x).
+- **Known at 2.0x font size, pre-existing (same with Roboto):** single-line chip rows (Builder type and rest
+  chips, Settings Appearance) and Home card meta lines break words mid-way; the Library "Shoulders" tile wraps.
+  Fine at 1.3x. A FlowRow / card layout follow-up would fix them.
+- **The emulator now seeds a fresh install in ~1 s**, not the ~10 s noted above, so the first-launch loader
+  (300 ms delay) rarely shows there; it was verified with a throwaway zero-delay build.
 - **Play Store listing still needs:** the 512 px icon re-exported as 32-bit PNG with alpha
   (`brand/png/bldr-play-store-icon-512.png` is 24-bit RGB); a 1024 × 500 feature graphic; at least
   two phone screenshots (take them after the typography pass). The store title can differ from the

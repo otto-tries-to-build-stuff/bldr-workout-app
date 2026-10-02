@@ -32,15 +32,12 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.ottotech.workoutbuilder.R
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 import com.ottotech.workoutbuilder.ui.theme.WorkoutTheme
@@ -202,22 +199,6 @@ object BrandFonts {
         Font(R.font.space_grotesk_medium, FontWeight.Medium),
         Font(R.font.space_grotesk_bold, FontWeight.Bold),
     )
-}
-
-/**
- * Brand heading styles. Not wired into AppType yet: switching the app's type is a deliberate,
- * one-pass change (see brand/BRAND.md), because AppType's sizes are tuned for Roboto.
- */
-object BrandType {
-    val display = TextStyle(
-        fontFamily = BrandFonts.ArchivoExpanded,
-        fontWeight = FontWeight.Black,
-        fontSize = 40.sp,
-        lineHeight = 44.sp,
-        letterSpacing = 0.01.em,
-    )
-    val headline = display.copy(fontSize = 26.sp, lineHeight = 30.sp)
-    val bigNumber = display.copy(fontSize = 46.sp, lineHeight = 50.sp, fontFeatureSettings = "tnum")
 }
 
 @Preview(name = "Loader · light")

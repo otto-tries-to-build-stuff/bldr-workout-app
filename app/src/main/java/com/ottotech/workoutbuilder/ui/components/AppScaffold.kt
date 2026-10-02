@@ -21,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 
@@ -96,8 +96,7 @@ private fun NavItem(tab: Tab, active: Boolean, onClick: () -> Unit) {
         Spacer(Modifier.height(5.dp))
         Text(
             text = tab.label,
-            fontSize = 12.sp,
-            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+            style = if (active) AppType.navLabel.copy(fontWeight = FontWeight.Bold) else AppType.navLabel,
             color = tint,
         )
     }

@@ -33,6 +33,7 @@ import com.ottotech.workoutbuilder.domain.TagVocabulary
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.InverseButton
+import com.ottotech.workoutbuilder.ui.components.ScreenTitle
 import com.ottotech.workoutbuilder.ui.components.SearchGlyph
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
 import com.ottotech.workoutbuilder.ui.theme.AppType
@@ -62,7 +63,7 @@ fun LibraryScreen(
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column {
-                Text("LIBRARY", style = AppType.libraryTitle, color = colors.onBackground)
+                ScreenTitle("LIBRARY")
                 Spacer(Modifier.height(12.dp))
                 AppTextField(
                     value = state.filter.query,

@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,6 +20,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
@@ -69,7 +73,15 @@ fun TimerRing(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Text(centreTop, style = AppType.timerDigits, color = ExecutionColors.onBackground)
+            // Archivo digits are wide: shrink rather than touch the ring at large font sizes.
+            BasicText(
+                centreTop,
+                style = AppType.timerDigits,
+                color = { ExecutionColors.onBackground },
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = AppType.timerDigits.fontSize),
+                modifier = Modifier.widthIn(max = Dimens.ringSize - Dimens.ringStroke * 2 - 24.dp),
+            )
             Text(centreBottom, style = AppType.timerCaption, color = ExecutionColors.textMuted)
         }
     }

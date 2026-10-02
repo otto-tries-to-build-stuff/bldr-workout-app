@@ -11,13 +11,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -123,50 +125,56 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
         // what's actually finished, or the bar reads fully solid on an exercise not yet done.
         ProgressBar(done = session.workIndex - 1, total = session.workTotal)
 
-        Spacer(Modifier.height(24.dp))
-        Text(
-            segment.exerciseName,
-            style = AppType.moveName,
-            color = ExecutionColors.onBackground,
-            textAlign = TextAlign.Center,
-        )
-        // REPS mode renders its own "Chest · Barbell" sub-line (RepsPanel) that already
-        // carries the muscle — showing the tag here too would say it twice on screen.
-        if (segment.mode != ItemMode.REPS) {
-            segment.primaryMuscle?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it.label.uppercase(), style = AppType.muscleTag, color = ExecutionColors.textMuted)
-            }
-        }
-
-        Spacer(Modifier.height(28.dp))
-        when (segment.mode) {
-            ItemMode.TIMED -> {
-                val remaining = session.remainingSecDisplay(now) ?: 0
-                val total = (segment.durationSec ?: 1).coerceAtLeast(1)
-                TimerRing(
-                    progress = remaining.toFloat() / total,
-                    centreTop = formatClock(remaining),
-                    centreBottom = "REMAINING",
-                )
-            }
-            ItemMode.MANUAL -> TimerRing(
-                progress = 1f,
-                centreTop = formatClock((session.elapsedMs(now) / 1000L).toInt()),
-                centreBottom = "ELAPSED",
-                onTap = viewModel::complete,
+        // The exercise, its clock and Restart scroll when they don't fit (large font sizes on a
+        // narrow phone), so the cards and Pause/Done below always stay on screen and reachable.
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                segment.exerciseName,
+                style = AppType.moveName,
+                color = ExecutionColors.onBackground,
+                textAlign = TextAlign.Center,
             )
-            ItemMode.REPS -> RepsPanel(segment = segment)
-        }
-        // Only where there's a clock to reset — reps have no timer.
-        if (segment.mode != ItemMode.REPS) {
-            Spacer(Modifier.height(12.dp))
-            // Remembered: this screen recomposes at 10Hz, and a fresh modifier would defeat skipping.
-            val restartLabel = remember { Modifier.semantics { contentDescription = "Restart this exercise" } }
-            TextAction("↺  Restart", color = ExecutionColors.textMuted, onClick = viewModel::restart, modifier = restartLabel)
+            // REPS mode renders its own "Chest · Barbell" sub-line (RepsPanel) that already
+            // carries the muscle — showing the tag here too would say it twice on screen.
+            if (segment.mode != ItemMode.REPS) {
+                segment.primaryMuscle?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it.label.uppercase(), style = AppType.muscleTag, color = ExecutionColors.textMuted)
+                }
+            }
+
+            Spacer(Modifier.height(28.dp))
+            when (segment.mode) {
+                ItemMode.TIMED -> {
+                    val remaining = session.remainingSecDisplay(now) ?: 0
+                    val total = (segment.durationSec ?: 1).coerceAtLeast(1)
+                    TimerRing(
+                        progress = remaining.toFloat() / total,
+                        centreTop = formatClock(remaining),
+                        centreBottom = "REMAINING",
+                    )
+                }
+                ItemMode.MANUAL -> TimerRing(
+                    progress = 1f,
+                    centreTop = formatClock((session.elapsedMs(now) / 1000L).toInt()),
+                    centreBottom = "ELAPSED",
+                    onTap = viewModel::complete,
+                )
+                ItemMode.REPS -> RepsPanel(segment = segment)
+            }
+            // Only where there's a clock to reset — reps have no timer.
+            if (segment.mode != ItemMode.REPS) {
+                Spacer(Modifier.height(12.dp))
+                // Remembered: this screen recomposes at 10Hz, and a fresh modifier would defeat skipping.
+                val restartLabel = remember { Modifier.semantics { contentDescription = "Restart this exercise" } }
+                TextAction("↺  Restart", color = ExecutionColors.textMuted, onClick = viewModel::restart, modifier = restartLabel)
+            }
         }
 
-        Spacer(Modifier.weight(1f))
         if (segment.kind == SegmentKind.WORK) {
             WatchDemoCard(segment)
             Spacer(Modifier.height(10.dp))
