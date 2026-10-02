@@ -152,7 +152,7 @@ private fun Header(onOpenSettings: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // 18 dp clears the mark's 16 dp minimum; 10 dp is well over its clear space (~3.4 dp).
+            // 18 dp clears the mark's 16 dp minimum; 10 dp is well over its clear space (two bars, ~5 dp).
             BldrMark(height = 18.dp, contentDescription = null)
             Spacer(Modifier.width(10.dp))
             Text(overline, style = AppType.overline, color = colors.textMuted, modifier = Modifier.weight(1f))
