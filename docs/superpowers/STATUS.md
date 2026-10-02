@@ -214,6 +214,8 @@ emulator in a throwaway branch (deleted; nothing merged):
   holding on the last. They're reassurance, not real progress. The phrase area is sized to the tallest phrase so nothing shifts.
 - **In Android Studio's static preview pane, the animated loader and splash previews look empty**: they render frame 0, before
   any bar has landed. Use Interactive mode; the "animations off" previews show the full B.
+- **Library exercise rows have a "Demo" link** (2026-10-03), in browse and pick mode, using the same `demoIntent` as the
+  Overview. It opens its own link; tapping the rest of the row still opens the exercise (or adds it when picking).
 - **The app's name is "BLDR"**, set once as the application label in `AndroidManifest.xml` (the
   activity inherits it). TalkBack spells a launcher label out ("B-L-D-R"); Android has no separate
   spoken name for it. Accepted.

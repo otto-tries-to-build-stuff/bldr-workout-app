@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -18,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.domain.Exercise
@@ -25,6 +29,8 @@ import com.ottotech.workoutbuilder.domain.Facet
 import com.ottotech.workoutbuilder.domain.Muscle
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
+import com.ottotech.workoutbuilder.ui.components.TextAction
+import com.ottotech.workoutbuilder.ui.demoIntent
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -86,9 +92,11 @@ fun CategoryScreen(
     }
 }
 
+/** Name and sub-line on the left; Demo (and, when picking, "+") on the right. Demo opens its own link, not the row's action. */
 @Composable
 private fun ExerciseRow(exercise: Exercise, pickMode: Boolean, onClick: () -> Unit) {
     val colors = LocalAppColors.current
+    val context = LocalContext.current
     // The sub-line is the exercise's equipment plus its secondary muscles — the two things
     // that decide whether you can actually do it right now.
     val equipment = exercise.tags.filter { it.facet == Facet.EQUIPMENT }.map { it.value }.sorted()
@@ -107,7 +115,14 @@ private fun ExerciseRow(exercise: Exercise, pickMode: Boolean, onClick: () -> Un
                     Text(sub, style = AppType.cardMeta, color = colors.textMuted)
                 }
             }
+            Spacer(Modifier.width(8.dp))
+            TextAction(
+                "Demo",
+                onClick = { context.startActivity(demoIntent(exercise)) },
+                modifier = Modifier.semantics { contentDescription = "Watch a demo of ${exercise.name}" },
+            )
             if (pickMode) {
+                Spacer(Modifier.width(16.dp))
                 Text("+", style = AppType.heroName, color = colors.onBackground)
             }
         }
