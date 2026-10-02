@@ -57,7 +57,7 @@ import com.ottotech.workoutbuilder.ui.theme.WorkoutTheme
  * ui/theme/Colors.kt.
  */
 
-enum class BldrLogoVariant(@DrawableRes val res: Int) {
+enum class BldrLogoVariant(@param:DrawableRes val res: Int) {
     /** The striped B on its own. App bars, small spaces. */
     Mark(R.drawable.bldr_mark),
 
@@ -338,16 +338,26 @@ private fun BldrLoaderDarkPreview() = LoaderPreview(dark = true, animate = true)
 @Composable
 private fun BldrLoaderStillPreview() = LoaderPreview(dark = false, animate = false)
 
-@Preview(name = "Splash build and refresh indicator")
+// Static preview panes render frame 0 of the build, where no bar has landed yet, so the
+// animated loader and splash previews look empty there. Use Interactive mode to watch them;
+// the "animations off" previews show the finished B.
+@Preview(name = "Splash build and refresh")
 @Composable
-private fun BldrSplashAndRefreshPreview() {
+private fun BldrSplashAndRefreshPreview() = SplashAndRefreshPreview(animate = true)
+
+@Preview(name = "Splash build and refresh · animations off")
+@Composable
+private fun BldrSplashAndRefreshStillPreview() = SplashAndRefreshPreview(animate = false)
+
+@Composable
+private fun SplashAndRefreshPreview(animate: Boolean) {
     WorkoutTheme(dark = false) {
         Row(
             Modifier.background(LocalAppColors.current.background).padding(24.dp),
             horizontalArrangement = Arrangement.spacedBy(32.dp),
         ) {
-            BldrSplashBuild()
-            BldrRefreshIndicator()
+            BldrSplashBuild(animate = animate)
+            BldrRefreshIndicator(animate = animate)
         }
     }
 }
