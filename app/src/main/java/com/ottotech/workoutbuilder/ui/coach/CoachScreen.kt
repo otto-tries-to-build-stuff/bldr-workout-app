@@ -202,15 +202,20 @@ private fun ColumnScope.Loading() {
         BldrLoader(contentDescription = "Drafting your workout")
         Spacer(Modifier.height(24.dp))
         // Sized by invisible copies of every phrase, so a wrapping phrase never shifts the loader.
-        Box(contentAlignment = Alignment.TopCenter) {
+        // Hidden from TalkBack: the words are decoration (the loader already says "Drafting your
+        // workout"), and a node that changes every 3 s would keep stealing a reader's focus.
+        Box(Modifier.clearAndSetSemantics {}, contentAlignment = Alignment.TopCenter) {
             WorkingWords.forEach {
-                Text(it, style = AppType.cardTitle, textAlign = TextAlign.Center, modifier = Modifier.alpha(0f).clearAndSetSemantics {})
+                Text(it, style = AppType.cardTitle, textAlign = TextAlign.Center, modifier = Modifier.alpha(0f))
             }
             AnimatedContent(
                 targetState = WorkingWords[index],
+                // Centred, with no size animation: the default (top-start, clipped resize) slid and cut the words.
+                contentAlignment = Alignment.TopCenter,
                 transitionSpec = {
-                    if (animate) fadeIn(tween(300)) togetherWith fadeOut(tween(300))
+                    val fade = if (animate) fadeIn(tween(300)) togetherWith fadeOut(tween(300))
                     else EnterTransition.None togetherWith ExitTransition.None
+                    fade.using(null)
                 },
                 label = "workingWords",
             ) { words ->
