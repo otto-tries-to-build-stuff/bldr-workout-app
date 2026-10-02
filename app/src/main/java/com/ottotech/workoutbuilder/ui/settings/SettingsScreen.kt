@@ -59,6 +59,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val colors = LocalAppColors.current
     val context = LocalContext.current
     var confirmRemove by remember { mutableStateOf(false) }
+    // Read once here: a remember inside a lazy item is dropped whenever it scrolls away.
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).versionName }
 
     Column(
         Modifier
@@ -166,9 +168,6 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             item { Spacer(Modifier.height(8.dp)) }
             item { SectionLabel("About") }
             item {
-                val version = remember {
-                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
-                }
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     BldrLogo(height = 24.dp)
                     Text("Version $version", style = AppType.cardMeta, color = colors.textMuted)

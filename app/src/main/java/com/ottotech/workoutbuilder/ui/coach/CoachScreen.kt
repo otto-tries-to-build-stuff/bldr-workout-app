@@ -163,7 +163,7 @@ private fun Loading() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        BldrLoader(width = 64.dp)
+        BldrLoader()
         Spacer(Modifier.height(8.dp))
         Text("Drafting your workout…", style = AppType.cardTitle, color = colors.onBackground)
         Text("This takes 15–30 seconds.", style = AppType.cardMeta, color = colors.textMuted)

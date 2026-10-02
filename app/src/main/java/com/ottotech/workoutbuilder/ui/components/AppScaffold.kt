@@ -96,7 +96,8 @@ private fun NavItem(tab: Tab, active: Boolean, onClick: () -> Unit) {
         Spacer(Modifier.height(5.dp))
         Text(
             text = tab.label,
-            style = if (active) AppType.navLabel.copy(fontWeight = FontWeight.Bold) else AppType.navLabel,
+            style = AppType.navLabel,
+            fontWeight = if (active) FontWeight.Bold else null,
             color = tint,
         )
     }

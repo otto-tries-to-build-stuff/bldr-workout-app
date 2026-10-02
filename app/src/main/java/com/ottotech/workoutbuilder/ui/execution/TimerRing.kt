@@ -79,7 +79,8 @@ fun TimerRing(
                 style = AppType.timerDigits,
                 color = { ExecutionColors.onBackground },
                 maxLines = 1,
-                autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = AppType.timerDigits.fontSize),
+                // 2 sp steps: this re-measures every second, and finer steps buy nothing visible.
+                autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = AppType.timerDigits.fontSize, stepSize = 2.sp),
                 modifier = Modifier.widthIn(max = Dimens.ringSize - Dimens.ringStroke * 2 - 24.dp),
             )
             Text(centreBottom, style = AppType.timerCaption, color = ExecutionColors.textMuted)
