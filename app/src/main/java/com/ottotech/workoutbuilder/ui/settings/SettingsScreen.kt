@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -63,7 +64,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         Modifier
             .fillMaxSize()
             .background(colors.background)
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            // Pushed outside AppScaffold, so nothing else keeps the list's end clear of a
+            // 3-button nav bar (edge-to-edge is on).
+            .navigationBarsPadding(),
     ) {
         ScreenHeader(title = "Settings", onBack = onBack)
 

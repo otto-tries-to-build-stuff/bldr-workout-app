@@ -7,11 +7,11 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -127,8 +127,10 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
 
         // The exercise, its clock and Restart scroll when they don't fit (large font sizes on a
         // narrow phone), so the cards and Pause/Done below always stay on screen and reachable.
+        // Keyed on the segment: each new exercise starts at the top, its name in view.
+        val scroll = remember(segment.index) { ScrollState(0) }
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()),
+            Modifier.weight(1f).verticalScroll(scroll),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(24.dp))
