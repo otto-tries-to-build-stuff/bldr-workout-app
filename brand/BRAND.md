@@ -47,7 +47,6 @@ Text("Push day", style = BrandType.display)
 ## Not done yet (decisions for later)
 
 - `AppType` in `ui/theme/Type.kt` still uses the system font, with sizes tuned for Roboto. Moving to Archivo and Space Grotesk should be done in one pass across `AppType`, re-checking sizes and line heights, not screen by screen.
-- The app's label is still "Workout Builder" in `AndroidManifest.xml`.
 - No splash theme is set. On Android 12+ the system splash already shows the launcher icon on `windowBackground`.
 
 ## Licences

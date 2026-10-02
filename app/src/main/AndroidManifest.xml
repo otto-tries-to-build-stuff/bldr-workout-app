@@ -12,13 +12,12 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="Workout Builder"
+        android:label="BLDR"
         android:supportsRtl="true"
         android:theme="@style/Theme.WorkoutBuilder">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="Workout Builder"
             android:launchMode="singleTop"
             android:theme="@style/Theme.WorkoutBuilder">
             <intent-filter>
