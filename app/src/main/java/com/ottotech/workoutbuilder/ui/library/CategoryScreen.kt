@@ -19,18 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.domain.Exercise
 import com.ottotech.workoutbuilder.domain.Facet
 import com.ottotech.workoutbuilder.domain.Muscle
+import com.ottotech.workoutbuilder.ui.DemoAction
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
-import com.ottotech.workoutbuilder.ui.components.TextAction
-import com.ottotech.workoutbuilder.ui.demoIntent
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -96,7 +92,6 @@ fun CategoryScreen(
 @Composable
 private fun ExerciseRow(exercise: Exercise, pickMode: Boolean, onClick: () -> Unit) {
     val colors = LocalAppColors.current
-    val context = LocalContext.current
     // The sub-line is the exercise's equipment plus its secondary muscles — the two things
     // that decide whether you can actually do it right now.
     val equipment = exercise.tags.filter { it.facet == Facet.EQUIPMENT }.map { it.value }.sorted()
@@ -116,11 +111,7 @@ private fun ExerciseRow(exercise: Exercise, pickMode: Boolean, onClick: () -> Un
                 }
             }
             Spacer(Modifier.width(8.dp))
-            TextAction(
-                "Demo",
-                onClick = { context.startActivity(demoIntent(exercise)) },
-                modifier = Modifier.semantics { contentDescription = "Watch a demo of ${exercise.name}" },
-            )
+            DemoAction(exercise)
             if (pickMode) {
                 Spacer(Modifier.width(16.dp))
                 Text("+", style = AppType.heroName, color = colors.onBackground)

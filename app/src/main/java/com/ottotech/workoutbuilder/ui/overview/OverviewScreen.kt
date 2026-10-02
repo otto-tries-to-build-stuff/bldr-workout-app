@@ -21,20 +21,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.domain.Exercise
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.WorkoutItem
 import com.ottotech.workoutbuilder.domain.WorkoutOverview
+import com.ottotech.workoutbuilder.ui.DemoAction
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
-import com.ottotech.workoutbuilder.ui.components.TextAction
-import com.ottotech.workoutbuilder.ui.demoIntent
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -138,7 +134,6 @@ private fun SectionCard(section: Section, exercises: Map<String, Exercise>) {
 @Composable
 private fun ItemRow(item: WorkoutItem, exercise: Exercise?) {
     val colors = LocalAppColors.current
-    val context = LocalContext.current
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(exercise?.name ?: "Removed exercise", style = AppType.setRowLabel, color = colors.onBackground)
@@ -149,11 +144,7 @@ private fun ItemRow(item: WorkoutItem, exercise: Exercise?) {
         }
         if (exercise != null) {
             Spacer(Modifier.width(8.dp))
-            TextAction(
-                "Demo",
-                onClick = { context.startActivity(demoIntent(exercise)) },
-                modifier = Modifier.semantics { contentDescription = "Watch a demo of ${exercise.name}" },
-            )
+            DemoAction(exercise)
         }
     }
 }
