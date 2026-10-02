@@ -1,8 +1,6 @@
 package com.ottotech.workoutbuilder.ui.coach
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -50,7 +48,6 @@ import com.ottotech.workoutbuilder.ai.CoachPhase
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TagVocabulary
 import com.ottotech.workoutbuilder.ui.brand.BldrLoader
-import com.ottotech.workoutbuilder.ui.brand.rememberSystemAnimationsOn
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
@@ -185,7 +182,6 @@ private const val WorkingWordMillis = 3_000L
 @Composable
 private fun ColumnScope.Loading() {
     val colors = LocalAppColors.current
-    val animate = rememberSystemAnimationsOn()
     // Steps through the words once and holds on the last: a loop would jump from "Finalizing" back to the start.
     var index by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
@@ -212,11 +208,8 @@ private fun ColumnScope.Loading() {
                 targetState = WorkingWords[index],
                 // Centred, with no size animation: the default (top-start, clipped resize) slid and cut the words.
                 contentAlignment = Alignment.TopCenter,
-                transitionSpec = {
-                    val fade = if (animate) fadeIn(tween(300)) togetherWith fadeOut(tween(300))
-                    else EnterTransition.None togetherWith ExitTransition.None
-                    fade.using(null)
-                },
+                // Compose scales this by the system animation setting, so with animations off it's an instant swap.
+                transitionSpec = { (fadeIn(tween(300)) togetherWith fadeOut(tween(300))).using(null) },
                 label = "workingWords",
             ) { words ->
                 Text(words, style = AppType.cardTitle, color = colors.onBackground, textAlign = TextAlign.Center)
