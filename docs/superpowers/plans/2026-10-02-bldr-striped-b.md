@@ -225,6 +225,8 @@ private fun ColumnScope.Loading() {
 
 **Risk:** low; one screen state. **Check:** on-device (centring, sequence, animations off, TalkBack, large text).
 
+> **As built (after review):** the phrases are centred with no size animation (`contentAlignment = TopCenter`, `.using(null)`), because the default slid and clipped them. The whole phrase area is cleared from accessibility (decoration; a node that changes every 3 s steals TalkBack focus). The explicit animations-off branch was dropped, since Compose scales the fade by the system setting, so `rememberSystemAnimationsOn` stayed `private` in `Brand.kt`.
+
 ---
 
 ### Task 3: Logo placements and decisions in the docs
