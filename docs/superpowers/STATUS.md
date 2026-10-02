@@ -14,6 +14,7 @@
 | **Plan 1D** — Execution + audio | **Complete on `phase-1d-execution-audio`, not yet merged.** 141 tests green. Installed on the real phone (Samsung Galaxy S22) and ready for the user's hands-on verification pass (§5 of the design spec — pocket test, music ducking, headset button, lock screen, battery-saver survival), which is outstanding and owned by the user, not yet run. |
 | **Edit & delete workouts** | **Complete on `edit-delete-workouts`** (branched from the 1D branch, so it carries 1D too). 144 tests green, verified on the emulator. Not yet merged — waits on the 1D hands-on pass. |
 | **Phase 2 — AI Coach** | **Built on `phase-2-ai-coach`** (branched from `edit-delete-workouts`, so it carries 1D and edit/delete too). 177 tests green; independent review done, its 4 important findings fixed. Verified on the emulator up to the network boundary: no-key gate, Settings round-trip, bad-key and no-network messages. **Outstanding, needs the user:** one real generation with their own key (plan Task 7 Step 5) — the first call that proves the request body (schema, refusal-fallback header) is accepted. |
+| **BLDR brand rollout** | **In progress on `bldr-brand`** (branched from `phase-2-ai-coach` after committing the Workout Overview / lead-in work and the brand drop). Plan: `plans/2026-10-02-bldr-brand-rollout.md`. |
 
 `main` is the verified baseline. Branch from it for each plan.
 
