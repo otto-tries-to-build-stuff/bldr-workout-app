@@ -92,7 +92,7 @@ private fun LaunchLoader() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        BldrLoader(width = 72.dp)
+        BldrLoader(width = 44.dp)
         Spacer(Modifier.height(16.dp))
         Text("Getting ready", style = AppType.cardMeta, color = LocalAppColors.current.textMuted)
     }
