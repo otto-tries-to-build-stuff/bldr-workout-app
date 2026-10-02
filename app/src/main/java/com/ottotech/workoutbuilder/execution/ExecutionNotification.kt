@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.session.MediaSession
 import com.ottotech.workoutbuilder.MainActivity
+import com.ottotech.workoutbuilder.R
 
 /**
  * The persistent notification that keeps the service in the foreground.
@@ -58,7 +59,7 @@ object ExecutionNotification {
         ).build()
 
         return Notification.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setSmallIcon(R.drawable.ic_stat_bldr)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(open)
