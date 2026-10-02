@@ -47,7 +47,7 @@ Text("Push day", style = BrandType.display)
 ## Not done yet (decisions for later)
 
 - `AppType` in `ui/theme/Type.kt` still uses the system font, with sizes tuned for Roboto. Moving to Archivo and Space Grotesk should be done in one pass across `AppType`, re-checking sizes and line heights, not screen by screen.
-- No splash theme is set. On Android 12+ the system splash already shows the launcher icon on `windowBackground`.
+- No splash theme, by decision (2026-10-02). On Android 12+ the system splash already shows the launcher icon on `windowBackground`. The real wait (first-launch seeding) shows `BldrLoader` instead, after a 300 ms delay so normal launches never flash it (`MainActivity.LaunchLoader`).
 
 ## Licences
 
