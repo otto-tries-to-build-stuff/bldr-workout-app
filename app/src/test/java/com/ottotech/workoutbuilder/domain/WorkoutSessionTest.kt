@@ -64,6 +64,51 @@ class WorkoutSessionTest {
         assertTrue(cues.isEmpty(), "an empty workout must not play a finish tone")
     }
 
+    // ---- lead-in countdown ----
+
+    @Test
+    fun `a lead-in starts on 3 with a countdown beep, naming the first exercise`() {
+        val (s, cues) = WorkoutSession.start(indexed(timed(30, name = "Leg Swings")), now = 0L, leadInSec = 3)
+        assertEquals(SegmentKind.LEAD_IN, s.current?.kind)
+        assertEquals("Leg Swings", s.current?.exerciseName)
+        assertEquals(3, s.remainingSecDisplay(0L))
+        assertEquals(listOf(Cue.COUNTDOWN), cues)
+    }
+
+    @Test
+    fun `the lead-in beeps on 2 and 1, then fires go and starts the first segment`() {
+        var s = WorkoutSession.start(indexed(timed(30)), now = 0L, leadInSec = 3).session
+        assertTrue(s.tick(500L).cues.isEmpty(), "still on 3")
+
+        val two = s.tick(1_000L)
+        assertEquals(listOf(Cue.COUNTDOWN), two.cues)
+        s = two.session
+
+        val one = s.tick(2_000L)
+        assertEquals(listOf(Cue.COUNTDOWN), one.cues)
+        s = one.session
+
+        val go = s.tick(3_000L)
+        assertEquals(listOf(Cue.GO), go.cues)
+        assertEquals(SegmentKind.WORK, go.session.current?.kind)
+        assertEquals(30_000L, go.session.remainingMs(3_000L), "the first segment starts with its full time")
+    }
+
+    @Test
+    fun `the lead-in is not counted as an exercise`() {
+        val s = WorkoutSession.start(indexed(timed(30), timed(30)), now = 0L, leadInSec = 3).session
+        assertEquals(2, s.workTotal)
+        assertEquals(1, s.workIndex)
+    }
+
+    @Test
+    fun `skipping the lead-in starts the first exercise straight away`() {
+        val s = WorkoutSession.start(indexed(timed(30)), now = 0L, leadInSec = 3).session
+        val (skipped, cues) = s.skip(1_000L)
+        assertEquals(SegmentKind.WORK, skipped.current?.kind)
+        assertEquals(listOf(Cue.GO), cues)
+    }
+
     // ---- elapsed / remaining ----
 
     @Test
@@ -307,6 +352,51 @@ class WorkoutSessionTest {
         val (landed, cues) = s.tick(600_000L)
         assertEquals(1, landed.index, "it waits for a person; it cannot be consumed by elapsed time")
         assertEquals(listOf(Cue.GO), cues)
+    }
+
+    // ---- restart ----
+
+    @Test
+    fun `restart puts the current segment back to its full duration with a go cue`() {
+        val s = WorkoutSession.start(indexed(timed(30), timed(30)), now = 0L).session
+        val (restarted, cues) = s.restart(now = 20_000L)
+        assertEquals(0, restarted.index, "restart stays on the same exercise")
+        assertEquals(30_000L, restarted.remainingMs(20_000L))
+        assertEquals(listOf(Cue.GO), cues)
+    }
+
+    @Test
+    fun `restart lets the countdown beep again`() {
+        val s = WorkoutSession.start(indexed(timed(10)), now = 0L).session
+        val beeped = s.tick(7_500L).session
+        assertEquals(3, beeped.lastCountdown)
+        val restarted = beeped.restart(now = 8_000L).session
+        assertNull(restarted.lastCountdown)
+        assertEquals(listOf(Cue.COUNTDOWN), restarted.tick(15_500L).cues)
+    }
+
+    @Test
+    fun `restart while paused stays paused at full time, silently`() {
+        val s = WorkoutSession.start(indexed(timed(30)), now = 0L).session.pause(now = 10_000L)
+        val (restarted, cues) = s.restart(now = 12_000L)
+        assertTrue(restarted.isPaused)
+        assertEquals(30_000L, restarted.remainingMs(50_000L), "no time passes until resumed")
+        assertTrue(cues.isEmpty(), "a paused restart has nothing to start yet")
+        assertEquals(30_000L, restarted.resume(now = 60_000L).remainingMs(60_000L))
+    }
+
+    @Test
+    fun `restart resets a manual segment's elapsed count`() {
+        val s = WorkoutSession.start(indexed(manual()), now = 0L).session
+        assertEquals(0L, s.restart(now = 9_000L).session.elapsedMs(9_000L))
+    }
+
+    @Test
+    fun `restart does nothing once finished`() {
+        val done = WorkoutSession.start(indexed(timed(10)), now = 0L).session.skip(now = 1_000L).session
+        val (after, cues) = done.restart(now = 2_000L)
+        assertEquals(done, after)
+        assertTrue(cues.isEmpty())
     }
 
     // ---- progress counter ----

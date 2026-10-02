@@ -59,7 +59,7 @@ import java.util.Locale
  */
 @Composable
 fun HomeScreen(
-    onStartWorkout: (String) -> Unit,
+    onOpenWorkout: (String) -> Unit,
     onEditWorkout: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onBuild: () -> Unit,
@@ -99,7 +99,7 @@ fun HomeScreen(
                         summary = summary,
                         now = now,
                         zone = zone,
-                        onClick = { onStartWorkout(summary.id) },
+                        onClick = { onOpenWorkout(summary.id) },
                         onEdit = { onEditWorkout(summary.id) },
                         onDelete = { pendingDeleteId = summary.id },
                     )
@@ -220,8 +220,8 @@ private fun WorkoutCard(
 }
 
 /**
- * Edit and Delete live behind "⋯" rather than on the card itself: tapping the card starts
- * the workout, and a destructive action must not be one mis-tap away from that. The 48 dp
+ * Edit and Delete live behind "⋯" rather than on the card itself: tapping the card opens
+ * the workout's overview, and a destructive action must not be one mis-tap away from that. The 48 dp
  * box gets its own click, so a tap on it never falls through to the card.
  */
 @Composable

@@ -112,21 +112,20 @@ data class WorkoutSession(
             carry -= durationMs
             next++
         }
-        return if (next >= segments.size) {
-            SessionTick(copy(index = segments.size, finished = true, lastCountdown = null), listOf(Cue.FINISH))
-        } else {
-            SessionTick(
-                copy(
-                    index = next,
-                    startedAt = now - carry,
-                    pausedAt = null,
-                    pausedTotal = 0L,
-                    lastCountdown = null,
-                ),
-                listOf(Cue.GO),
-            )
-        }
+        return if (next >= segments.size) finish() else SessionTick(beginSegment(next, now - carry), listOf(Cue.GO))
     }
+
+    /** Segment [at] from its start — the one place a segment's per-run state is reset. */
+    private fun beginSegment(at: Int, startedAt: Long, paused: Boolean = false) = copy(
+        index = at,
+        startedAt = startedAt,
+        pausedAt = if (paused) startedAt else null,
+        pausedTotal = 0L,
+        lastCountdown = null,
+    )
+
+    private fun finish() =
+        SessionTick(copy(index = segments.size, finished = true, lastCountdown = null), listOf(Cue.FINISH))
 
     /**
      * Moves to the next segment on the person's instruction, whatever its mode and whatever
@@ -136,20 +135,7 @@ data class WorkoutSession(
     fun skip(now: Long): SessionTick {
         if (finished) return SessionTick(this)
         val next = index + 1
-        return if (next >= segments.size) {
-            SessionTick(copy(index = segments.size, finished = true, lastCountdown = null), listOf(Cue.FINISH))
-        } else {
-            SessionTick(
-                copy(
-                    index = next,
-                    startedAt = now,
-                    pausedAt = null,
-                    pausedTotal = 0L,
-                    lastCountdown = null,
-                ),
-                listOf(Cue.GO),
-            )
-        }
+        return if (next >= segments.size) finish() else SessionTick(beginSegment(next, now), listOf(Cue.GO))
     }
 
     /**
@@ -157,6 +143,16 @@ data class WorkoutSession(
      * separately because the intent differs, and the screen shows a different control.
      */
     fun complete(now: Long): SessionTick = skip(now)
+
+    /**
+     * Puts the current segment back to its start: full time on a timed one, zero elapsed on a
+     * manual one. A paused session stays paused — with the pause re-anchored to [now], so no
+     * time is lost before Resume — and plays no go cue, since nothing has started yet.
+     */
+    fun restart(now: Long): SessionTick {
+        if (finished) return SessionTick(this)
+        return SessionTick(beginSegment(index, now, paused = isPaused), if (isPaused) emptyList() else listOf(Cue.GO))
+    }
 
     fun pause(now: Long): WorkoutSession =
         if (finished || isPaused) this else copy(pausedAt = now)
@@ -168,13 +164,19 @@ data class WorkoutSession(
     }
 
     companion object {
-        fun start(segments: List<Segment>, now: Long): SessionTick =
-            if (segments.isEmpty()) {
-                // Nothing to run. Finish silently — a finish tone for a workout that never
-                // started would be a lie, and Home must not record it as performed.
-                SessionTick(WorkoutSession(segments, finished = true))
-            } else {
-                SessionTick(WorkoutSession(segments, index = 0, startedAt = now), listOf(Cue.GO))
-            }
+        /**
+         * [leadInSec] puts a "3, 2, 1" in front of the first segment. It is an ordinary timed
+         * [SegmentKind.LEAD_IN] segment, so [tick]'s last-three-seconds beeps are the count,
+         * advancing past it plays go, and pause / skip / restart need no special case.
+         */
+        fun start(segments: List<Segment>, now: Long, leadInSec: Int = 0): SessionTick {
+            // Nothing to run. Finish silently — a finish tone for a workout that never
+            // started would be a lie, and Home must not record it as performed.
+            if (segments.isEmpty()) return SessionTick(WorkoutSession(segments, finished = true))
+            if (leadInSec <= 0) return SessionTick(WorkoutSession(segments, startedAt = now), listOf(Cue.GO))
+            // A copy of the first segment, so the lead-in can name what's coming.
+            val leadIn = segments.first().copy(kind = SegmentKind.LEAD_IN, mode = ItemMode.TIMED, durationSec = leadInSec)
+            return WorkoutSession(listOf(leadIn) + segments, startedAt = now).tick(now)
+        }
     }
 }

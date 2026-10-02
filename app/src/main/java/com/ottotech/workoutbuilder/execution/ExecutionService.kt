@@ -152,6 +152,7 @@ class ExecutionService : Service() {
             ACTION_RESUME -> update { it.resume(now()) }
             ACTION_SKIP -> updateWithCues { it.skip(now()) }
             ACTION_COMPLETE -> updateWithCues { it.complete(now()) }
+            ACTION_RESTART -> updateWithCues { it.restart(now()) }
             ACTION_TOGGLE_MUTE -> handleToggleMute()
             ACTION_STOP -> stopEverything()
         }
@@ -204,7 +205,7 @@ class ExecutionService : Service() {
                 // wait against the segment's own clock, silently stealing that time off it.
                 cues.muted = app.prefs.cuesMuted
                 cues.prime()
-                val (session, sessionCues) = WorkoutSession.start(segments, now())
+                val (session, sessionCues) = WorkoutSession.start(segments, now(), LEAD_IN_SEC)
                 acquireWakeLock()
                 _state.value = ExecutionState(
                     workoutName = workout.name,
@@ -212,7 +213,7 @@ class ExecutionService : Service() {
                     session = session,
                     muted = app.prefs.cuesMuted,
                 )
-                sessionCues.forEach { play(it) } // the opening GO — start() emits it for any non-empty workout
+                sessionCues.forEach { play(it) } // the lead-in's opening "3" beep
                 refreshNotification()
                 runClock()
             } catch (e: CancellationException) {
@@ -428,11 +429,15 @@ class ExecutionService : Service() {
         const val ACTION_RESUME = "resume"
         const val ACTION_SKIP = "skip"
         const val ACTION_COMPLETE = "complete"
+        const val ACTION_RESTART = "restart"
         const val ACTION_TOGGLE_MUTE = "toggle_mute"
         const val ACTION_STOP = "stop"
         const val EXTRA_WORKOUT_ID = "workoutId"
         private const val TAG = "ExecutionService"
         private const val TICK_MS = 100L
+
+        /** The "3, 2, 1" on screen before the first exercise, so a workout never starts cold. */
+        private const val LEAD_IN_SEC = 3
 
         /** The notification is rebuilt at most this often, independent of the 10Hz tick. */
         private const val NOTIFY_INTERVAL_MS = 1_000L
@@ -465,6 +470,7 @@ class ExecutionService : Service() {
         fun resume(context: Context) = command(context, ACTION_RESUME)
         fun skip(context: Context) = command(context, ACTION_SKIP)
         fun complete(context: Context) = command(context, ACTION_COMPLETE)
+        fun restart(context: Context) = command(context, ACTION_RESTART)
         fun toggleMute(context: Context) = command(context, ACTION_TOGGLE_MUTE)
         fun stop(context: Context) = command(context, ACTION_STOP)
     }

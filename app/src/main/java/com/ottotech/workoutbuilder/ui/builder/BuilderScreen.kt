@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.domain.ItemMode
 import com.ottotech.workoutbuilder.domain.MoveDirection
 import com.ottotech.workoutbuilder.domain.Rest
+import com.ottotech.workoutbuilder.domain.toCleanString
 import com.ottotech.workoutbuilder.domain.RestSlot
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TrainingType
@@ -367,7 +368,7 @@ private fun ItemMode.chipLabel(): String = when (this) {
 @Composable
 private fun WeightField(item: WorkoutItem, onChange: (Float?) -> Unit) {
     var text by remember(item.id) {
-        mutableStateOf(item.weightKg?.let { if (it % 1f == 0f) it.toInt().toString() else it.toString() } ?: "")
+        mutableStateOf(item.weightKg?.toCleanString() ?: "")
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text("Weight (kg)", style = AppType.cardMeta, color = LocalAppColors.current.textMuted, modifier = Modifier.weight(1f))

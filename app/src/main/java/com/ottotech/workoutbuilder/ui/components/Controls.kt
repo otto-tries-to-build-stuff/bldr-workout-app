@@ -265,7 +265,9 @@ fun TextAction(
             .defaultMinSize(minWidth = Dimens.minTouchTarget, minHeight = Dimens.minTouchTarget)
             .clip(RoundedCornerShape(Dimens.radiusChip))
             .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.CenterStart,
+        // End, not Start: short labels ("Demo") narrower than the 48 dp minimum otherwise sit
+        // inset from the right edge, out of line with the text above them.
+        contentAlignment = Alignment.CenterEnd,
     ) {
         Text(text, style = AppType.chip, color = if (enabled) color else LocalAppColors.current.textMuted)
     }

@@ -1,6 +1,7 @@
 package com.ottotech.workoutbuilder.domain
 
-enum class SegmentKind { WORK, REST }
+/** [LEAD_IN] is the "3, 2, 1" before a workout's first segment — see [WorkoutSession.start]. */
+enum class SegmentKind { WORK, REST, LEAD_IN }
 
 /**
  * One step of a running workout, produced by [SegmentCompiler] flattening a [Workout]:

@@ -2,6 +2,9 @@ package com.ottotech.workoutbuilder.ui.execution
 
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -14,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -37,6 +41,7 @@ import com.ottotech.workoutbuilder.domain.ItemMode
 import com.ottotech.workoutbuilder.domain.Segment
 import com.ottotech.workoutbuilder.domain.SegmentKind
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
+import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.demoIntent
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
@@ -110,6 +115,10 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             onToggleMute = viewModel::toggleMute,
             onClose = { confirmExit = true },
         )
+        if (segment.kind == SegmentKind.LEAD_IN) {
+            LeadIn(seconds = session.remainingSecDisplay(now) ?: 0, firstUp = segment.exerciseName)
+            return@Column
+        }
         // workIndex is 1-based and includes the in-progress exercise; done must count only
         // what's actually finished, or the bar reads fully solid on an exercise not yet done.
         ProgressBar(done = session.workIndex - 1, total = session.workTotal)
@@ -149,6 +158,13 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             )
             ItemMode.REPS -> RepsPanel(segment = segment)
         }
+        // Only where there's a clock to reset — reps have no timer.
+        if (segment.mode != ItemMode.REPS) {
+            Spacer(Modifier.height(12.dp))
+            // Remembered: this screen recomposes at 10Hz, and a fresh modifier would defeat skipping.
+            val restartLabel = remember { Modifier.semantics { contentDescription = "Restart this exercise" } }
+            TextAction("↺  Restart", color = ExecutionColors.textMuted, onClick = viewModel::restart, modifier = restartLabel)
+        }
 
         Spacer(Modifier.weight(1f))
         if (segment.kind == SegmentKind.WORK) {
@@ -173,6 +189,35 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             onQuit = { confirmExit = false; onExit() },
         )
     }
+}
+
+/**
+ * The "3, 2, 1" before the first exercise. Each number lands big and settles — scaled up and
+ * faded in, keyed on the number so every second flashes afresh — in step with the beep the
+ * service plays for it.
+ */
+@Composable
+private fun ColumnScope.LeadIn(seconds: Int, firstUp: String) {
+    val pop = remember(seconds) { Animatable(0f) }
+    LaunchedEffect(seconds) { pop.animateTo(1f, tween(durationMillis = 350, easing = FastOutSlowInEasing)) }
+
+    Spacer(Modifier.weight(1f))
+    Text("GET READY", style = AppType.timerCaption, color = ExecutionColors.textMuted)
+    Text(
+        seconds.toString(),
+        style = AppType.leadInDigits,
+        color = ExecutionColors.onBackground,
+        modifier = Modifier.graphicsLayer {
+            val scale = 1.35f - 0.35f * pop.value
+            scaleX = scale
+            scaleY = scale
+            alpha = 0.25f + 0.75f * pop.value
+        },
+    )
+    Text("First up", style = AppType.timerCaption, color = ExecutionColors.textMuted)
+    Spacer(Modifier.height(6.dp))
+    Text(firstUp, style = AppType.cardTitle, color = ExecutionColors.onBackground, textAlign = TextAlign.Center)
+    Spacer(Modifier.weight(1.3f))
 }
 
 /** mm:ss for a minute or more, bare seconds below that — matches the reference app. */

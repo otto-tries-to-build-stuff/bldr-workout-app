@@ -76,7 +76,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 item {
                     HairlineCard(Modifier.fillMaxWidth()) {
                         Row(
-                            Modifier.fillMaxWidth().padding(start = Dimens.cardPadding, end = 6.dp, top = 12.dp, bottom = 12.dp),
+                            Modifier.fillMaxWidth().padding(horizontal = Dimens.cardPadding, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(Modifier.weight(1f)) {

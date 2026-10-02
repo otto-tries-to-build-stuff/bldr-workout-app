@@ -29,6 +29,7 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.ottotech.workoutbuilder.domain.Segment
+import com.ottotech.workoutbuilder.domain.toCleanString
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
@@ -118,10 +119,6 @@ private fun setRowLabel(segment: Segment, i: Int): String {
     val detail = listOfNotNull(reps, weight).joinToString(" · ")
     return if (detail.isBlank()) "Set ${i + 1}" else "Set ${i + 1} · $detail"
 }
-
-/** Trims a trailing `.0` off a whole-number weight without dropping a real fraction (e.g. 7.5). */
-private fun Float.toCleanString(): String =
-    if (this == this.toLong().toFloat()) this.toLong().toString() else this.toString()
 
 @Composable
 private fun SetRow(label: String, done: Boolean, onToggle: () -> Unit) {

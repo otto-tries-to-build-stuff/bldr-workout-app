@@ -42,6 +42,8 @@ object AppType {
         letterSpacing = (-0.03).em,
         fontFeatureSettings = "tnum", // tabular figures: digits must not jitter as they change
     )
+    /** The lead-in's "3, 2, 1" — the biggest type in the app, meant to be read from the floor. */
+    val leadInDigits = timerDigits.copy(fontSize = 180.sp, lineHeight = 200.sp)
     val timerCaption = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.08.em)
     val repsExerciseName = TextStyle(fontSize = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.02).em)
     val setRowLabel = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.SemiBold)

@@ -37,6 +37,8 @@ import com.ottotech.workoutbuilder.ui.library.ExerciseDetailScreen
 import com.ottotech.workoutbuilder.ui.library.FiltersSheet
 import com.ottotech.workoutbuilder.ui.library.LibraryScreen
 import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
+import com.ottotech.workoutbuilder.ui.overview.OverviewScreen
+import com.ottotech.workoutbuilder.ui.overview.OverviewViewModel
 import com.ottotech.workoutbuilder.ui.settings.SettingsScreen
 import com.ottotech.workoutbuilder.ui.settings.SettingsViewModel
 
@@ -49,6 +51,7 @@ object Routes {
     const val BUILDER = "builder?workoutId={workoutId}"
     const val PICK_LIBRARY = "pick"
     const val PICK_CATEGORY = "pick/{muscle}"
+    const val OVERVIEW = "workout/{workoutId}"
     const val EXECUTION = "execution/{workoutId}"
     const val SETTINGS = "settings"
     const val COACH = "coach"
@@ -56,6 +59,7 @@ object Routes {
     fun category(muscle: Muscle) = "library/${muscle.name}"
     fun exercise(exerciseId: String) = "exercise/$exerciseId"
     fun pickCategory(muscle: Muscle) = "pick/${muscle.name}"
+    fun overview(workoutId: String) = "workout/$workoutId"
     fun execution(workoutId: String) = "execution/$workoutId"
     fun builder(workoutId: String? = null) = if (workoutId == null) "builder" else "builder?workoutId=$workoutId"
 }
@@ -94,7 +98,7 @@ fun AppNav() {
 
             AppScaffold(tab = Tab.HOME, onSelectTab = { if (it == Tab.LIBRARY) nav.switchTab(Routes.LIBRARY) }) {
                 HomeScreen(
-                    onStartWorkout = { workoutId -> nav.navigate(Routes.execution(workoutId)) },
+                    onOpenWorkout = { workoutId -> nav.navigate(Routes.overview(workoutId)) },
                     onEditWorkout = { workoutId -> nav.navigate(Routes.builder(workoutId)) },
                     onOpenSettings = nav.navigateOnce(Routes.SETTINGS),
                     onBuild = { showBuildSheet = true },
@@ -186,7 +190,22 @@ fun AppNav() {
                     builderVm.beginPick(sectionId)
                     nav.navigate(Routes.PICK_LIBRARY)
                 },
-                onSaved = { nav.popBackStack(Routes.HOME, inclusive = false) },
+                // Back to wherever the edit began: Home, or the overview of the workout just changed.
+                onSaved = nav.popOnce(),
+            )
+        }
+
+        composable(
+            route = Routes.OVERVIEW,
+            arguments = listOf(navArgument("workoutId") { type = NavType.StringType }),
+        ) { entry ->
+            val workoutId = entry.arguments?.getString("workoutId").orEmpty()
+            val overviewVm: OverviewViewModel = viewModel(factory = OverviewViewModel.Factory)
+            OverviewScreen(
+                viewModel = overviewVm,
+                onBack = nav.popOnce(),
+                onEdit = nav.navigateOnce(Routes.builder(workoutId)),
+                onStart = nav.navigateOnce(Routes.execution(workoutId)),
             )
         }
 
@@ -273,10 +292,10 @@ fun AppNav() {
             // `remember` would not survive that and ACTION_START would refire — restarting an
             // already-finished workout the user never asked to repeat (begin()'s guard only
             // ignores a restart of an UNFINISHED session, since a deliberate restart of the
-            // same workout from Home must still work). rememberSaveable does survive: this is
+            // same workout from its overview must still work). rememberSaveable does survive: this is
             // the same backstack entry being recomposed, so its SavedStateHandle carries
             // `started` through. A genuinely fresh navigation here (including restarting this
-            // same workout from Home) always creates a brand-new backstack entry instead, with
+            // same workout from its overview) always creates a brand-new backstack entry instead, with
             // its own fresh `false`.
             var started by rememberSaveable(workoutId) { mutableStateOf(false) }
             LaunchedEffect(workoutId) {
@@ -291,7 +310,8 @@ fun AppNav() {
                 viewModel = executionVm,
                 onExit = {
                     executionVm.stop()
-                    nav.popBackStack(Routes.HOME, inclusive = false)
+                    // Back to the workout's overview, ready to go again or pick another.
+                    nav.popBackStack(Routes.OVERVIEW, inclusive = false)
                 },
             )
         }
