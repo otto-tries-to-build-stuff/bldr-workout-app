@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ottotech.workoutbuilder.domain.WorkoutSummary
+import com.ottotech.workoutbuilder.ui.brand.BldrMark
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
@@ -148,10 +149,12 @@ private fun Header(onOpenSettings: () -> Unit) {
         // box is taller than the overline; the row absorbs that instead of the title spacing.
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(overline, style = AppType.overline, color = colors.textMuted)
+            // 18 dp clears the mark's 16 dp minimum; 10 dp is well over its clear space (~3.4 dp).
+            BldrMark(height = 18.dp, contentDescription = null)
+            Spacer(Modifier.width(10.dp))
+            Text(overline, style = AppType.overline, color = colors.textMuted, modifier = Modifier.weight(1f))
             TextAction("Settings", color = colors.textMuted, onClick = onOpenSettings)
         }
         Text("YOUR\nWORKOUTS", style = AppType.screenTitle, color = colors.onBackground)

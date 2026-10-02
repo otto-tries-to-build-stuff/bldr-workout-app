@@ -32,6 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ottotech.workoutbuilder.domain.ThemeMode
+import com.ottotech.workoutbuilder.ui.brand.BldrLogo
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
@@ -43,7 +45,6 @@ import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
-import com.ottotech.workoutbuilder.domain.ThemeMode
 
 private const val KEYS_URL = "https://console.anthropic.com/settings/keys"
 
@@ -154,6 +155,23 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                             uncheckedThumbColor = colors.textMuted,
                             uncheckedBorderColor = colors.border,
                         ),
+                    )
+                }
+            }
+
+            item { Spacer(Modifier.height(8.dp)) }
+            item { SectionLabel("About") }
+            item {
+                val version = remember {
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    BldrLogo(height = 24.dp)
+                    Text("Version $version", style = AppType.cardMeta, color = colors.textMuted)
+                    Text(
+                        "Set in Archivo and Space Grotesk, used under the SIL Open Font License.",
+                        style = AppType.cardMeta,
+                        color = colors.textMuted,
                     )
                 }
             }

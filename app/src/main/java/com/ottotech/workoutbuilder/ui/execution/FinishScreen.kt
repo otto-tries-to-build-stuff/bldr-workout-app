@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ottotech.workoutbuilder.ui.brand.BldrMark
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
@@ -35,6 +37,9 @@ fun FinishScreen(workoutName: String, onDone: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // Execution is always dark: the default tint (LocalAppColors) would be near-black in Light.
+            BldrMark(height = 40.dp, color = ExecutionColors.onBackground, contentDescription = null)
+            Spacer(Modifier.height(8.dp))
             Text(
                 "WORKOUT COMPLETE",
                 style = AppType.heroLabel,
