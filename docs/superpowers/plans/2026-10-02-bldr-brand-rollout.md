@@ -35,11 +35,13 @@
 
 ## What was checked before writing this plan (2026-10-02)
 
+> Updated 2026-10-03 for the striped-B mark; see `plans/2026-10-02-bldr-striped-b.md`. The icon-geometry bullet below now describes the new mark; the original dumbbell measurements are in git history.
+
 Verified on the current working tree, with nothing changed:
 
 - **Build:** `./gradlew :app:assembleDebug` passes with the brand drop, so `Brand.kt` compiles and every new resource links.
 - **Launcher icon (already wired):** `aapt2 dump badging` reports `icon='res/mipmap-anydpi-v26/ic_launcher.xml'` for every density, with `ic_launcher_round` alongside. `minSdk` is 26, so the adaptive icon covers every supported device and **no PNG fallbacks are needed**. Both files declare background, foreground and `<monochrome>` layers. `roundIcon` is only read by Android 7.1 launchers, so it is redundant at minSdk 26 but harmless; keep it.
-- **Icon geometry (no path edits needed):** the foreground mark is centred exactly (x 30.08–77.92, y 37.44–70.56 in the 108 dp canvas). Its farthest point is 29.1 dp from centre, inside the 33 dp safe-zone circle every launcher mask respects. The monochrome layer has identical geometry. `ic_stat_bldr` spans x 1–23 of 24, which is exactly the 22 dp live area for status-bar icons, white on transparent. The loader's three animated plates in `Brand.kt` (collar 0–6, small plate 5–15 × 32 tall, big plate 18–32 × 72 tall, all centred on y 36) match the plates in `bldr_mark.xml`. **No geometry to flag.**
+- **Icon geometry (striped B, no path edits needed):** the launcher foreground and monochrome layers are identical: a 30.9 × 40 dp mark (x 38.57–69.43, y 34.00–74.00 in the 108 dp canvas), centred exactly on (54, 54). Its farthest corner is 25.3 dp from centre, inside the 33 dp safe-zone radius every launcher mask keeps (7.7 dp to spare); offline renders under circle, squircle, rounded-square and teardrop masks, and the Pixel themed icon, all show even margins. `ic_stat_bldr` is 15.4 × 20 dp (x 4.29–19.71, y 2.00–22.00 of 24), centred and inside the 22 dp live area, white on transparent. `Bars` in `Brand.kt` match `bldr_mark.xml`'s seven 10-high pills (radius 5) exactly. **No geometry to flag.**
 - **Notification icon (already wired):** `ExecutionNotification` now calls `setSmallIcon(R.drawable.ic_stat_bldr)`, and the drawable is in the APK.
 - **Fonts:** all four TTFs are in the APK (≈ 380 KB total). Each embeds its OFL licence text and URL in its name table, which satisfies OFL clause 2, so no licence screen is legally required.
 - **Glyph coverage:** Space Grotesk and Archivo cover every character the UI shows except ↺ ⋯ ▸ ✓ ✕. Roboto lacks those five too (it also lacks ↑ ↓, which Space Grotesk has), so they already come from the system fallback font. Nothing gets worse.
@@ -160,6 +162,8 @@ Expected: `application: label='BLDR'` and `launchable-activity: … label='BLDR'
 ---
 
 ### Task 3: BLDR loader — preview, accessibility, and the Coach
+
+> Later change (2026-10-03): the canvas redrew the loader as the striped B's "build the B" motion. `BldrLoader` now draws every bar in code and `bldr_loader_base.xml` is deleted, so the `painterResource(R.drawable.bldr_loader_base)` code below is historical. The Coach wait was also restyled (centred loader with "working words"); see `plans/2026-10-02-bldr-striped-b.md`.
 
 **Every waiting moment in the app, and what happens to each:**
 

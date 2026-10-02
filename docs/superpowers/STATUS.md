@@ -14,7 +14,7 @@
 | **Plan 1D** — Execution + audio | **Complete on `phase-1d-execution-audio`, not yet merged.** 141 tests green. Installed on the real phone (Samsung Galaxy S22) and ready for the user's hands-on verification pass (§5 of the design spec — pocket test, music ducking, headset button, lock screen, battery-saver survival), which is outstanding and owned by the user, not yet run. |
 | **Edit & delete workouts** | **Complete on `edit-delete-workouts`** (branched from the 1D branch, so it carries 1D too). 144 tests green, verified on the emulator. Not yet merged — waits on the 1D hands-on pass. |
 | **Phase 2 — AI Coach** | **Built on `phase-2-ai-coach`** (branched from `edit-delete-workouts`, so it carries 1D and edit/delete too). 177 tests green; independent review done, its 4 important findings fixed. Verified on the emulator up to the network boundary: no-key gate, Settings round-trip, bad-key and no-network messages. **Outstanding, needs the user:** one real generation with their own key (plan Task 7 Step 5) — the first call that proves the request body (schema, refusal-fallback header) is accepted. |
-| **BLDR brand rollout** | **Complete on `bldr-brand`, not yet merged** (branched from `phase-2-ai-coach` after committing the Workout Overview / lead-in work and the brand drop). Plan: `plans/2026-10-02-bldr-brand-rollout.md`. 197 tests green; independent whole-branch review done, its one Important finding (Settings under a 3-button nav bar) fixed, plus the execution scroll now resetting per exercise. Icon (incl. themed icons), BLDR name, loader (Coach + first launch), logo on Home / Settings About / finish screen, and the Archivo + Space Grotesk type pass, all verified on the emulator at a Galaxy S22-sized screen (360 dp) at 1.0x, 1.3x, 1.6x and 2.0x font size. **Outstanding, needs the user:** a look on the real S22 (Settings scrolled to the end with button navigation; a workout at 2.0x; a cold start after a reboot), and the Play Store assets below. |
+| **BLDR brand rollout** | **Complete on `bldr-brand`, not yet merged** (branched from `phase-2-ai-coach`). Plans: `plans/2026-10-02-bldr-brand-rollout.md`, then `plans/2026-10-02-bldr-striped-b.md` (the striped-B mark and "build the B" motion from the design canvas, plus the Coach's centred loader with working words). 197 tests green. Verified on the emulator, incl. a Galaxy S22-sized screen at 1.0x–2.0x font size, animations on and off, and the launcher icon under circle, squircle, rounded-square, teardrop and themed masks. **Outstanding, needs the user:** a look on the real S22 (Samsung squircle icon; Settings scrolled to the end with button navigation; a workout at 2.0x; a cold start after a reboot), Android Studio previews in `Brand.kt`, and the Play Store assets below. |
 
 `main` is the verified baseline. Branch from it for each plan.
 
@@ -204,6 +204,16 @@ emulator in a throwaway branch (deleted; nothing merged):
 
 ## BLDR brand facts
 
+- **The mark is the striped B**: seven 10-high pills in a 54 × 70 frame (taller than wide). `BldrLoader(width = …)` is its true
+  width, so the box is 1.3x taller; bars drop in from above, so leave ~⅕ of the width clear above a loader. Sizes in use:
+  44 dp at first launch, 40 dp (the default) in the Coach. Geometry and timings (`Bars`, `BuildTiming`) belong to the design
+  canvas: never edit them in code.
+- **`BldrSplashBuild` and `BldrRefreshIndicator` exist but are unused**: a one-shot splash build would add ~1.4 s to every
+  launch, and the app has no pull-to-refresh or small inline waits. See BRAND.md "Decisions".
+- **The Coach's wait** centres the loader ("Drafting your workout" to TalkBack) and steps through six working words, 3 s each,
+  holding on the last. They're reassurance, not real progress. The phrase area is sized to the tallest phrase so nothing shifts.
+- **In Android Studio's static preview pane, the animated loader and splash previews look empty**: they render frame 0, before
+  any bar has landed. Use Interactive mode; the "animations off" previews show the full B.
 - **The app's name is "BLDR"**, set once as the application label in `AndroidManifest.xml` (the
   activity inherits it). TalkBack spells a launcher label out ("B-L-D-R"); Android has no separate
   spoken name for it. Accepted.
