@@ -1,6 +1,6 @@
 # BLDR brand
 
-The app's brand is BLDR (said "builder"). Black and white only: no accent colour, no gradients, no shadows on the marks.
+The app's brand is BLDR (said "builder"). The mark is the striped B: seven rounded bars, like weight plates, stacked in five rows to form a B. Black and white only: no accent colour, no gradients, no shadows on the marks.
 
 Design source: the "BLDR Brand Kit" canvas in Claude. When the canvas changes, re-export from there rather than editing the path data by hand.
 
@@ -12,7 +12,6 @@ Design source: the "BLDR Brand Kit" canvas in Claude. When the canvas changes, r
 | Primary logo | `res/drawable/bldr_logo_horizontal.xml` | Headers, about screen, anywhere with width to spare |
 | Stacked logo | `res/drawable/bldr_logo_stacked.xml` | Splash-style screens, centred hero spaces |
 | Wordmark | `res/drawable/bldr_wordmark.xml` | When the mark is already visible nearby |
-| Loader base | `res/drawable/bldr_loader_base.xml` | Used by `BldrLoader` only |
 | Launcher icon | `res/mipmap-anydpi-v26/ic_launcher.xml` (+ `_round`) | Wired in `AndroidManifest.xml` |
 | Launcher layers | `res/drawable/ic_launcher_foreground.xml`, `ic_launcher_monochrome.xml` | Adaptive icon; monochrome is the Android 13+ themed icon |
 | Icon background | `@color/bldr_icon_background` in `res/values/bldr_brand.xml` | Launcher only |
@@ -28,19 +27,31 @@ All of it lives in `ui/brand/Brand.kt`.
 BldrLogo(height = 28.dp)                                    // primary horizontal logo
 BldrLogo(height = 96.dp, variant = BldrLogoVariant.Stacked)
 BldrMark(height = 24.dp)
-BldrLoader(width = 64.dp)                                   // replaces a spinner
+BldrLoader(width = 40.dp)                                   // full-screen and section loading
+BldrRefreshIndicator()                                      // pull to refresh, small inline waits
+BldrSplashBuild(onBuilt = { /* go to first screen */ })     // builds once, if a branded launch is ever wanted
 Text("Push day", style = AppType.heroName)                  // every app style lives in AppType
 ScreenTitle("LIBRARY")                                      // Archivo title that shrinks to fit
 ```
 
 - Every graphic is one colour, tinted at the call site. Defaults to `LocalAppColors.current.onBackground`; pass `onSurfaceInverse` on inverse surfaces. Never hard-code a hex (house rule from `ui/theme/Colors.kt`).
 - Don't recolour parts of a logo, outline it, stretch it, rotate it or put it on a photo without a solid backing.
-- The counters (holes in the B) are real cut-outs, so the logo works on any solid surface.
+- The gaps between bars are real gaps, so the logo works on any solid surface.
+
+## Motion: build the B
+
+- Bars drop in from the bottom row up. On rows with two bars, the left one lands first. 120 ms between bars, a 96 ms drop with a small overshoot, then a 48 ms settle.
+- `BldrLoader` loops every 1.6 s: build (about 1 s), hold the full B, fade, repeat.
+- `BldrSplashBuild` builds once, holds 400 ms, then calls `onBuilt`.
+- `BldrRefreshIndicator` pulses only the bottom three bars, for small sizes.
+- All three show the still, complete B and schedule no frames when the system has animations turned off. Don't remove that.
+- The loader's `width` is the mark's true width; it is 1.3x taller than wide. Bars drop in from above, so leave about a fifth of the width as headroom above it (the canvas doesn't clip).
+- Timings are the source of truth in the Motion board on the brand canvas; in code they live in `BuildTiming` in `Brand.kt`.
 
 ## Rules
 
-- Clear space: keep space equal to the big plate's width on every side of the mark or logo.
-- Minimum sizes: mark 16dp tall, horizontal logo 24dp tall, stacked logo 56dp tall.
+- Clear space: keep space equal to two bar heights on every side of the mark or logo.
+- Minimum sizes: mark 16dp tall (the gaps close up below that), horizontal logo 24dp tall, stacked logo 56dp tall.
 - Headings and big numbers: Archivo Expanded 900, only via `AppType.screenTitle`, `timerDigits` and `leadInDigits`. Short lines only; never for body text. It runs ~1.55x wider than Roboto, so titles go through `ScreenTitle` (auto-shrinks).
 - UI text: Space Grotesk 400, 500, 700 (`BrandFonts.SpaceGrotesk`).
 - Notification small icons must stay white on transparent. Android tints them.
