@@ -10,10 +10,12 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -26,18 +28,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.ottotech.workoutbuilder.R
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
+import com.ottotech.workoutbuilder.ui.theme.WorkoutTheme
 
 /*
  * BLDR brand assets for Compose. Usage rules live in brand/BRAND.md at the repo root.
@@ -113,23 +119,27 @@ fun BldrLoader(
     width: Dp = 64.dp,
     color: Color = LocalAppColors.current.onBackground,
     contentDescription: String = "Loading",
+    /** Exposed for previews. Callers keep the default, which follows the system setting. */
+    animate: Boolean = rememberSystemAnimationsOn(),
 ) {
     val description = contentDescription
-    val context = LocalContext.current
-    val animate = remember {
-        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f
-    }
-    val transition = rememberInfiniteTransition(label = "bldrLoader")
-    val scales = listOf(
-        transition.plateScale(delayMillis = 0),
-        transition.plateScale(delayMillis = 150),
-        transition.plateScale(delayMillis = 300),
-    )
+    // No transition at all when still, so a held loader schedules no frames.
+    val scales: List<State<Float>>? = if (animate) {
+        val transition = rememberInfiniteTransition(label = "bldrLoader")
+        listOf(
+            transition.plateScale(delayMillis = 0),
+            transition.plateScale(delayMillis = 150),
+            transition.plateScale(delayMillis = 300),
+        )
+    } else null
 
     Box(
         modifier
             .size(width, width * (MarkHeight / MarkWidth))
-            .semantics { this.contentDescription = description },
+            .semantics {
+                this.contentDescription = description
+                progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate
+            },
     ) {
         Image(
             painter = painterResource(R.drawable.bldr_loader_base),
@@ -140,7 +150,7 @@ fun BldrLoader(
         Canvas(Modifier.fillMaxSize()) {
             val unit = size.width / MarkWidth
             Plates.forEachIndexed { i, plate ->
-                val scale = if (animate) scales[i].value else 1f
+                val scale = scales?.get(i)?.value ?: 1f
                 val h = plate.h * scale
                 val progress = (scale - MinPlateScale) / (1f - MinPlateScale)
                 drawRoundRect(
@@ -172,6 +182,15 @@ private fun InfiniteTransition.plateScale(delayMillis: Int): State<Float> = anim
     label = "plate$delayMillis",
 )
 
+/** False when the user has turned animations off (Developer options, or Accessibility → Remove animations). */
+@Composable
+private fun rememberSystemAnimationsOn(): Boolean {
+    val context = LocalContext.current
+    return remember {
+        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f
+    }
+}
+
 /** Bundled brand typefaces (SIL Open Font License, see brand/licenses). */
 object BrandFonts {
     /** Archivo at width 125, weight 900. Headings and big numbers only. */
@@ -199,4 +218,25 @@ object BrandType {
     )
     val headline = display.copy(fontSize = 26.sp, lineHeight = 30.sp)
     val bigNumber = display.copy(fontSize = 46.sp, lineHeight = 50.sp, fontFeatureSettings = "tnum")
+}
+
+@Preview(name = "Loader · light")
+@Composable
+private fun BldrLoaderLightPreview() = LoaderPreview(dark = false, animate = true)
+
+@Preview(name = "Loader · dark")
+@Composable
+private fun BldrLoaderDarkPreview() = LoaderPreview(dark = true, animate = true)
+
+@Preview(name = "Loader · animations off")
+@Composable
+private fun BldrLoaderStillPreview() = LoaderPreview(dark = false, animate = false)
+
+@Composable
+private fun LoaderPreview(dark: Boolean, animate: Boolean) {
+    WorkoutTheme(dark = dark) {
+        Box(Modifier.background(LocalAppColors.current.background).padding(24.dp)) {
+            BldrLoader(animate = animate)
+        }
+    }
 }

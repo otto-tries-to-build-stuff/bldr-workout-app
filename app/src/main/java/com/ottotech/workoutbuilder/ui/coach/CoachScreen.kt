@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.ai.CoachPhase
 import com.ottotech.workoutbuilder.domain.Section
 import com.ottotech.workoutbuilder.domain.TagVocabulary
+import com.ottotech.workoutbuilder.ui.brand.BldrLoader
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
@@ -163,14 +163,10 @@ private fun Loading() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        BldrLoader(width = 64.dp)
+        Spacer(Modifier.height(8.dp))
         Text("Drafting your workout…", style = AppType.cardTitle, color = colors.onBackground)
         Text("This takes 15–30 seconds.", style = AppType.cardMeta, color = colors.textMuted)
-        Spacer(Modifier.height(8.dp))
-        LinearProgressIndicator(
-            modifier = Modifier.fillMaxWidth(),
-            color = colors.onBackground,
-            trackColor = colors.surface,
-        )
     }
 }
 
