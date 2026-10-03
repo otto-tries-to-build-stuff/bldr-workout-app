@@ -144,26 +144,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
 
             item { Spacer(Modifier.height(8.dp)) }
             item { SectionLabel("Sound") }
-            item {
-                Row(
-                    Modifier.fillMaxWidth().defaultMinSize(minHeight = Dimens.minTouchTarget),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Workout cues", style = AppType.cardTitle, color = colors.onBackground, modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = state.soundOn,
-                        onCheckedChange = viewModel::onSoundOn,
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = colors.surfaceInverse,
-                            checkedThumbColor = colors.onSurfaceInverse,
-                            checkedBorderColor = colors.surfaceInverse,
-                            uncheckedTrackColor = colors.surface,
-                            uncheckedThumbColor = colors.textMuted,
-                            uncheckedBorderColor = colors.border,
-                        ),
-                    )
-                }
-            }
+            item { SettingSwitch("Workout cues", checked = state.soundOn, onCheckedChange = viewModel::onSoundOn) }
+            item { SettingSwitch("Voice announcements", checked = state.voiceOn, onCheckedChange = viewModel::onVoiceOn) }
 
             item { Spacer(Modifier.height(8.dp)) }
             item { SectionLabel("About") }
@@ -189,6 +171,30 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             dismissLabel = "Cancel",
             onConfirm = { confirmRemove = false; viewModel.removeKey() },
             onDismiss = { confirmRemove = false },
+        )
+    }
+}
+
+/** A labelled on/off row in the Sound section. */
+@Composable
+private fun SettingSwitch(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    val colors = LocalAppColors.current
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = Dimens.minTouchTarget),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = AppType.cardTitle, color = colors.onBackground, modifier = Modifier.weight(1f))
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = colors.surfaceInverse,
+                checkedThumbColor = colors.onSurfaceInverse,
+                checkedBorderColor = colors.surfaceInverse,
+                uncheckedTrackColor = colors.surface,
+                uncheckedThumbColor = colors.textMuted,
+                uncheckedBorderColor = colors.border,
+            ),
         )
     }
 }

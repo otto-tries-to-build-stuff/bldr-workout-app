@@ -118,7 +118,7 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
             onClose = { confirmExit = true },
         )
         if (segment.kind == SegmentKind.LEAD_IN) {
-            LeadIn(seconds = session.remainingSecDisplay(now) ?: 0, firstUp = segment.exerciseName)
+            LeadIn(seconds = session.remainingSecDisplay(now) ?: 0, upNext = segment.exerciseName, first = session.index == 0)
             return@Column
         }
         // workIndex is 1-based and includes the in-progress exercise; done must count only
@@ -202,12 +202,12 @@ fun ExecutionScreen(viewModel: ExecutionViewModel, onExit: () -> Unit) {
 }
 
 /**
- * The "3, 2, 1" before the first exercise. Each number lands big and settles — scaled up and
+ * The "3, 2, 1" before an exercise — always the first one, and every one with voice on. Each number lands big and settles — scaled up and
  * faded in, keyed on the number so every second flashes afresh — in step with the beep the
  * service plays for it.
  */
 @Composable
-private fun ColumnScope.LeadIn(seconds: Int, firstUp: String) {
+private fun ColumnScope.LeadIn(seconds: Int, upNext: String, first: Boolean) {
     val pop = remember(seconds) { Animatable(0f) }
     LaunchedEffect(seconds) { pop.animateTo(1f, tween(durationMillis = 350, easing = FastOutSlowInEasing)) }
 
@@ -224,9 +224,9 @@ private fun ColumnScope.LeadIn(seconds: Int, firstUp: String) {
             alpha = 0.25f + 0.75f * pop.value
         },
     )
-    Text("First up", style = AppType.timerCaption, color = ExecutionColors.textMuted)
+    Text(if (first) "First up" else "Next up", style = AppType.timerCaption, color = ExecutionColors.textMuted)
     Spacer(Modifier.height(6.dp))
-    Text(firstUp, style = AppType.cardTitle, color = ExecutionColors.onBackground, textAlign = TextAlign.Center)
+    Text(upNext, style = AppType.cardTitle, color = ExecutionColors.onBackground, textAlign = TextAlign.Center)
     Spacer(Modifier.weight(1.3f))
 }
 

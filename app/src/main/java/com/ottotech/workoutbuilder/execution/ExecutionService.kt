@@ -123,7 +123,7 @@ class ExecutionService : Service() {
                 // onPlay/onPause based on the PlaybackState most recently published below, so
                 // a single physical button still maps to the right action.
                 override fun onPlay() { update { it.resume(now()) } }
-                override fun onPause() { update { it.pause(now()) } }
+                override fun onPause() { pauseSession() }
                 override fun onSkipToNext() { updateWithCues { it.skip(now()) } }
             })
         }
@@ -148,7 +148,7 @@ class ExecutionService : Service() {
         }
         when (intent?.action) {
             ACTION_START -> intent.getStringExtra(EXTRA_WORKOUT_ID)?.let { begin(it) }
-            ACTION_PAUSE -> update { it.pause(now()) }
+            ACTION_PAUSE -> pauseSession()
             ACTION_RESUME -> update { it.resume(now()) }
             ACTION_SKIP -> updateWithCues { it.skip(now()) }
             ACTION_COMPLETE -> updateWithCues { it.complete(now()) }
@@ -203,17 +203,25 @@ class ExecutionService : Service() {
                 // waits on SoundPool decode, and the spec's own mitigation is to have that done
                 // "before the first segment begins". Starting the session first would run that
                 // wait against the segment's own clock, silently stealing that time off it.
+                val voice = app.prefs.voiceOn
                 cues.muted = app.prefs.cuesMuted
+                cues.voiceOn = voice
                 cues.prime()
-                val (session, sessionCues) = WorkoutSession.start(segments, now(), LEAD_IN_SEC)
+                val start = WorkoutSession.start(
+                    segments,
+                    now(),
+                    leadInSec = if (voice) GET_READY_SEC else LEAD_IN_SEC,
+                    voice = voice,
+                )
                 acquireWakeLock()
                 _state.value = ExecutionState(
                     workoutName = workout.name,
                     workoutId = workoutId,
-                    session = session,
+                    session = start.session,
                     muted = app.prefs.cuesMuted,
                 )
-                sessionCues.forEach { play(it) } // the lead-in's opening "3" beep
+                start.cues.forEach { play(it) } // voice off: the lead-in's opening "3" beep
+                start.speech?.let { cues.say(it) } // voice on: "First up: …"
                 refreshNotification()
                 runClock()
             } catch (e: CancellationException) {
@@ -247,6 +255,8 @@ class ExecutionService : Service() {
                 // alive until reboot. _state is deliberately left alone: it lives on the
                 // companion object, survives this service instance, and the finish screen
                 // reads it after the service is long gone.
+                // Let "Workout complete" finish — teardown releases the voice mid-word otherwise.
+                cues.awaitQuiet(FINISH_SPEECH_TIMEOUT_MS)
                 stopForFinish()
                 return
             }
@@ -296,7 +306,7 @@ class ExecutionService : Service() {
     }
 
     /**
-     * As [update], but for transforms that can also emit cues. `update`'s block can run more
+     * As [update], but for transforms that can also emit cues and spoken lines. `update`'s block can run more
      * than once under contention, so cues are not played from inside it — [pendingCues] is
      * simply overwritten by whichever invocation of the block runs last, and that last
      * invocation is always the one immediately before the winning compare-and-set (the loop
@@ -307,19 +317,22 @@ class ExecutionService : Service() {
     private inline fun updateWithCues(transform: (WorkoutSession) -> com.ottotech.workoutbuilder.domain.SessionTick) {
         var applied = false
         var pendingCues: List<Cue> = emptyList()
+        var pendingSpeech: String? = null
         var committed: WorkoutSession? = null
         _state.update { current ->
             applied = false
             val session = current.session ?: return@update current
-            val (next, cues) = transform(session)
-            if (next == session && cues.isEmpty()) return@update current
+            val tick = transform(session)
+            if (tick.session == session && tick.cues.isEmpty() && tick.speech == null) return@update current
             applied = true
-            pendingCues = cues
-            committed = next
-            current.copy(session = next)
+            pendingCues = tick.cues
+            pendingSpeech = tick.speech
+            committed = tick.session
+            current.copy(session = tick.session)
         }
         if (applied) {
             pendingCues.forEach { play(it) }
+            pendingSpeech?.let { cues.say(it) }
             refreshNotification()
             // As with pendingCues above: `committed` is the session from whichever invocation
             // of the update block actually won the compare-and-set, so this check and the
@@ -334,6 +347,12 @@ class ExecutionService : Service() {
         }
     }
 
+    /** Pausing also cuts off a line mid-sentence; resuming does not repeat it. */
+    private fun pauseSession() {
+        update { it.pause(now()) }
+        cues.stopSpeech()
+    }
+
     /**
      * As [update], the plain `_state.value = ...` this replaced could lose a concurrent tick's
      * write; `update {}` closes that window here too.
@@ -346,6 +365,7 @@ class ExecutionService : Service() {
         }
         app.prefs.cuesMuted = muted
         cues.muted = muted
+        if (muted) cues.stopSpeech()
     }
 
     private fun play(cue: Cue) = cues.play(cue)
@@ -438,6 +458,12 @@ class ExecutionService : Service() {
 
         /** The "3, 2, 1" on screen before the first exercise, so a workout never starts cold. */
         private const val LEAD_IN_SEC = 3
+
+        /** With voice on, each exercise's get-ready step: ~3 s to name it, then "3, 2, 1". */
+        private const val GET_READY_SEC = 6
+
+        /** How long teardown waits for "Workout complete" to finish before releasing audio. */
+        private const val FINISH_SPEECH_TIMEOUT_MS = 4_000L
 
         /** The notification is rebuilt at most this often, independent of the 10Hz tick. */
         private const val NOTIFY_INTERVAL_MS = 1_000L
