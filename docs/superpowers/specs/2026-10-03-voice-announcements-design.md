@@ -49,6 +49,8 @@ beep 3-2-1, no speech).
   - entering a `LEAD_IN`: "First up: <name>" at session index 0, else "Next up: <name>";
   - entering a `REST`: "Rest";
   - entering a `WORK` segment: nothing (the get-ready step already named it);
+  - entering a `LEAD_IN` also plays **no go tone** — the voice opens the step, and "go" is
+    kept for the exercise itself;
   - finishing: "Workout complete".
   Emitted by `start`, `advance` (tick auto-advance, landing segment only on catch-up), `skip`
   / `complete`, and `restart` (re-says the current line unless paused). It is emitted
