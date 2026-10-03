@@ -413,4 +413,135 @@ class WorkoutSessionTest {
         val onSecond = onRest.tick(30_000L).session
         assertEquals(2, onSecond.workIndex)
     }
+
+    // ---- voice: get-ready steps and spoken lines ----
+
+    /** A workout started with voice on and a 6 s get-ready step, as the service starts it. */
+    private fun voiced(vararg segments: Segment) =
+        WorkoutSession.start(indexed(*segments), now = 0L, leadInSec = 6, voice = true)
+
+    @Test
+    fun `with voice on, every exercise gets a get-ready step and rests do not`() {
+        val s = voiced(timed(30, "Squat"), rest(10), timed(30, "Lunge"), timed(30, "Plank")).session
+        assertEquals(
+            listOf(
+                SegmentKind.LEAD_IN, SegmentKind.WORK, SegmentKind.REST,
+                SegmentKind.LEAD_IN, SegmentKind.WORK, SegmentKind.LEAD_IN, SegmentKind.WORK,
+            ),
+            s.segments.map { it.kind },
+        )
+        assertEquals(listOf("Squat", "Squat", "Rest", "Lunge", "Lunge", "Plank", "Plank"), s.segments.map { it.exerciseName })
+        assertTrue(s.segments.filter { it.kind == SegmentKind.LEAD_IN }.all { it.durationSec == 6 && it.mode == ItemMode.TIMED })
+        assertEquals(3, s.workTotal, "get-ready steps are not exercises")
+    }
+
+    @Test
+    fun `with voice off, only the first segment gets a lead-in, as before`() {
+        val s = WorkoutSession.start(indexed(timed(30), rest(10), timed(30)), now = 0L, leadInSec = 3).session
+        assertEquals(listOf(SegmentKind.LEAD_IN, SegmentKind.WORK, SegmentKind.REST, SegmentKind.WORK), s.segments.map { it.kind })
+    }
+
+    @Test
+    fun `a voiced workout opens on a silent get-ready step that says first up`() {
+        val tick = voiced(timed(30, "Squat"))
+        assertEquals(SegmentKind.LEAD_IN, tick.session.current?.kind)
+        assertEquals(6, tick.session.remainingSecDisplay(0L))
+        assertTrue(tick.cues.isEmpty(), "no beep until the 3-2-1 at the end of the step")
+        assertEquals("First up: Squat", tick.speech)
+    }
+
+    @Test
+    fun `a get-ready step beeps 3-2-1 at its end, then go starts the exercise with nothing said`() {
+        var s = voiced(timed(30, "Squat")).session
+        val beeps = listOf(3_500L, 4_500L, 5_500L).map { t -> s.tick(t).also { s = it.session }.cues }
+        assertEquals(List(3) { listOf(Cue.COUNTDOWN) }, beeps)
+        val go = s.tick(6_000L)
+        assertEquals(SegmentKind.WORK, go.session.current?.kind)
+        assertEquals(listOf(Cue.GO), go.cues)
+        assertNull(go.speech, "the get-ready step already named it")
+    }
+
+    @Test
+    fun `entering a rest says rest, and leaving it says next up with no go tone`() {
+        // LEAD_IN 0-6 · WORK 6-16 · REST 16-26 · LEAD_IN 26-32 · WORK 32-42
+        val s = voiced(timed(10), rest(10), timed(10, "Lunge")).session.tick(6_000L).session
+        val intoRest = s.tick(16_000L)
+        assertEquals(SegmentKind.REST, intoRest.session.current?.kind)
+        assertEquals("Rest", intoRest.speech)
+        assertEquals(listOf(Cue.GO), intoRest.cues)
+        val intoGetReady = intoRest.session.tick(26_000L)
+        assertEquals(SegmentKind.LEAD_IN, intoGetReady.session.current?.kind)
+        assertEquals("Next up: Lunge", intoGetReady.speech)
+        assertTrue(intoGetReady.cues.isEmpty(), "the voice, not a go tone, opens a get-ready step")
+    }
+
+    @Test
+    fun `a rest followed by a get-ready step counts down silently`() {
+        var s = voiced(timed(10), rest(10), timed(10)).session.tick(6_000L).session.tick(16_000L).session
+        assertEquals(SegmentKind.REST, s.current?.kind) // ends at 26s
+        for (t in listOf(23_500L, 24_500L, 25_500L)) {
+            val tick = s.tick(t)
+            assertTrue(tick.cues.isEmpty(), "rest must not beep at ${t}ms — the get-ready step does the 3-2-1")
+            s = tick.session
+        }
+    }
+
+    @Test
+    fun `an exercise followed by a get-ready step still beeps its 3-2-1 to finish`() {
+        val s = voiced(timed(10), timed(10)).session.tick(6_000L).session // exercise ends at 16s
+        assertEquals(listOf(Cue.COUNTDOWN), s.tick(13_500L).cues)
+    }
+
+    @Test
+    fun `with voice off, a rest still beeps its 3-2-1`() {
+        // Voice off: a rest is never followed by a lead-in, so it beeps exactly as before.
+        var s = WorkoutSession.start(indexed(timed(10), rest(10), timed(10)), now = 0L).session
+        s = s.tick(10_000L).session // into the rest, ends at 20s
+        assertEquals(listOf(Cue.COUNTDOWN), s.tick(17_500L).cues)
+    }
+
+    @Test
+    fun `finishing says workout complete`() {
+        val s = voiced(timed(10)).session.tick(6_000L).session
+        val end = s.tick(16_000L)
+        assertTrue(end.session.finished)
+        assertEquals(listOf(Cue.FINISH), end.cues)
+        assertEquals("Workout complete", end.speech)
+    }
+
+    @Test
+    fun `skipping a rest lands on the get-ready step and names the exercise`() {
+        val s = voiced(timed(10), rest(10), timed(10, "Lunge")).session.tick(6_000L).session.tick(16_000L).session
+        val skipped = s.skip(17_000L)
+        assertEquals(SegmentKind.LEAD_IN, skipped.session.current?.kind)
+        assertEquals("Next up: Lunge", skipped.speech)
+        assertTrue(skipped.cues.isEmpty())
+    }
+
+    @Test
+    fun `skipping a get-ready step starts the exercise with go and nothing said`() {
+        val skipped = voiced(timed(10, "Squat")).session.skip(1_000L)
+        assertEquals(SegmentKind.WORK, skipped.session.current?.kind)
+        assertEquals(listOf(Cue.GO), skipped.cues)
+        assertNull(skipped.speech)
+    }
+
+    @Test
+    fun `restarting a get-ready step says its line again, but not while paused`() {
+        val s = voiced(timed(10, "Squat")).session
+        val restarted = s.restart(2_000L)
+        assertEquals("First up: Squat", restarted.speech)
+        assertTrue(restarted.cues.isEmpty())
+        assertNull(s.pause(2_000L).restart(3_000L).speech)
+    }
+
+    @Test
+    fun `waking after a long sleep speaks only the segment it lands on`() {
+        // LEAD_IN 0-6 · Squat 6-16 · REST 16-26 · LEAD_IN 26-32 · Lunge 32-42
+        val woke = voiced(timed(10, "Squat"), rest(10), timed(10, "Lunge")).session.tick(28_000L)
+        assertEquals(3, woke.session.index)
+        assertEquals(SegmentKind.LEAD_IN, woke.session.current?.kind)
+        assertEquals("Next up: Lunge", woke.speech)
+        assertTrue(woke.cues.isEmpty())
+    }
 }

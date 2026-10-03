@@ -9,6 +9,11 @@ enum class Cue { COUNTDOWN, GO, FINISH }
 data class SessionTick(
     val session: WorkoutSession,
     val cues: List<Cue> = emptyList(),
+    /**
+     * A line for the voice to say at this transition, or null. Emitted whether or not voice is
+     * switched on — the service decides whether to speak it.
+     */
+    val speech: String? = null,
 )
 
 /**
@@ -76,6 +81,14 @@ data class WorkoutSession(
     }
 
     /**
+     * A rest that hands over to a get-ready step stays silent: that step's own 3-2-1 is the
+     * countdown, and beeping here too would be beeps, voice, beeps. With voice off a rest is
+     * never followed by a lead-in, so this is always true there.
+     */
+    private val countsDown: Boolean
+        get() = !(current?.kind == SegmentKind.REST && segments.getOrNull(index + 1)?.kind == SegmentKind.LEAD_IN)
+
+    /**
      * Advances the clock. Returns the same session when nothing is due, so the caller can
      * compare instances cheaply and only re-publish state that changed.
      */
@@ -85,7 +98,7 @@ data class WorkoutSession(
         if (remaining <= 0L) return advance(now, overflow = -remaining)
 
         val second = ceil(remaining / 1000.0).toInt()
-        val due = second in 1..3 && (lastCountdown == null || second < lastCountdown)
+        val due = second in 1..3 && (lastCountdown == null || second < lastCountdown) && countsDown
         return if (due) {
             SessionTick(copy(lastCountdown = second), listOf(Cue.COUNTDOWN))
         } else {
@@ -112,7 +125,7 @@ data class WorkoutSession(
             carry -= durationMs
             next++
         }
-        return if (next >= segments.size) finish() else SessionTick(beginSegment(next, now - carry), listOf(Cue.GO))
+        return if (next >= segments.size) finish() else entered(beginSegment(next, now - carry), next)
     }
 
     /** Segment [at] from its start — the one place a segment's per-run state is reset. */
@@ -124,8 +137,30 @@ data class WorkoutSession(
         lastCountdown = null,
     )
 
-    private fun finish() =
-        SessionTick(copy(index = segments.size, finished = true, lastCountdown = null), listOf(Cue.FINISH))
+    /**
+     * The tick for having just begun segment [at] of [session]. A get-ready step opens with the
+     * voice and no tone — "go" is kept for the exercise itself.
+     */
+    private fun entered(session: WorkoutSession, at: Int): SessionTick {
+        val cues = if (session.segments[at].kind == SegmentKind.LEAD_IN) emptyList() else listOf(Cue.GO)
+        return SessionTick(session, cues, speechFor(at))
+    }
+
+    /** What the voice says as segment [at] begins — see [SessionTick.speech]. */
+    private fun speechFor(at: Int): String? {
+        val segment = segments[at]
+        return when (segment.kind) {
+            SegmentKind.LEAD_IN -> (if (at == 0) "First up: " else "Next up: ") + segment.exerciseName
+            SegmentKind.REST -> "Rest"
+            SegmentKind.WORK -> null // its get-ready step already named it
+        }
+    }
+
+    private fun finish() = SessionTick(
+        copy(index = segments.size, finished = true, lastCountdown = null),
+        listOf(Cue.FINISH),
+        "Workout complete",
+    )
 
     /**
      * Moves to the next segment on the person's instruction, whatever its mode and whatever
@@ -135,7 +170,7 @@ data class WorkoutSession(
     fun skip(now: Long): SessionTick {
         if (finished) return SessionTick(this)
         val next = index + 1
-        return if (next >= segments.size) finish() else SessionTick(beginSegment(next, now), listOf(Cue.GO))
+        return if (next >= segments.size) finish() else entered(beginSegment(next, now), next)
     }
 
     /**
@@ -151,7 +186,7 @@ data class WorkoutSession(
      */
     fun restart(now: Long): SessionTick {
         if (finished) return SessionTick(this)
-        return SessionTick(beginSegment(index, now, paused = isPaused), if (isPaused) emptyList() else listOf(Cue.GO))
+        return if (isPaused) SessionTick(beginSegment(index, now, paused = true)) else entered(beginSegment(index, now), index)
     }
 
     fun pause(now: Long): WorkoutSession =
@@ -168,15 +203,27 @@ data class WorkoutSession(
          * [leadInSec] puts a "3, 2, 1" in front of the first segment. It is an ordinary timed
          * [SegmentKind.LEAD_IN] segment, so [tick]'s last-three-seconds beeps are the count,
          * advancing past it plays go, and pause / skip / restart need no special case.
+         *
+         * With [voice] on, a lead-in — a get-ready step — goes in front of **every** exercise,
+         * not just the first, giving the voice room to name it before the 3-2-1.
          */
-        fun start(segments: List<Segment>, now: Long, leadInSec: Int = 0): SessionTick {
+        fun start(segments: List<Segment>, now: Long, leadInSec: Int = 0, voice: Boolean = false): SessionTick {
             // Nothing to run. Finish silently — a finish tone for a workout that never
             // started would be a lie, and Home must not record it as performed.
             if (segments.isEmpty()) return SessionTick(WorkoutSession(segments, finished = true))
             if (leadInSec <= 0) return SessionTick(WorkoutSession(segments, startedAt = now), listOf(Cue.GO))
-            // A copy of the first segment, so the lead-in can name what's coming.
-            val leadIn = segments.first().copy(kind = SegmentKind.LEAD_IN, mode = ItemMode.TIMED, durationSec = leadInSec)
-            return WorkoutSession(listOf(leadIn) + segments, startedAt = now).tick(now)
+            // A copy of the segment it precedes, so a lead-in can name what's coming.
+            fun leadIn(before: Segment) =
+                before.copy(kind = SegmentKind.LEAD_IN, mode = ItemMode.TIMED, durationSec = leadInSec)
+            val withLeadIns = if (voice) {
+                // A compiled workout always opens on an exercise (SegmentCompiler only puts
+                // rests after items), so this also covers the first segment.
+                segments.flatMap { if (it.kind == SegmentKind.WORK) listOf(leadIn(it), it) else listOf(it) }
+            } else {
+                listOf(leadIn(segments.first())) + segments
+            }
+            val session = WorkoutSession(withLeadIns, startedAt = now)
+            return session.tick(now).copy(speech = session.speechFor(0))
         }
     }
 }
