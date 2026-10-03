@@ -306,44 +306,36 @@ class ExecutionService : Service() {
     }
 
     /**
-     * As [update], but for transforms that can also emit cues and spoken lines. `update`'s block can run more
-     * than once under contention, so cues are not played from inside it — [pendingCues] is
-     * simply overwritten by whichever invocation of the block runs last, and that last
-     * invocation is always the one immediately before the winning compare-and-set (the loop
-     * returns as soon as one succeeds). Cues are only played once that block has returned, so
-     * exactly the cues belonging to the transition that actually got committed play, exactly
-     * once — never one from an invocation whose result was discarded and retried.
+     * As [update], but for transforms that can also emit cues and spoken lines. `update`'s
+     * block can run more than once under contention, so nothing is played from inside it —
+     * `committed` is simply overwritten by whichever invocation of the block runs last, and
+     * that last invocation is always the one immediately before the winning compare-and-set
+     * (the loop returns as soon as one succeeds). Cues and speech are only played once that
+     * block has returned, so exactly what belongs to the transition that actually got
+     * committed plays, exactly once — never anything from an invocation whose result was
+     * discarded and retried.
      */
     private inline fun updateWithCues(transform: (WorkoutSession) -> com.ottotech.workoutbuilder.domain.SessionTick) {
-        var applied = false
-        var pendingCues: List<Cue> = emptyList()
-        var pendingSpeech: String? = null
-        var committed: WorkoutSession? = null
+        var committed: com.ottotech.workoutbuilder.domain.SessionTick? = null
         _state.update { current ->
-            applied = false
+            committed = null
             val session = current.session ?: return@update current
             val tick = transform(session)
             if (tick.session == session && tick.cues.isEmpty() && tick.speech == null) return@update current
-            applied = true
-            pendingCues = tick.cues
-            pendingSpeech = tick.speech
-            committed = tick.session
+            committed = tick
             current.copy(session = tick.session)
         }
-        if (applied) {
-            pendingCues.forEach { play(it) }
-            pendingSpeech?.let { cues.say(it) }
-            refreshNotification()
-            // As with pendingCues above: `committed` is the session from whichever invocation
-            // of the update block actually won the compare-and-set, so this check and the
-            // markPerformed write it can trigger happen exactly once per real transition —
-            // never from a retried, discarded invocation, and never inside the update{}
-            // lambda itself (which could re-run under contention and write the row twice).
-            val next = committed
-            if (next != null && next.finished && !performedRecorded && next.segments.isNotEmpty()) {
-                performedRecorded = true
-                scope.launch { app.workouts.markPerformed(runningWorkoutId) }
-            }
+        val tick = committed ?: return
+        tick.cues.forEach { play(it) }
+        tick.speech?.let { cues.say(it) }
+        refreshNotification()
+        // As above: the markPerformed write this can trigger happens exactly once per real
+        // transition — never from a retried, discarded invocation, and never inside the
+        // update{} lambda itself (which could re-run under contention and write the row twice).
+        val next = tick.session
+        if (next.finished && !performedRecorded && next.segments.isNotEmpty()) {
+            performedRecorded = true
+            scope.launch { app.workouts.markPerformed(runningWorkoutId) }
         }
     }
 

@@ -146,11 +146,14 @@ data class WorkoutSession(
         return SessionTick(session, cues, speechFor(at))
     }
 
+    /** Shown and said with a lead-in at [at]: the workout's first, or one of the get-ready steps after it. */
+    fun leadInCaption(at: Int = index): String = if (at == 0) "First up" else "Next up"
+
     /** What the voice says as segment [at] begins — see [SessionTick.speech]. */
     private fun speechFor(at: Int): String? {
         val segment = segments[at]
         return when (segment.kind) {
-            SegmentKind.LEAD_IN -> (if (at == 0) "First up: " else "Next up: ") + segment.exerciseName
+            SegmentKind.LEAD_IN -> "${leadInCaption(at)}: ${segment.exerciseName}"
             SegmentKind.REST -> "Rest"
             SegmentKind.WORK -> null // its get-ready step already named it
         }

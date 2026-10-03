@@ -63,6 +63,8 @@ class CuePlayer(private val context: Context) {
         .build()
 
     @Volatile private var tts: TextToSpeech? = null
+
+    /** Set once, by [voiceReady]: the engine is up *and* warmed up, so a line plays on time. */
     @Volatile private var ttsReady = false
     private val lineCounter = AtomicInteger(0)
 
@@ -73,9 +75,9 @@ class CuePlayer(private val context: Context) {
     @Volatile private var speakingId: String? = null
 
     /**
-     * A line asked for while the engine was still starting, and when. A cold engine can take
-     * longer than [prime]'s budget (~6 s on the emulator), which would otherwise lose the
-     * opening "First up"; this speaks it the moment the engine is ready — if still fresh.
+     * A line asked for before [voiceReady], and when. A cold engine can outlast [prime]'s
+     * budget, which would otherwise lose the opening "First up"; this speaks it the moment
+     * the voice is ready — if still fresh.
      */
     @Volatile private var pendingLine: Pair<String, Long>? = null
 
@@ -150,21 +152,30 @@ class CuePlayer(private val context: Context) {
             // A missing engine can report failure from inside the constructor, before
             // `engine` is assigned — hence the null-safe configure.
             engine = TextToSpeech(context) { status ->
-                ttsReady = status == TextToSpeech.SUCCESS && engine?.let(::configure) == true
-                if (!ttsReady) Log.w(TAG, "Text-to-speech unavailable (status $status); the voice will be silent")
-                else Log.i(TAG, "Voice engine ready in ${SystemClock.elapsedRealtime() - speechStartedAt}ms")
-                val warming = ttsReady && engine?.synthesizeToFile(
-                    "Ready", null, File(context.cacheDir, "tts_warmup.wav"), WARMUP_ID,
-                ) == TextToSpeech.SUCCESS
-                if (!warming) done.complete(Unit)
-                pendingLine?.let { (text, at) ->
-                    pendingLine = null
-                    if (ttsReady && SystemClock.elapsedRealtime() - at <= PENDING_LINE_MAX_AGE_MS) say(text)
+                if (status == TextToSpeech.SUCCESS && engine?.let(::configure) == true) {
+                    Log.i(TAG, "Voice engine ready in ${SystemClock.elapsedRealtime() - speechStartedAt}ms")
+                    val warming = engine?.synthesizeToFile(
+                        "Ready", null, File(context.cacheDir, "tts_warmup.wav"), WARMUP_ID,
+                    ) == TextToSpeech.SUCCESS
+                    if (!warming) voiceReady() // speaks, just possibly a beat late at first
+                } else {
+                    Log.w(TAG, "Text-to-speech unavailable (status $status); the voice will be silent")
+                    done.complete(Unit)
                 }
             }
             tts = engine
         }
         return done
+    }
+
+    /** The one point the voice becomes usable: after warm-up (or when it can't run). */
+    private fun voiceReady() {
+        ttsReady = true
+        warmUp?.complete(Unit)
+        pendingLine?.let { (text, at) ->
+            pendingLine = null
+            if (SystemClock.elapsedRealtime() - at <= PENDING_LINE_MAX_AGE_MS) say(text)
+        }
     }
 
     /** English (exercise names are English): the phone's own variant if it is in English, else US. */
@@ -230,13 +241,15 @@ class CuePlayer(private val context: Context) {
                 focusHeld = true
             }
         }
-        mainHandler.removeCallbacks(releaseFocus)
-        mainHandler.postDelayed(releaseFocus, FOCUS_RELEASE_DELAY_MS)
+        scheduleRelease()
     }
 
     /** Pushes an already-held focus's release out from now — never requests focus afresh. */
     private fun extendFocus() {
-        if (!synchronized(focusLock) { focusHeld }) return
+        if (synchronized(focusLock) { focusHeld }) scheduleRelease()
+    }
+
+    private fun scheduleRelease() {
         mainHandler.removeCallbacks(releaseFocus)
         mainHandler.postDelayed(releaseFocus, FOCUS_RELEASE_DELAY_MS)
     }
@@ -292,7 +305,7 @@ class CuePlayer(private val context: Context) {
     private fun lineEnded(id: String?) {
         if (id == WARMUP_ID) {
             Log.i(TAG, "Voice warmed up in ${SystemClock.elapsedRealtime() - speechStartedAt}ms")
-            warmUp?.complete(Unit)
+            voiceReady()
             return
         }
         if (id == null || id != speakingId) return
