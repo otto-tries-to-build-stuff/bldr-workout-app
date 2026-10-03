@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -71,6 +72,17 @@ class CuePlayer(private val context: Context) {
      */
     @Volatile private var speakingId: String? = null
 
+    /**
+     * A line asked for while the engine was still starting, and when. A cold engine can take
+     * longer than [prime]'s budget (~6 s on the emulator), which would otherwise lose the
+     * opening "First up"; this speaks it the moment the engine is ready — if still fresh.
+     */
+    @Volatile private var pendingLine: Pair<String, Long>? = null
+
+    /** Completes when the engine's silent warm-up line is done — see [startSpeech]. */
+    @Volatile private var warmUp: CompletableDeferred<Unit>? = null
+    private var speechStartedAt = 0L
+
     private val loadedCount = AtomicInteger(0)
     private val loaded = CompletableDeferred<Unit>()
 
@@ -96,32 +108,43 @@ class CuePlayer(private val context: Context) {
      * occupying a pool thread while it waits. The only caller ([execution.ExecutionService])
      * is already inside a coroutine.
      *
-     * With [voiceOn], the speech engine is started here too and waited for under the same
-     * budget, so the opening "First up" is not lost to engine start-up.
+     * With [voiceOn], the speech engine is started and warmed up here too, under its own
+     * longer budget ([SPEECH_PRIME_TIMEOUT_MS]) measured from the same start, so the opening
+     * "First up" plays on time rather than seconds late.
      */
     suspend fun prime() {
+        val startedAt = SystemClock.elapsedRealtime()
         val speechInit = if (voiceOn && tts == null) startSpeech() else null
         if (soundIds.isEmpty()) {
             soundIds[Cue.COUNTDOWN] = load("cue_countdown.wav", ToneWav.COUNTDOWN)
             soundIds[Cue.GO] = load("cue_go.wav", ToneWav.GO)
             soundIds[Cue.FINISH] = load("cue_finish.wav", ToneWav.FINISH)
         }
-        val completed = withTimeoutOrNull(PRIME_TIMEOUT_MS) {
-            loaded.await()
-            speechInit?.await()
+        if (withTimeoutOrNull(PRIME_TIMEOUT_MS) { loaded.await() } == null) {
+            Log.w(TAG, "Cue tones did not finish decoding within ${PRIME_TIMEOUT_MS}ms; some cues may not play")
         }
-        if (completed == null) {
-            Log.w(TAG, "Cue tones or voice did not finish loading within ${PRIME_TIMEOUT_MS}ms; some cues may not play")
+        if (speechInit != null) {
+            val left = SPEECH_PRIME_TIMEOUT_MS - (SystemClock.elapsedRealtime() - startedAt)
+            if (withTimeoutOrNull(left) { speechInit.await() } == null) {
+                Log.w(TAG, "Voice not warmed up within ${SPEECH_PRIME_TIMEOUT_MS}ms; the first line may be late")
+            }
         }
     }
 
     /**
      * Binds the phone's text-to-speech engine. Built on the main thread, where its init
-     * callback is delivered. The returned signal completes once init has finished, whether or
-     * not it succeeded — a phone with no engine or no English voice just stays silent.
+     * callback is delivered.
+     *
+     * The returned signal completes once the engine is warmed up, or has failed — a phone with
+     * no engine or no English voice just stays silent. "Ready" per init is not enough: an
+     * engine's first sentence also loads its voice model, ~3 s on the emulator, which would land
+     * "First up" on top of the 3-2-1. So init is followed by one silent warm-up line rendered
+     * to a throwaway file, and that is what the signal waits for.
      */
     private suspend fun startSpeech(): CompletableDeferred<Unit> {
         val done = CompletableDeferred<Unit>()
+        warmUp = done
+        speechStartedAt = SystemClock.elapsedRealtime()
         withContext(Dispatchers.Main) {
             var engine: TextToSpeech? = null
             // A missing engine can report failure from inside the constructor, before
@@ -129,7 +152,15 @@ class CuePlayer(private val context: Context) {
             engine = TextToSpeech(context) { status ->
                 ttsReady = status == TextToSpeech.SUCCESS && engine?.let(::configure) == true
                 if (!ttsReady) Log.w(TAG, "Text-to-speech unavailable (status $status); the voice will be silent")
-                done.complete(Unit)
+                else Log.i(TAG, "Voice engine ready in ${SystemClock.elapsedRealtime() - speechStartedAt}ms")
+                val warming = ttsReady && engine?.synthesizeToFile(
+                    "Ready", null, File(context.cacheDir, "tts_warmup.wav"), WARMUP_ID,
+                ) == TextToSpeech.SUCCESS
+                if (!warming) done.complete(Unit)
+                pendingLine?.let { (text, at) ->
+                    pendingLine = null
+                    if (ttsReady && SystemClock.elapsedRealtime() - at <= PENDING_LINE_MAX_AGE_MS) say(text)
+                }
             }
             tts = engine
         }
@@ -228,8 +259,12 @@ class CuePlayer(private val context: Context) {
 
     /** Speaks [text], replacing any line still being spoken. Silent when muted or voice is off. */
     fun say(text: String) {
-        if (muted || released || !voiceOn || !ttsReady) return
+        if (muted || released || !voiceOn) return
         val engine = tts ?: return
+        if (!ttsReady) {
+            pendingLine = text to SystemClock.elapsedRealtime()
+            return
+        }
         val id = "line-${lineCounter.incrementAndGet()}"
         speakingId = id
         holdFocusForBurst()
@@ -239,6 +274,7 @@ class CuePlayer(private val context: Context) {
     /** Cuts the current line short — on pause and on mute. */
     fun stopSpeech() {
         if (released) return
+        pendingLine = null
         speakingId = null
         tts?.stop()
         extendFocus()
@@ -254,6 +290,11 @@ class CuePlayer(private val context: Context) {
     }
 
     private fun lineEnded(id: String?) {
+        if (id == WARMUP_ID) {
+            Log.i(TAG, "Voice warmed up in ${SystemClock.elapsedRealtime() - speechStartedAt}ms")
+            warmUp?.complete(Unit)
+            return
+        }
         if (id == null || id != speakingId) return
         speakingId = null
         extendFocus()
@@ -261,6 +302,7 @@ class CuePlayer(private val context: Context) {
 
     fun release() {
         released = true
+        pendingLine = null
         speakingId = null
         tts?.shutdown()
         tts = null
@@ -280,6 +322,17 @@ class CuePlayer(private val context: Context) {
         const val TAG = "CuePlayer"
         const val EXPECTED_SOUNDS = 3
         const val PRIME_TIMEOUT_MS = 2_000L
+
+        /**
+         * Start-up and warm-up for a cold speech engine: longer than the tones' budget, since it
+         * only bites on the first workout after the engine has gone idle. Warm, it takes well
+         * under a second.
+         */
+        const val SPEECH_PRIME_TIMEOUT_MS = 4_000L
+        const val WARMUP_ID = "warmup"
+
+        /** A held line older than this is stale — the get-ready step's speaking window has gone. */
+        const val PENDING_LINE_MAX_AGE_MS = 3_000L
         const val FOCUS_RELEASE_DELAY_MS = 1_500L
     }
 }
