@@ -4,6 +4,11 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -41,6 +47,7 @@ import com.ottotech.workoutbuilder.ui.overview.OverviewScreen
 import com.ottotech.workoutbuilder.ui.overview.OverviewViewModel
 import com.ottotech.workoutbuilder.ui.settings.SettingsScreen
 import com.ottotech.workoutbuilder.ui.settings.SettingsViewModel
+import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 
 object Routes {
     const val HOME = "home"
@@ -229,11 +236,21 @@ fun AppNav() {
             val pickVm: LibraryViewModel = viewModel(factory = LibraryViewModel.Factory)
             var showFilters by rememberSaveable { mutableStateOf(false) }
 
-            LibraryScreen(
-                viewModel = pickVm,
-                onOpenCategory = { nav.navigate(Routes.pickCategory(it)) },
-                onOpenFilters = { showFilters = true },
-            )
+            // Outside AppScaffold, so it must clear the system bars itself — otherwise the
+            // title sits under the status bar (edge-to-edge is on).
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(LocalAppColors.current.background)
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
+            ) {
+                LibraryScreen(
+                    viewModel = pickVm,
+                    onOpenCategory = { nav.navigate(Routes.pickCategory(it)) },
+                    onOpenFilters = { showFilters = true },
+                )
+            }
             if (showFilters) {
                 FiltersSheet(viewModel = pickVm, onDismiss = { showFilters = false })
             }
