@@ -26,6 +26,11 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_CUES_MUTED, false)
         set(value) = prefs.edit().putBoolean(KEY_CUES_MUTED, value).apply()
 
+    /** Spoken exercise names during a workout. On by default; read when a workout starts. */
+    var voiceOn: Boolean
+        get() = prefs.getBoolean(KEY_VOICE_ON, true)
+        set(value) = prefs.edit().putBoolean(KEY_VOICE_ON, value).apply()
+
     private val _themeMode = MutableStateFlow(ThemeMode.fromStored(prefs.getString(KEY_THEME, null)))
 
     /** Observed by MainActivity, so a change in Settings re-themes the whole app at once. */
@@ -39,6 +44,7 @@ class AppPrefs(context: Context) {
     private companion object {
         const val KEY_SAMPLE_SEEDED = "sample_workout_seeded"
         const val KEY_CUES_MUTED = "cues_muted"
+        const val KEY_VOICE_ON = "voice_on"
         const val KEY_THEME = "theme_mode"
     }
 }

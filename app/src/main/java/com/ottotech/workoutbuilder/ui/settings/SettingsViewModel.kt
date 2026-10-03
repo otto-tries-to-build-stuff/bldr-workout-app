@@ -20,12 +20,13 @@ data class SettingsUiState(
     val draftKey: String = "",
     val draftError: String? = null,
     val soundOn: Boolean,
+    val voiceOn: Boolean,
     val theme: ThemeMode,
 )
 
 class SettingsViewModel(private val keys: ApiKeyStore, private val prefs: AppPrefs) : ViewModel() {
 
-    private val _state = MutableStateFlow(SettingsUiState(hasKey = keys.hasKey, soundOn = !prefs.cuesMuted, theme = prefs.themeMode.value))
+    private val _state = MutableStateFlow(SettingsUiState(hasKey = keys.hasKey, soundOn = !prefs.cuesMuted, voiceOn = prefs.voiceOn, theme = prefs.themeMode.value))
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
 
     fun onDraftKey(text: String) = _state.update { it.copy(draftKey = text, draftError = null) }
@@ -48,6 +49,11 @@ class SettingsViewModel(private val keys: ApiKeyStore, private val prefs: AppPre
     fun onSoundOn(on: Boolean) {
         prefs.cuesMuted = !on
         _state.update { it.copy(soundOn = on) }
+    }
+
+    fun onVoiceOn(on: Boolean) {
+        prefs.voiceOn = on
+        _state.update { it.copy(voiceOn = on) }
     }
 
     /** Applies immediately: MainActivity observes the same preference. */
