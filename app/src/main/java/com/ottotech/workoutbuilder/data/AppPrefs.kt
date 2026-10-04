@@ -21,6 +21,11 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_SAMPLE_SEEDED, false)
         set(value) = prefs.edit().putBoolean(KEY_SAMPLE_SEEDED, value).apply()
 
+    /** The welcome tour has been finished or skipped. Installs from before the tour see it once too. */
+    var welcomeSeen: Boolean
+        get() = prefs.getBoolean(KEY_WELCOME_SEEN, false)
+        set(value) = prefs.edit().putBoolean(KEY_WELCOME_SEEN, value).apply()
+
     /** Cue mute — written by both the in-workout mute button and the Settings sound switch. */
     var cuesMuted: Boolean
         get() = prefs.getBoolean(KEY_CUES_MUTED, false)
@@ -46,5 +51,6 @@ class AppPrefs(context: Context) {
         const val KEY_CUES_MUTED = "cues_muted"
         const val KEY_VOICE_ON = "voice_on"
         const val KEY_THEME = "theme_mode"
+        const val KEY_WELCOME_SEEN = "welcome_seen"
     }
 }

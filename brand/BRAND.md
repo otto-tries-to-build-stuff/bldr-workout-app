@@ -60,6 +60,7 @@ ScreenTitle("LIBRARY")                                      // Archivo title tha
 
 - No splash theme, by decision (2026-10-02). On Android 12+ the system splash already shows the launcher icon on `windowBackground`. The real wait (first-launch seeding) shows `BldrLoader` instead, after a 300 ms delay so normal launches never flash it (`MainActivity.LaunchLoader`).
 - `BldrSplashBuild` and `BldrRefreshIndicator` are available but unused (2026-10-02). As a splash, the one-shot build would add ~1.4 s to every launch; the only real launch wait (first-launch seeding) has an unknown length, which the looping `BldrLoader` fits. The app has no pull-to-refresh or small inline waits for the refresh indicator.
+- The welcome tour's first card shows `BldrLoader` at 104dp as its hero (2026-10-04); the tour also fills the first-launch seeding wait, ahead of `LaunchLoader`.
 - The Coach's wait centres `BldrLoader` and steps through six "working words" (3 s each, holding on the last). They are reassurance, not real progress: the request is a single call.
 
 ## Licences

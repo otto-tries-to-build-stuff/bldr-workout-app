@@ -62,6 +62,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenPrivacy: () -> Unit,
     onOpenHelp: () -> Unit,
+    onReplayWelcome: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
@@ -188,6 +189,7 @@ fun SettingsScreen(
                 }
             }
             item { LinkCard("How to use BLDR", "Step-by-step guides with animations", onClick = onOpenHelp) }
+            item { LinkCard("Replay welcome tour", "A quick look at what BLDR can do", onClick = onReplayWelcome) }
             item { LinkCard("Privacy", "How your data is handled", onClick = onOpenPrivacy) }
         }
     }

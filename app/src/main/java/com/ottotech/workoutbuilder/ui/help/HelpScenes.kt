@@ -131,7 +131,6 @@ private const val CoachTweak = "swap lunges for step-ups"
 
 @Composable
 private fun AskCoachScene(pos: ScenePosition) {
-    val colors = LocalAppColors.current
     val saved = pos.reached(CoachBeat.Saved)
     when {
         // Settings first, then back to Home.
@@ -160,17 +159,7 @@ private fun AskCoachScene(pos: ScenePosition) {
                 )
             },
         )
-        !pos.reached(CoachBeat.Draft) -> Column(
-            Modifier.fillMaxSize().background(colors.background).padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            MiniHeader("COACH")
-            Spacer(Modifier.weight(1f))
-            BldrLoader(width = 44.dp, contentDescription = "")
-            Spacer(Modifier.height(24.dp))
-            Text("Selecting optimal exercises…", style = AppType.cardMeta, color = colors.textMuted)
-            Spacer(Modifier.weight(1.3f))
-        }
+        !pos.reached(CoachBeat.Draft) -> MiniCoachLoading()
         else -> Push(
             enter = if (saved) 1f - pos.enter(CoachBeat.Saved) else 1f,
             under = {
@@ -520,7 +509,7 @@ private fun MiniSheet(rise: Float, content: @Composable () -> Unit) {
 internal class MiniExercise(val name: String, val timed: Boolean, val reveal: Float = 1f)
 
 @Composable
-private fun MiniBuilder(
+internal fun MiniBuilder(
     title: String,
     name: String,
     items: List<MiniExercise>,
@@ -640,7 +629,7 @@ private fun MiniSettingsKey(saved: Boolean, pasted: Boolean = false, saveTap: Fl
 }
 
 @Composable
-private fun MiniCoachForm(
+internal fun MiniCoachForm(
     goal: String,
     typing: Boolean,
     length: Boolean,
@@ -695,12 +684,36 @@ private fun MiniCoachForm(
     }
 }
 
+/** The Coach drafting: the build-the-B loader over one of its working words. */
 @Composable
-private fun MiniCoachDraft(tweak: String, typing: Boolean, swapped: Boolean, tweakTap: Float, saveTap: Float) {
+internal fun MiniCoachLoading() {
+    val colors = LocalAppColors.current
+    Column(
+        Modifier.fillMaxSize().background(colors.background).padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        MiniHeader("COACH")
+        Spacer(Modifier.weight(1f))
+        BldrLoader(width = 44.dp, contentDescription = "")
+        Spacer(Modifier.height(24.dp))
+        Text("Selecting optimal exercises…", style = AppType.cardMeta, color = colors.textMuted)
+        Spacer(Modifier.weight(1.3f))
+    }
+}
+
+@Composable
+internal fun MiniCoachDraft(
+    tweak: String = "",
+    typing: Boolean = false,
+    swapped: Boolean = false,
+    tweakTap: Float = 0f,
+    saveTap: Float = 0f,
+    name: String = "Ski strength",
+) {
     val colors = LocalAppColors.current
     Column(Modifier.fillMaxSize().background(colors.background).padding(horizontal = 20.dp)) {
         MiniHeader("COACH")
-        Text("Ski strength", style = AppType.heroName, color = colors.onBackground)
+        Text(name, style = AppType.heroName, color = colors.onBackground)
         Text("30 MIN · 6 exercises · Strength", style = AppType.cardMeta, color = colors.textMuted)
         Spacer(Modifier.height(14.dp))
         MiniSectionCard("Warm-up", null, listOf("Jumping jacks", "Hip circles"))
@@ -795,7 +808,7 @@ private fun MiniLeadIn(count: Int) {
 
 /** The always-dark workout screen: a timed exercise on the ring, or a reps exercise's sets. */
 @Composable
-private fun MiniExecution(
+internal fun MiniExecution(
     name: String,
     position: Int,
     remaining: Float = 30f,
@@ -892,9 +905,9 @@ private fun ExecutionButton(text: String, filled: Boolean, modifier: Modifier) {
 
 /** The screen going dark in a pocket, with the workout carrying on in its notification and voice. */
 @Composable
-private fun MiniLockScreen(dim: Float, voice: Float, remaining: Int) {
+internal fun MiniLockScreen(dim: Float, voice: Float, remaining: Int, exercise: String = "Skater hops") {
     Box(Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxSize().background(ExecutionColors.background.copy(alpha = 0.96f * dim)))
+        Box(Modifier.fillMaxSize().background(ExecutionColors.background.copy(alpha = 0.97f * dim)))
         Column(Modifier.fillMaxWidth().padding(20.dp).padding(top = 30.dp).slideY(-(1f - dim))) {
             Text("6:42", style = AppType.screenTitle, color = ExecutionColors.onBackground.copy(alpha = dim), modifier = Modifier.align(Alignment.CenterHorizontally))
             Spacer(Modifier.height(24.dp))
@@ -906,7 +919,7 @@ private fun MiniLockScreen(dim: Float, voice: Float, remaining: Int) {
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Court Speed", style = AppType.cardTitle, color = ExecutionColors.onBackground.copy(alpha = dim))
-                    Text("Skater hops · ${remaining}s", style = AppType.cardMeta, color = ExecutionColors.textMuted.copy(alpha = dim))
+                    Text("$exercise · ${remaining}s", style = AppType.cardMeta, color = ExecutionColors.textMuted.copy(alpha = dim))
                 }
             }
         }

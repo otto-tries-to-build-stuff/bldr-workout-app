@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ottotech.workoutbuilder.ui.components.LinkCard
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
 import com.ottotech.workoutbuilder.ui.components.TextAction
@@ -137,7 +139,9 @@ private fun StepRow(number: Int, text: String, lit: Boolean, onClick: () -> Unit
             .semantics { selected = lit }
             .padding(horizontal = 8.dp, vertical = 10.dp),
     ) {
-        Box(Modifier.size(28.dp).clip(CircleShape).background(badge), contentAlignment = Alignment.Center) {
+        // Sized in sp so the number stays inside its circle at large font sizes.
+        val badgeSize = with(LocalDensity.current) { 28.sp.toDp() }
+        Box(Modifier.size(badgeSize).clip(CircleShape).background(badge), contentAlignment = Alignment.Center) {
             Text("$number", style = AppType.chip, color = badgeInk)
         }
         Spacer(Modifier.width(14.dp))

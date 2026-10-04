@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ottotech.workoutbuilder.ui.AppNav
 import com.ottotech.workoutbuilder.ui.brand.BldrLoader
+import com.ottotech.workoutbuilder.ui.help.WelcomeScreen
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 import com.ottotech.workoutbuilder.ui.theme.WorkoutTheme
@@ -48,6 +49,8 @@ class MainActivity : ComponentActivity() {
         // hundred inserts on a cold start only, and gating on it avoids Home flashing its
         // "Nothing here yet" empty state for one frame before the seed lands.
         var ready by mutableStateOf(false)
+        // The tour needs no data, so on a fresh install it fills the seeding wait.
+        var showWelcome by mutableStateOf(!app.prefs.welcomeSeen)
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 // Order matters: the sample workout references seeded exercise ids.
@@ -68,7 +71,14 @@ class MainActivity : ComponentActivity() {
             }
             WorkoutTheme(dark = dark) {
                 Box(Modifier.fillMaxSize().background(LocalAppColors.current.background)) {
-                    if (ready) AppNav() else LaunchLoader()
+                    when {
+                        showWelcome -> WelcomeScreen(onDone = {
+                            app.prefs.welcomeSeen = true
+                            showWelcome = false
+                        })
+                        ready -> AppNav()
+                        else -> LaunchLoader()
+                    }
                 }
             }
         }

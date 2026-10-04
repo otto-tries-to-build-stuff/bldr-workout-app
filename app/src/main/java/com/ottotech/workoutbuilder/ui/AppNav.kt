@@ -39,6 +39,7 @@ import com.ottotech.workoutbuilder.ui.execution.ExecutionViewModel
 import com.ottotech.workoutbuilder.ui.help.HelpScreen
 import com.ottotech.workoutbuilder.ui.help.HelpTopic
 import com.ottotech.workoutbuilder.ui.help.HelpTopicScreen
+import com.ottotech.workoutbuilder.ui.help.WelcomeScreen
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
 import com.ottotech.workoutbuilder.ui.library.CategoryScreen
@@ -68,6 +69,7 @@ object Routes {
     const val PRIVACY = "privacy"
     const val HELP = "help"
     const val HELP_TOPIC = "help/{topic}"
+    const val WELCOME = "welcome"
     const val COACH = "coach"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
@@ -241,8 +243,11 @@ fun AppNav() {
                 onBack = nav.popOnce(),
                 onOpenPrivacy = nav.navigateOnce(Routes.PRIVACY),
                 onOpenHelp = nav.navigateOnce(Routes.HELP),
+                onReplayWelcome = nav.navigateOnce(Routes.WELCOME),
             )
         }
+
+        composable(Routes.WELCOME) { WelcomeScreen(onDone = nav.popOnce()) }
 
         composable(Routes.HELP) {
             HelpScreen(onOpenTopic = { nav.navigate(Routes.helpTopic(it)) }, onBack = nav.popOnce())
