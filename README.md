@@ -50,7 +50,7 @@ the phone.
 
 1. Clone the repo:
    ```
-   git clone https://github.com/<you>/<this-repo>.git
+   git clone https://github.com/otto-tries-to-build-stuff/bldr-workout-app.git
    ```
 2. In Android Studio, choose **Open** and pick the cloned folder. Let Gradle sync finish.
 3. Plug in your phone with USB debugging on (or start an emulator), then press **Run**.
