@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -58,6 +59,25 @@ fun HairlineCard(
             .border(BorderStroke(Dimens.hairline, colors.border), shape)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) { content() }
+}
+
+/** A card that opens another screen: a title, a muted line under it and a ›. */
+@Composable
+fun LinkCard(title: String, subtitle: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = LocalAppColors.current
+    HairlineCard(modifier.fillMaxWidth(), onClick = onClick) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = Dimens.cardPadding, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = AppType.cardTitle, color = colors.onBackground)
+                Text(subtitle, style = AppType.cardMeta, color = colors.textMuted)
+            }
+            Spacer(Modifier.width(12.dp))
+            Text("›", style = AppType.heroName, color = colors.onBackground)
+        }
+    }
 }
 
 /**

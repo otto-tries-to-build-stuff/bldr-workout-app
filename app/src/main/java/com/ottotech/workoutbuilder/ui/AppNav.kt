@@ -36,6 +36,9 @@ import com.ottotech.workoutbuilder.ui.components.AppScaffold
 import com.ottotech.workoutbuilder.ui.components.Tab
 import com.ottotech.workoutbuilder.ui.execution.ExecutionScreen
 import com.ottotech.workoutbuilder.ui.execution.ExecutionViewModel
+import com.ottotech.workoutbuilder.ui.help.HelpScreen
+import com.ottotech.workoutbuilder.ui.help.HelpTopic
+import com.ottotech.workoutbuilder.ui.help.HelpTopicScreen
 import com.ottotech.workoutbuilder.ui.home.BuildSheet
 import com.ottotech.workoutbuilder.ui.home.HomeScreen
 import com.ottotech.workoutbuilder.ui.library.CategoryScreen
@@ -63,6 +66,8 @@ object Routes {
     const val EXECUTION = "execution/{workoutId}"
     const val SETTINGS = "settings"
     const val PRIVACY = "privacy"
+    const val HELP = "help"
+    const val HELP_TOPIC = "help/{topic}"
     const val COACH = "coach"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
@@ -70,6 +75,7 @@ object Routes {
     fun pickCategory(muscle: Muscle) = "pick/${muscle.name}"
     fun overview(workoutId: String) = "workout/$workoutId"
     fun execution(workoutId: String) = "execution/$workoutId"
+    fun helpTopic(topic: HelpTopic) = "help/${topic.name}"
     fun builder(workoutId: String? = null) = if (workoutId == null) "builder" else "builder?workoutId=$workoutId"
 }
 
@@ -230,7 +236,24 @@ fun AppNav() {
 
         composable(Routes.SETTINGS) {
             val settingsVm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
-            SettingsScreen(viewModel = settingsVm, onBack = nav.popOnce(), onOpenPrivacy = nav.navigateOnce(Routes.PRIVACY))
+            SettingsScreen(
+                viewModel = settingsVm,
+                onBack = nav.popOnce(),
+                onOpenPrivacy = nav.navigateOnce(Routes.PRIVACY),
+                onOpenHelp = nav.navigateOnce(Routes.HELP),
+            )
+        }
+
+        composable(Routes.HELP) {
+            HelpScreen(onOpenTopic = { nav.navigate(Routes.helpTopic(it)) }, onBack = nav.popOnce())
+        }
+
+        composable(
+            Routes.HELP_TOPIC,
+            arguments = listOf(navArgument("topic") { type = NavType.StringType }),
+        ) { entry ->
+            val topic = HelpTopic.valueOf(entry.arguments?.getString("topic") ?: HelpTopic.BuildYourself.name)
+            HelpTopicScreen(topic = topic, onBack = nav.popOnce())
         }
 
         composable(Routes.PRIVACY) { PrivacyScreen(onBack = nav.popOnce()) }

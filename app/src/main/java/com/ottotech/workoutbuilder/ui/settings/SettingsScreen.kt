@@ -37,11 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.domain.ThemeMode
 import com.ottotech.workoutbuilder.ui.brand.BldrLogo
+import com.ottotech.workoutbuilder.ui.help.KEYS_URL
+import com.ottotech.workoutbuilder.ui.help.KEY_STEPS
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
 import com.ottotech.workoutbuilder.ui.components.HairlineCard
 import com.ottotech.workoutbuilder.ui.components.InverseButton
+import com.ottotech.workoutbuilder.ui.components.LinkCard
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
 import com.ottotech.workoutbuilder.ui.components.SectionLabel
 import com.ottotech.workoutbuilder.ui.components.TextAction
@@ -49,22 +52,17 @@ import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 
-private const val KEYS_URL = "https://platform.claude.com/settings/keys"
-
-private val KEY_STEPS = listOf(
-    "Open the Claude Console and sign in, or create an account. It's separate from a Claude.ai subscription.",
-    "Under Billing, add some credit. \$5 covers dozens of workouts.",
-    "Go to API keys and tap Create key. Any name works, e.g. BLDR.",
-    "Copy the key. It starts with sk-ant- and is only shown once.",
-    "Come back here, paste it above and tap Save key.",
-)
-
 /**
  * Spec §6.7: the Coach's API key, the theme and the cue sound switch (keep-screen-on is deferred).
  * The saved key is never shown back, not even masked — the field only takes a new one.
  */
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit, onOpenPrivacy: () -> Unit) {
+fun SettingsScreen(
+    viewModel: SettingsViewModel,
+    onBack: () -> Unit,
+    onOpenPrivacy: () -> Unit,
+    onOpenHelp: () -> Unit,
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
     val context = LocalContext.current
@@ -182,6 +180,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit, onOpenPriva
             item { SettingSwitch("Voice announcements", checked = state.voiceOn, onCheckedChange = viewModel::onVoiceOn) }
 
             item { Spacer(Modifier.height(8.dp)) }
+            item { SectionLabel("Help") }
+            item { LinkCard("How to use BLDR", "Step-by-step guides with animations", onClick = onOpenHelp) }
+
+            item { Spacer(Modifier.height(8.dp)) }
             item { SectionLabel("About") }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -194,20 +196,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit, onOpenPriva
                     )
                 }
             }
-            item {
-                HairlineCard(Modifier.fillMaxWidth(), onClick = onOpenPrivacy) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = Dimens.cardPadding, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text("Privacy", style = AppType.cardTitle, color = colors.onBackground)
-                            Text("How your data is handled", style = AppType.cardMeta, color = colors.textMuted)
-                        }
-                        Text("›", style = AppType.heroName, color = colors.onBackground)
-                    }
-                }
-            }
+            item { LinkCard("Privacy", "How your data is handled", onClick = onOpenPrivacy) }
         }
     }
 
