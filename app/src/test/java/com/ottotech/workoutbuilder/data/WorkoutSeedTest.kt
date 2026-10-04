@@ -16,8 +16,8 @@ import kotlin.test.assertTrue
  * library and asserts the output matches `buildSegments()` in the reference web app.
  *
  * If the segment count is not 40, the compiler or the seed is wrong — not this
- * expectation. Re-read spec §4 and `web-app-reference/HIIT Workout.html` before changing a
- * number here.
+ * expectation. Re-read `buildSegments()` in the Court Speed web app (github.com/otto-tries-to-build-stuff/courtspeed-hiit)
+ * before changing a number here.
  */
 class WorkoutSeedTest {
 

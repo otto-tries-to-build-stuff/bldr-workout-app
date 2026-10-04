@@ -3,8 +3,8 @@ package com.ottotech.workoutbuilder.ui.theme
 import androidx.compose.ui.unit.dp
 
 /**
- * Spacing, radii and fixed sizes. Rescaled 2026-07-26 — see the note in Type.kt and
- * docs/superpowers/plans/2026-07-26-design-correction-pass.md. No shadows anywhere.
+ * Spacing, radii and fixed sizes. Rescaled 2026-07-26 — see the note in Type.kt. No
+ * shadows anywhere.
  */
 object Dimens {
     val screenPadding = 20.dp

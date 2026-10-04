@@ -10,8 +10,8 @@ data class ToneSpec(val freqHz: Double, val durationSec: Double, val volume: Dou
 /**
  * Generates the cue tones as WAV bytes at runtime — no audio assets are shipped.
  *
- * A direct port of `makeWav()` in `web-app-reference/HIIT Workout.html:1466`, kept
- * sample-for-sample so the Android app sounds exactly like the web version the user already
+ * A direct port of `makeWav()` in the Court Speed web app
+ * (github.com/otto-tries-to-build-stuff/courtspeed-hiit), kept sample-for-sample so the Android app sounds exactly like the web version the user already
  * trained to: mono 22050 Hz 16-bit PCM, a sine wave with a 5ms fade-in (without which each
  * cue starts on a click) and an exponential decay envelope.
  *

@@ -11,8 +11,9 @@ import java.time.Instant
 /**
  * The workouts a fresh install starts with.
  *
- * Court Speed is rebuilt from `web-app-reference/HIIT Workout.html` and mirrors that file's
- * `buildSegments()`. It is both the app's sample content and its acceptance fixture: if the
+ * Court Speed is rebuilt from the Court Speed web app
+ * (github.com/otto-tries-to-build-stuff/courtspeed-hiit) and mirrors its `buildSegments()`.
+ * It is both the app's sample content and its acceptance fixture: if the
  * compiler turns this into the same 40-segment sequence the web app produces, the data model
  * can express a real workout. See `WorkoutSeedTest`.
  *

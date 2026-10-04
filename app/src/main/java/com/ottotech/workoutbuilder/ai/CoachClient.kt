@@ -57,7 +57,7 @@ object CoachFailures {
  * 429/5xx/connection errors twice with backoff before an exception reaches us.
  *
  * Building the client and the first request pay a ~4 s one-time warm-up on Android (class
- * loading — see STATUS.md), so the screen calls [warmUp] when it opens.
+ * loading), so the screen calls [warmUp] when it opens.
  */
 class CoachClient(apiKey: String) {
 

@@ -21,3 +21,15 @@ secrets.properties
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Kotlin compiler caches
+.kotlin/
+
+# Built apps — share builds through releases, not the repo
+*.apk
+*.aab
+
+# Local working notes and tool output
+docs/superpowers/
+.superpowers/
+brag-output*/

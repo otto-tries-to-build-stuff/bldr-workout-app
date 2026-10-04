@@ -63,8 +63,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Official Anthropic SDK (Java; Kotlin uses it directly). Verified on Android 2026-09-24 —
-    // see STATUS.md. Also supplies Jackson, which CoachResponseMapper parses with.
+    // Official Anthropic SDK (Java; Kotlin uses it directly). Verified on Android 2026-09-24.
+    // Also supplies Jackson, which CoachResponseMapper parses with.
     implementation("com.anthropic:anthropic-java:2.34.0")
 
     debugImplementation(libs.androidx.compose.ui.tooling)

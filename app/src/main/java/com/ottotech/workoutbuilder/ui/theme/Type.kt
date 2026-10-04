@@ -10,8 +10,7 @@ import com.ottotech.workoutbuilder.ui.brand.BrandFonts
 
 /**
  * Type scale. Sizes were rescaled 2026-07-26 (the handoff's px were ~62% of true size; do not
- * revert toward them) and re-fitted 2026-10-02 for the BLDR fonts. See
- * docs/superpowers/plans/2026-10-02-bldr-brand-rollout.md, Task 6:
+ * revert toward them) and re-fitted 2026-10-02 for the BLDR fonts:
  * - Archivo Expanded 900 (titles, big numbers) runs ~1.55x wider than Roboto ExtraBold, so
  *   titles drop 40 → 32 sp and the timer 46 → 38 sp; ScreenTitle and TimerRing also auto-shrink.
  * - Space Grotesk (everything else) is ~7% wider than Roboto but has a smaller x-height, so body

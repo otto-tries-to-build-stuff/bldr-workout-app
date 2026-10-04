@@ -56,8 +56,7 @@ import java.util.Locale
  * The old "Up next" hero was removed 2026-07-26. It presented itself as a recommendation but
  * could only ever resolve to "the last workout you created" — nothing writes `lastPerformedAt`
  * until Plan 1D — and the user does not train in a fixed rotation, so even a working version
- * would have promised a schedule the app does not have. See
- * docs/superpowers/plans/2026-07-26-design-correction-pass.md.
+ * would have promised a schedule the app does not have.
  */
 @Composable
 fun HomeScreen(
