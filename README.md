@@ -9,6 +9,24 @@ drafts a workout from a goal you describe, using your own Anthropic API key.
 
 Everything is stored on your phone. There are no accounts, no ads, no analytics and no backend.
 
+## Why I built this
+
+I'd been building HIIT workouts with Claude as small web pages, but a web page only keeps its
+timer and sound going while the screen is on, so I had to keep my phone unlocked for the whole
+workout (...which was annoying).
+
+The original idea was just a mobile app version of my HIIT workout, so I could have audio cues
+while my phone was locked. From there I thought it might be neat to be able to build workouts
+from a pre-defined library. Then I thought it might be cool to incorporate some kind of AI Coach.
+
+I wanted to create something that I could easily share with friends as well, which is where the
+idea came from of letting people add their own Anthropic API key within the app itself to enable
+the Coach, as opposed to:
+
+- a) hardcoding my own API key (which would cost me money), or
+- b) making it a variable within the code, which would make it harder for people to use the app
+  without first cloning the repo (waaaay too technical for most of my friends).
+
 ## Features
 
 - **Build it yourself.** Pick exercises from the library and set each one to timed, reps
