@@ -23,7 +23,7 @@ const val KEYS_URL = "https://platform.claude.com/settings/keys"
 enum class BuildBeat { Home, TapBuild, Sheet, TapYourself, Name, TapAdd, Added, TapTimed, TapRounds, TapRest, TapSave, Saved }
 enum class CoachBeat { KeySaved, TapBuild, Sheet, TapCoach, Goal, TapLength, TapKit, TapGo, Drafting, Draft, Tweak, Tweaked, TapSave, Saved }
 enum class RunBeat { TapWorkout, Overview, TapStart, GetReady, Timer, Reps, TapDone, TapPause, Paused, TapSkip, TapDemo, TapMute, Locked }
-enum class FindBeat { TapTab, Library, Search, TapFilters, Filters, TapChip, TapExercise, Detail, TapDemo, Paste, TapSaveLink, LinkSaved }
+enum class FindBeat { TapTab, Library, Search, TapFilters, Filters, TapChip, TapTile, Category, TapExercise, Detail, TapDemo, Paste, TapSaveLink, LinkSaved }
 enum class EditBeat { TapMenu, Menu, TapEdit, Builder, TapSave, TapMenuAgain, TapDelete, Confirm, TapConfirm, Gone }
 enum class KeyBeat { Console, Billing, TapCreate, Created, TapCopy, Copied, Settings, Paste, TapSaveKey, KeySaved }
 
@@ -61,10 +61,10 @@ enum class HelpTopic(val title: String, val summary: String, val steps: List<Str
         ),
         script = script {
             step(CoachBeat.KeySaved to 1600)
-            step(CoachBeat.TapBuild to TAP, CoachBeat.Sheet to 500, CoachBeat.TapCoach to TAP)
+            step(CoachBeat.TapBuild to TAP + 300, CoachBeat.Sheet to 500, CoachBeat.TapCoach to TAP)
             step(CoachBeat.Goal to 1500, CoachBeat.TapLength to TAP, CoachBeat.TapKit to TAP)
             step(CoachBeat.TapGo to TAP, CoachBeat.Drafting to 1600)
-            step(CoachBeat.Draft to 900, CoachBeat.Tweak to 1400, CoachBeat.Tweaked to 900)
+            step(CoachBeat.Draft to 900, CoachBeat.Tweak to 1900, CoachBeat.Tweaked to 900)
             step(CoachBeat.TapSave to TAP, CoachBeat.Saved to 2000)
         },
     ),
@@ -101,8 +101,8 @@ enum class HelpTopic(val title: String, val summary: String, val steps: List<Str
         script = script {
             step(FindBeat.TapTab to TAP, FindBeat.Library to 600)
             step(FindBeat.Search to 1400)
-            step(FindBeat.TapFilters to TAP, FindBeat.Filters to 500, FindBeat.TapChip to TAP + 300)
-            step(FindBeat.TapExercise to TAP, FindBeat.Detail to 600, FindBeat.TapDemo to TAP)
+            step(FindBeat.TapFilters to TAP, FindBeat.Filters to 500, FindBeat.TapChip to TAP + 500)
+            step(FindBeat.TapTile to TAP, FindBeat.Category to 400, FindBeat.TapExercise to TAP, FindBeat.Detail to 500, FindBeat.TapDemo to TAP)
             step(FindBeat.Paste to 1200, FindBeat.TapSaveLink to TAP, FindBeat.LinkSaved to 1600)
         },
     ),
@@ -116,8 +116,8 @@ enum class HelpTopic(val title: String, val summary: String, val steps: List<Str
         ),
         script = script {
             step(EditBeat.TapMenu to TAP + 200, EditBeat.Menu to 500)
-            step(EditBeat.TapEdit to TAP, EditBeat.Builder to 1000, EditBeat.TapSave to TAP)
-            step(EditBeat.TapMenuAgain to TAP, EditBeat.TapDelete to TAP, EditBeat.Confirm to 500, EditBeat.TapConfirm to TAP, EditBeat.Gone to 1800)
+            step(EditBeat.TapEdit to TAP, EditBeat.Builder to 1300, EditBeat.TapSave to TAP)
+            step(EditBeat.TapMenuAgain to TAP + 300, EditBeat.TapDelete to TAP, EditBeat.Confirm to 500, EditBeat.TapConfirm to TAP, EditBeat.Gone to 1800)
         },
     ),
     SetUpCoach(

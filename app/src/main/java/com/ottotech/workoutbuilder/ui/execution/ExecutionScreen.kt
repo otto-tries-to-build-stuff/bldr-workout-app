@@ -286,7 +286,7 @@ private fun ExecutionHeader(
 
 /** A small speaker glyph, canvas-drawn to match [com.ottotech.workoutbuilder.ui.components.HomeGlyph] and friends. */
 @Composable
-private fun MuteGlyph(muted: Boolean, color: Color, size: Dp = 20.dp) {
+internal fun MuteGlyph(muted: Boolean, color: Color, size: Dp = 20.dp) {
     Canvas(Modifier.size(size)) {
         val w = this.size.width
         val h = this.size.height
@@ -377,7 +377,7 @@ private fun WatchDemoCard(segment: Segment) {
 }
 
 @Composable
-private fun PlayGlyph(color: Color, size: Dp = 18.dp) {
+internal fun PlayGlyph(color: Color, size: Dp = 18.dp) {
     Canvas(Modifier.size(size)) {
         val w = this.size.width
         val h = this.size.height

@@ -27,6 +27,7 @@ import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
@@ -189,6 +190,7 @@ fun Modifier.reveal(fraction: Float): Modifier = this
         val placeable = measurable.measure(constraints)
         layout(placeable.width, (placeable.height * fraction).roundToInt()) { placeable.place(0, 0) }
     }
+    .clipToBounds()
     .graphicsLayer { alpha = fraction }
 
 /** Slides this element sideways by [fraction] of its own width (0 = in place, 1 = fully right). */
@@ -286,20 +288,32 @@ fun MiniStepper(value: String, plusTap: Float = 0f) {
     }
 }
 
-/** A Home workout card: name and minutes over meta and last-done. */
+/** A Home workout card: name and minutes over meta and last-done, with the ⋯ menu beside them. */
 @Composable
-fun MiniWorkoutCard(name: String, minutes: String, meta: String, lastDone: String, modifier: Modifier = Modifier) {
+fun MiniWorkoutCard(
+    name: String,
+    minutes: String,
+    meta: String,
+    lastDone: String,
+    modifier: Modifier = Modifier,
+    menuTap: Float = 0f,
+) {
     val colors = LocalAppColors.current
     HairlineCard(modifier.fillMaxWidth()) {
-        Column(Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
-            Row {
-                Text(name, style = AppType.cardTitle, color = colors.onBackground, modifier = Modifier.weight(1f))
-                Text(minutes, style = AppType.cardTitle, color = colors.onBackground)
+        Row(Modifier.padding(start = 18.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).padding(vertical = 16.dp)) {
+                Row {
+                    Text(name, style = AppType.cardTitle, color = colors.onBackground, modifier = Modifier.weight(1f))
+                    Text(minutes, style = AppType.cardTitle, color = colors.onBackground)
+                }
+                Spacer(Modifier.height(4.dp))
+                Row {
+                    Text(meta, style = AppType.cardMeta, color = colors.textMuted, modifier = Modifier.weight(1f))
+                    Text(lastDone, style = AppType.cardMeta, color = colors.textMuted)
+                }
             }
-            Spacer(Modifier.height(4.dp))
-            Row {
-                Text(meta, style = AppType.cardMeta, color = colors.textMuted, modifier = Modifier.weight(1f))
-                Text(lastDone, style = AppType.cardMeta, color = colors.textMuted)
+            Box(Modifier.size(40.dp).tapHint(menuTap), contentAlignment = Alignment.Center) {
+                Text("⋯", style = AppType.cardTitle, color = colors.onBackground)
             }
         }
     }
