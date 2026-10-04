@@ -45,6 +45,7 @@ import com.ottotech.workoutbuilder.ui.library.LibraryScreen
 import com.ottotech.workoutbuilder.ui.library.LibraryViewModel
 import com.ottotech.workoutbuilder.ui.overview.OverviewScreen
 import com.ottotech.workoutbuilder.ui.overview.OverviewViewModel
+import com.ottotech.workoutbuilder.ui.settings.PrivacyScreen
 import com.ottotech.workoutbuilder.ui.settings.SettingsScreen
 import com.ottotech.workoutbuilder.ui.settings.SettingsViewModel
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -61,6 +62,7 @@ object Routes {
     const val OVERVIEW = "workout/{workoutId}"
     const val EXECUTION = "execution/{workoutId}"
     const val SETTINGS = "settings"
+    const val PRIVACY = "privacy"
     const val COACH = "coach"
 
     fun category(muscle: Muscle) = "library/${muscle.name}"
@@ -228,8 +230,10 @@ fun AppNav() {
 
         composable(Routes.SETTINGS) {
             val settingsVm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
-            SettingsScreen(viewModel = settingsVm, onBack = nav.popOnce())
+            SettingsScreen(viewModel = settingsVm, onBack = nav.popOnce(), onOpenPrivacy = nav.navigateOnce(Routes.PRIVACY))
         }
+
+        composable(Routes.PRIVACY) { PrivacyScreen(onBack = nav.popOnce()) }
 
         composable(Routes.PICK_LIBRARY) {
             // A fresh, pick-scoped Library filter — independent of the Library tab's state.

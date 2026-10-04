@@ -64,7 +64,7 @@ private val KEY_STEPS = listOf(
  * The saved key is never shown back, not even masked — the field only takes a new one.
  */
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
+fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit, onOpenPrivacy: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
     val context = LocalContext.current
@@ -164,6 +164,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     color = colors.textMuted,
                 )
             }
+            item { TextAction("How your data is used", onClick = onOpenPrivacy) }
 
             item { Spacer(Modifier.height(8.dp)) }
             item { SectionLabel("Appearance") }
@@ -191,6 +192,20 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                         style = AppType.cardMeta,
                         color = colors.textMuted,
                     )
+                }
+            }
+            item {
+                HairlineCard(Modifier.fillMaxWidth(), onClick = onOpenPrivacy) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = Dimens.cardPadding, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Privacy", style = AppType.cardTitle, color = colors.onBackground)
+                            Text("How your data is handled", style = AppType.cardMeta, color = colors.textMuted)
+                        }
+                        Text("›", style = AppType.heroName, color = colors.onBackground)
+                    }
                 }
             }
         }
