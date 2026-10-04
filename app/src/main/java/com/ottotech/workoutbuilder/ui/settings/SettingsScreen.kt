@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Switch
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +49,15 @@ import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 
-private const val KEYS_URL = "https://console.anthropic.com/settings/keys"
+private const val KEYS_URL = "https://platform.claude.com/settings/keys"
+
+private val KEY_STEPS = listOf(
+    "Open the Claude Console and sign in, or create an account. It's separate from a Claude.ai subscription.",
+    "Under Billing, add some credit. \$5 covers dozens of workouts.",
+    "Go to API keys and tap Create key. Any name works, e.g. BLDR.",
+    "Copy the key. It starts with sk-ant- and is only shown once.",
+    "Come back here, paste it above and tap Save key.",
+)
 
 /**
  * Spec §6.7: the Coach's API key, the theme and the cue sound switch (keep-screen-on is deferred).
@@ -59,6 +69,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val colors = LocalAppColors.current
     val context = LocalContext.current
     var confirmRemove by remember { mutableStateOf(false) }
+    // Saveable: opening the browser to fetch a key can get this activity recreated.
+    var showKeySteps by rememberSaveable { mutableStateOf(false) }
     // Read once here: a remember inside a lazy item is dropped whenever it scrolls away.
     val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).versionName }
 
@@ -117,9 +129,30 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     )
                 }
                 item {
-                    TextAction("Get a key at console.anthropic.com", onClick = {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(KEYS_URL)))
-                    })
+                    TextAction(
+                        if (showKeySteps) "Hide steps" else "How do I get a key?",
+                        onClick = { showKeySteps = !showKeySteps },
+                    )
+                }
+                if (showKeySteps) {
+                    item {
+                        HairlineCard(Modifier.fillMaxWidth()) {
+                            Column(
+                                Modifier.padding(horizontal = Dimens.cardPadding, vertical = 14.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                KEY_STEPS.forEachIndexed { i, step ->
+                                    Row {
+                                        Text("${i + 1}.", style = AppType.cardMeta, color = colors.onBackground, modifier = Modifier.width(22.dp))
+                                        Text(step, style = AppType.cardMeta, color = colors.onBackground)
+                                    }
+                                }
+                                TextAction("Open Claude Console", onClick = {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(KEYS_URL)))
+                                })
+                            }
+                        }
+                    }
                 }
             }
 
