@@ -24,7 +24,7 @@ Two features:
 
 ## Where it lives in Settings
 
-A new **Help** section above About with two rows: **How to use BLDR** (topic list) and **Replay welcome tour**.
+In the About section, above Privacy: **How to use BLDR** (topic list) and **Replay welcome tour** (moved from a separate Help section at the user's request; the font-licence credit line was removed at the same time).
 
 ## Welcome tour cards
 

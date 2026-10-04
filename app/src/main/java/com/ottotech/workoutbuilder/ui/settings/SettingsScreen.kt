@@ -180,22 +180,14 @@ fun SettingsScreen(
             item { SettingSwitch("Voice announcements", checked = state.voiceOn, onCheckedChange = viewModel::onVoiceOn) }
 
             item { Spacer(Modifier.height(8.dp)) }
-            item { SectionLabel("Help") }
-            item { LinkCard("How to use BLDR", "Step-by-step guides with animations", onClick = onOpenHelp) }
-
-            item { Spacer(Modifier.height(8.dp)) }
             item { SectionLabel("About") }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     BldrLogo(height = 24.dp)
                     Text("Version $version", style = AppType.cardMeta, color = colors.textMuted)
-                    Text(
-                        "Set in Archivo and Space Grotesk, used under the SIL Open Font License.",
-                        style = AppType.cardMeta,
-                        color = colors.textMuted,
-                    )
                 }
             }
+            item { LinkCard("How to use BLDR", "Step-by-step guides with animations", onClick = onOpenHelp) }
             item { LinkCard("Privacy", "How your data is handled", onClick = onOpenPrivacy) }
         }
     }
