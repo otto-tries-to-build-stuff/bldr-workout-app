@@ -9,23 +9,11 @@ package com.ottotech.workoutbuilder.ui.help
 /** Steps from a button tap to the next beat: the fingertip shows, presses and lifts. */
 private const val TAP = 700
 
-/** Also shown in Settings under "How do I get a key?", so the two can never disagree. */
-val KEY_STEPS = listOf(
-    "Open the Claude Console and sign in, or create an account. It's separate from a Claude.ai subscription.",
-    "Under Billing, add some credit. \$5 covers dozens of workouts.",
-    "Go to API keys and tap Create key. Any name works, e.g. BLDR.",
-    "Copy the key. It starts with sk-ant- and is only shown once.",
-    "Come back here, paste it above and tap Save key.",
-)
-
-const val KEYS_URL = "https://platform.claude.com/settings/keys"
-
 enum class BuildBeat { Home, TapBuild, Sheet, TapYourself, Name, TapAdd, Added, TapTimed, TapRounds, TapRest, TapSave, Saved }
 enum class CoachBeat { KeySaved, TapBuild, Sheet, TapCoach, Goal, TapLength, TapKit, TapGo, Drafting, Draft, Tweak, Tweaked, TapSave, Saved }
 enum class RunBeat { TapWorkout, Overview, TapStart, GetReady, Timer, Reps, TapDone, TapPause, Paused, TapSkip, TapDemo, TapMute, Locked }
 enum class FindBeat { TapTab, Library, Search, TapFilters, Filters, TapChip, TapTile, Category, TapExercise, Detail, TapDemo, Paste, TapSaveLink, LinkSaved }
 enum class EditBeat { TapMenu, Menu, TapEdit, Builder, TapSave, TapMenuAgain, TapDelete, Confirm, TapConfirm, Gone }
-enum class KeyBeat { Console, Billing, TapCreate, Created, TapCopy, Copied, Settings, Paste, TapSaveKey, KeySaved }
 
 enum class HelpTopic(val title: String, val summary: String, val steps: List<String>, val script: Script) {
     BuildYourself(
@@ -52,7 +40,7 @@ enum class HelpTopic(val title: String, val summary: String, val steps: List<Str
         title = "Ask the Coach",
         summary = "Describe your goal and get a workout drafted.",
         steps = listOf(
-            "Add your API key in Settings first (see **Set up the Coach**).",
+            "Add your API key in Settings first. Tap **How do I get a key?** there for the steps.",
             "Tap **BUILD A WORKOUT**, then **Ask the Coach**.",
             "Say what you're training for, then pick a length and your equipment.",
             "Tap **BUILD MY WORKOUT** and wait for the draft.",
@@ -120,18 +108,6 @@ enum class HelpTopic(val title: String, val summary: String, val steps: List<Str
             step(EditBeat.TapMenuAgain to TAP + 300, EditBeat.TapDelete to TAP, EditBeat.Confirm to 500, EditBeat.TapConfirm to TAP, EditBeat.Gone to 1800)
         },
     ),
-    SetUpCoach(
-        title = "Set up the Coach",
-        summary = "Add your Anthropic API key.",
-        steps = KEY_STEPS,
-        script = script {
-            step(KeyBeat.Console to 1400)
-            step(KeyBeat.Billing to 1500)
-            step(KeyBeat.TapCreate to TAP, KeyBeat.Created to 700)
-            step(KeyBeat.TapCopy to TAP, KeyBeat.Copied to 600)
-            step(KeyBeat.Settings to 500, KeyBeat.Paste to 900, KeyBeat.TapSaveKey to TAP, KeyBeat.KeySaved to 1800)
-        },
-    ),
 }
 
 enum class TourBuildBeat { RowsIn, Flip, Rounds, Hold }
@@ -158,7 +134,7 @@ enum class WelcomeCard(val title: String, val body: String, val script: Script?)
     ),
     Train(
         title = "TRAIN HANDS-FREE",
-        body = "A big timer, voice and sound cues, and it keeps going with the screen off.",
+        body = "A timer, voice and sound cues that keep going, even when your phone is locked.",
         script = script { step(TourTrainBeat.Count to 1400, TourTrainBeat.Voice to 1400, TourTrainBeat.Dim to 1800, TourTrainBeat.Hold to 600) },
     ),
     Private(

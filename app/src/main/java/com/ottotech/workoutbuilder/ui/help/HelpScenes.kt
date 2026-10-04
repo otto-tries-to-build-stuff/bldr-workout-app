@@ -56,7 +56,6 @@ fun TopicScene(topic: HelpTopic, clock: ScriptClock) {
         HelpTopic.RunWorkout -> RunWorkoutScene(pos)
         HelpTopic.FindExercises -> FindExercisesScene(pos)
         HelpTopic.EditOrDelete -> EditOrDeleteScene(pos)
-        HelpTopic.SetUpCoach -> SetUpCoachScene(pos)
     }
 }
 
@@ -142,7 +141,7 @@ private fun AskCoachScene(pos: ScenePosition) {
                     MiniBuildSheet(rise = ease(pos.progressOf(CoachBeat.Sheet)), coachTap = pos.during(CoachBeat.TapCoach))
                 }
             },
-            over = { MiniSettingsKey(saved = true) },
+            over = { MiniSettingsKey() },
         )
         !pos.reached(CoachBeat.Drafting) -> Push(
             enter = pos.enter(CoachBeat.Goal),
@@ -315,75 +314,6 @@ private fun EditOrDeleteScene(pos: ScenePosition) {
             )
         },
     )
-}
-
-// ---- Set up the Coach ------------------------------------------------------------------------
-
-@Composable
-private fun SetUpCoachScene(pos: ScenePosition) {
-    when {
-        !pos.reached(KeyBeat.Billing) -> MiniBrowser {
-            Text("Claude Console", style = AppType.heroName, color = LocalAppColors.current.onBackground)
-            Spacer(Modifier.height(6.dp))
-            Text("Sign in or create an account", style = AppType.cardMeta, color = LocalAppColors.current.textMuted)
-            Spacer(Modifier.height(24.dp))
-            MiniButton("Continue with email", Modifier.fillMaxWidth().tapHint(window(pos.during(KeyBeat.Console), 0.4f, 1f)))
-        }
-        !pos.reached(KeyBeat.TapCreate) -> MiniBrowser {
-            val colors = LocalAppColors.current
-            Text("Billing", style = AppType.heroName, color = colors.onBackground)
-            Spacer(Modifier.height(20.dp))
-            HairlineCard(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(18.dp)) {
-                    Text("Credit balance", style = AppType.cardMeta, color = colors.textMuted)
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        if (pos.progress > 0.55f) "\$5.00" else "\$0.00",
-                        style = AppType.heroName,
-                        color = colors.onBackground,
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    MiniButton("Add credit", Modifier.fillMaxWidth().tapHint(window(pos.progress, 0.1f, 0.6f)))
-                }
-            }
-        }
-        !pos.reached(KeyBeat.Settings) -> MiniBrowser {
-            val colors = LocalAppColors.current
-            Text("API keys", style = AppType.heroName, color = colors.onBackground)
-            Spacer(Modifier.height(20.dp))
-            if (!pos.tapped(KeyBeat.TapCreate)) {
-                Text("No keys yet.", style = AppType.cardMeta, color = colors.textMuted)
-                Spacer(Modifier.height(16.dp))
-                MiniButton("Create key", Modifier.fillMaxWidth().tapHint(pos.during(KeyBeat.TapCreate)))
-            } else {
-                HairlineCard(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(18.dp)) {
-                        Text("BLDR", style = AppType.cardTitle, color = colors.onBackground)
-                        Spacer(Modifier.height(10.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("sk-ant-api03-••••••", style = AppType.cardMeta, color = colors.onBackground, modifier = Modifier.weight(1f))
-                            MiniChip(
-                                if (pos.tapped(KeyBeat.TapCopy)) "Copied ✓" else "Copy",
-                                selected = false,
-                                modifier = Modifier.tapHint(pos.during(KeyBeat.TapCopy)),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        else -> Push(
-            enter = pos.enter(KeyBeat.Settings),
-            under = { MiniBrowser {} },
-            over = {
-                MiniSettingsKey(
-                    saved = pos.tapped(KeyBeat.TapSaveKey),
-                    pasted = pos.progressOf(KeyBeat.Paste) > 0.4f,
-                    saveTap = pos.during(KeyBeat.TapSaveKey),
-                )
-            },
-        )
-    }
 }
 
 // ---- Shared mini-screens ---------------------------------------------------------------------
@@ -586,30 +516,22 @@ private fun MiniItem(item: MiniExercise, timedTap: Float, modifier: Modifier = M
     }
 }
 
-/** Settings' API key section, empty, pasted into, or saved. */
+/** Settings with an API key saved. */
 @Composable
-private fun MiniSettingsKey(saved: Boolean, pasted: Boolean = false, saveTap: Float = 0f) {
+private fun MiniSettingsKey() {
     val colors = LocalAppColors.current
     Column(Modifier.fillMaxSize().background(colors.background).padding(horizontal = 20.dp)) {
         MiniHeader("SETTINGS")
         SectionLabel("Anthropic API key")
         Spacer(Modifier.height(12.dp))
-        if (saved) {
-            HairlineCard(Modifier.fillMaxWidth()) {
-                Row(Modifier.padding(horizontal = 18.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Key saved", style = AppType.cardTitle, color = colors.onBackground)
-                        Text("Stored encrypted on this phone", style = AppType.cardMeta, color = colors.textMuted)
-                    }
-                    Text("Remove", style = AppType.chip, color = colors.onBackground)
+        HairlineCard(Modifier.fillMaxWidth()) {
+            Row(Modifier.padding(horizontal = 18.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Key saved", style = AppType.cardTitle, color = colors.onBackground)
+                    Text("Stored encrypted on this phone", style = AppType.cardMeta, color = colors.textMuted)
                 }
+                Text("Remove", style = AppType.chip, color = colors.onBackground)
             }
-        } else {
-            MiniField(if (pasted) "••••••••••••••••••" else "", "sk-ant-…", style = AppType.heroMeta)
-            Spacer(Modifier.height(12.dp))
-            MiniButton("SAVE KEY", Modifier.fillMaxWidth().tapHint(saveTap))
-            Spacer(Modifier.height(14.dp))
-            Text("How do I get a key?", style = AppType.chip, color = colors.onBackground)
         }
         Spacer(Modifier.height(16.dp))
         Text(
@@ -1130,21 +1052,5 @@ private fun MiniDialog(title: String, body: String, confirm: String, dismiss: St
                 Text(confirm, style = AppType.chip, color = colors.onBackground.copy(alpha = appear), modifier = Modifier.tapHint(confirmTap))
             }
         }
-    }
-}
-
-/** A plain browser window: an address bar over a web page. */
-@Composable
-private fun MiniBrowser(page: @Composable () -> Unit) {
-    val colors = LocalAppColors.current
-    Column(Modifier.fillMaxSize().background(colors.background)) {
-        Box(Modifier.fillMaxWidth().background(colors.surface).padding(horizontal = 16.dp, vertical = 14.dp)) {
-            Box(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.background).padding(horizontal = 16.dp, vertical = 9.dp),
-            ) {
-                Text("platform.claude.com", style = AppType.cardMeta, color = colors.textMuted)
-            }
-        }
-        Column(Modifier.padding(24.dp)) { page() }
     }
 }

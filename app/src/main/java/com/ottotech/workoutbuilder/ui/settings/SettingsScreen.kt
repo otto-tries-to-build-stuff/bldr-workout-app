@@ -37,8 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ottotech.workoutbuilder.domain.ThemeMode
 import com.ottotech.workoutbuilder.ui.brand.BldrLogo
-import com.ottotech.workoutbuilder.ui.help.KEYS_URL
-import com.ottotech.workoutbuilder.ui.help.KEY_STEPS
 import com.ottotech.workoutbuilder.ui.components.AppTextField
 import com.ottotech.workoutbuilder.ui.components.Chip
 import com.ottotech.workoutbuilder.ui.components.ConfirmDialog
@@ -51,6 +49,16 @@ import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
+
+private val KEY_STEPS = listOf(
+    "Open the Claude Console and sign in, or create an account. It's separate from a Claude.ai subscription.",
+    "Under Billing, add some credit. \$5 covers dozens of workouts.",
+    "Go to API keys and tap Create key. Any name works, e.g. BLDR.",
+    "Copy the key. It starts with sk-ant- and is only shown once.",
+    "Come back here, paste it above and tap Save key.",
+)
+
+private const val KEYS_URL = "https://platform.claude.com/settings/keys"
 
 /**
  * Spec §6.7: the Coach's API key, the theme and the cue sound switch (keep-screen-on is deferred).

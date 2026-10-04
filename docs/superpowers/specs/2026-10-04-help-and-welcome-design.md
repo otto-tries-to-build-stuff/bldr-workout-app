@@ -9,7 +9,7 @@ A new person opens BLDR and within a minute or two knows what it does and how to
 Two features:
 
 1. **Welcome tour** — a full-screen, five-card carousel shown on first open. Skip on every card, page dots, Next → **GET STARTED** on the last card. Shown once (existing installs see it once after updating); replayable from Settings.
-2. **How to use BLDR** — six topics in Settings, each a page with a looping animation of the job and numbered steps that light up in sync with it.
+2. **How to use BLDR** — five topics in Settings, each a page with a looping animation of the job and numbered steps that light up in sync with it.
 
 ## Decisions
 
@@ -18,7 +18,7 @@ Two features:
 - **Synced steps.** The step the animation is showing is lit (bold, filled number); tapping a step jumps the animation to that step's first beat.
 - **Reduced motion** (system animator scale 0): no frames scheduled; each step shows its still frame, and tapping a step changes the frame. Same rule as the brand loaders.
 - **Battery:** a player only ticks while composed and visible (tour pages off-screen and left topic pages stop).
-- **Content in one file** (wording + scripts), so wording edits are one-line changes. Topic 6's steps reuse the Settings `KEY_STEPS` list verbatim.
+- **Content in one file** (wording + scripts), so wording edits are one-line changes. 
 - **Tour fills the first-launch wait.** On a fresh install seeding takes ~10 s; the tour shows immediately instead of the loader. If GET STARTED is tapped before seeding finishes, the existing `LaunchLoader` shows for the remainder.
 - The "seen tour" flag lives in `AppPrefs` (SharedPreferences), like the other one-shot flags.
 
@@ -33,7 +33,7 @@ In the About section, above Privacy: **How to use BLDR** (topic list) and **Repl
 | 1 | WELCOME TO BLDR | Build workouts that fit you, then train with a timer that coaches you through them. | The striped B builds (existing brand motion). |
 | 2 | BUILD IT YOUR WAY | Pick from 100 exercises. Set reps or timers, rounds and rests. | Exercise rows drop into a workout card; a Reps tag flips to Timed; "× 3 rounds" appears. |
 | 3 | OR ASK THE COACH | Describe your goal and get a workout drafted for you. Tweak it until it's right. | "30 min legs, dumbbells" types in, the B loader plays, a workout card appears. |
-| 4 | TRAIN HANDS-FREE | A big timer, voice and sound cues, and it keeps going with the screen off. | Timer ring counts down, "Next up: Squats" pops up, the screen dims while the ring keeps going. |
+| 4 | TRAIN HANDS-FREE | A timer, voice and sound cues that keep going, even when your phone is locked. | Timer ring counts down, "Next up: Squats" pops up, the screen dims while the ring keeps going. |
 | 5 | PRIVATE BY DESIGN | Your workouts stay on your phone. No accounts, no ads, no tracking. | A workout card slides into a phone outline and a padlock closes. Button: GET STARTED. |
 
 ## How-to topics
@@ -41,11 +41,12 @@ In the About section, above Privacy: **How to use BLDR** (topic list) and **Repl
 Each topic: title, one-line summary (for the list), steps, and an animation whose beats walk through the steps in order.
 
 1. **Build a workout yourself** — (1) On Home, tap BUILD A WORKOUT, then Build it yourself. (2) Give your workout a name. (3) Tap + Add exercise and pick from the Library. (4) For each exercise, choose Timed, Reps or Manual, then set the time, or the sets and reps. (5) Set Rounds to repeat a section, and choose rests between exercises and rounds. Use + Add section for a warm-up or finisher. (6) Tap SAVE WORKOUT.
-2. **Ask the Coach** — (1) Add your API key in Settings first (see Set up the Coach). (2) Tap BUILD A WORKOUT, then Ask the Coach. (3) Say what you're training for, then pick a length and your equipment. (4) Tap BUILD MY WORKOUT and wait for the draft. (5) Not quite right? Type a change into Tweak, e.g. "swap lunges for step-ups", or tap Regenerate for a fresh take. (6) Tap SAVE to add it to your workouts.
+2. **Ask the Coach** — (1) Add your API key in Settings first. Tap How do I get a key? there for the steps. (2) Tap BUILD A WORKOUT, then Ask the Coach. (3) Say what you're training for, then pick a length and your equipment. (4) Tap BUILD MY WORKOUT and wait for the draft. (5) Not quite right? Type a change into Tweak, e.g. "swap lunges for step-ups", or tap Regenerate for a fresh take. (6) Tap SAVE to add it to your workouts.
 3. **Run a workout** — (1) Tap a workout on Home, check the overview, then tap START. (2) A short Get ready countdown names the first exercise. (3) Timed exercises count down on the ring. For reps, tap Done › when you've finished. (4) Tap Pause any time. Skip › moves on, and ↺ Restart resets the clock. (5) Tap Watch demo to see how an exercise is done. The speaker icon mutes the cues. (6) Lock your phone if you like. The timer and voice cues keep going.
 4. **Find exercises** — (1) Open the Library tab at the bottom. (2) Browse by muscle, or search by name. (3) Tap Filters to narrow by type, equipment, movement pattern or extra muscles worked. (4) Tap an exercise to see its tags, then tap WATCH DEMO. (5) Prefer a different demo? Paste a video link and tap SAVE LINK.
 5. **Edit or delete a workout** — (1) On Home, tap ⋯ next to a workout. (2) Tap Edit to change it, then SAVE WORKOUT. You can also tap Edit on a workout's overview. (3) Or tap Delete and confirm. This can't be undone.
-6. **Set up the Coach** — the five Settings key steps, plus an Open Claude Console button. Animation: a key is created, copied, pasted into Settings, and the field turns into "Key saved".
+
+Removed after review (2026-10-04): a sixth topic, **Set up the Coach**, drew the Claude Console website, which is not part of the app; Settings' own "How do I get a key?" steps cover it.
 
 ## Pieces
 
@@ -57,7 +58,7 @@ Each topic: title, one-line summary (for the list), steps, and an animation whos
 
 ## Testing
 
-- JVM tests: every step has at least one beat; beats are in step order; step-start lookup and beat-at-time lookup are correct, including the loop wrap; topic 6 steps equal Settings' key steps.
+- JVM tests: every step has at least one beat; beats are in step order; step-start lookup and beat-at-time lookup are correct, including the loop wrap.
 - Emulator: fresh install (tour during seeding, Skip, Get started), Replay from Settings, every topic, animations off, dark mode, 200% font, small screen.
 
 ## Build order

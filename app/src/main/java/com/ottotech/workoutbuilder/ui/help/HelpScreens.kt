@@ -1,7 +1,5 @@
 package com.ottotech.workoutbuilder.ui.help
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -44,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ottotech.workoutbuilder.ui.components.LinkCard
 import com.ottotech.workoutbuilder.ui.components.ScreenHeader
-import com.ottotech.workoutbuilder.ui.components.TextAction
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
@@ -81,7 +77,6 @@ fun HelpScreen(onOpenTopic: (HelpTopic) -> Unit, onBack: () -> Unit) {
 @Composable
 fun HelpTopicScreen(topic: HelpTopic, onBack: () -> Unit) {
     val colors = LocalAppColors.current
-    val context = LocalContext.current
     val clock = rememberScriptClock(topic.script)
     // Derived, so only a change of step recomposes the list, not every animation frame.
     val lit by remember(clock) { derivedStateOf { clock.position.step } }
@@ -112,13 +107,6 @@ fun HelpTopicScreen(topic: HelpTopic, onBack: () -> Unit) {
         ) {
             topic.steps.forEachIndexed { i, step ->
                 StepRow(number = i + 1, text = step, lit = i == lit, onClick = { clock.show(i) })
-            }
-            if (topic == HelpTopic.SetUpCoach) {
-                TextAction(
-                    "Open Claude Console",
-                    modifier = Modifier.padding(start = 8.dp),
-                    onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(KEYS_URL))) },
-                )
             }
         }
     }

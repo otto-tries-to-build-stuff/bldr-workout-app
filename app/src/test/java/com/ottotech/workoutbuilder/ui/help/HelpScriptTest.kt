@@ -77,11 +77,6 @@ class HelpScriptTest {
     }
 
     @Test
-    fun `the key topic uses the Settings key steps word for word`() {
-        assertEquals(KEY_STEPS, HelpTopic.SetUpCoach.steps)
-    }
-
-    @Test
     fun `bold markers split into runs, unpaired markers stay as text`() {
         assertEquals(
             listOf("Tap " to false, "SAVE" to true, " now." to false),
