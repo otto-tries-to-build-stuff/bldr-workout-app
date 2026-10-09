@@ -16,6 +16,9 @@ ksp = "2.2.10-2.0.2"
 # Room 2.x deliberately, not the androidx.room3 KMP rewrite: this app is Android-only,
 # so Room 3 buys nothing and changes every DAO call to a coroutine.
 room = "2.8.0"
+# Design previews only (see .claude/skills/design-preview): render real screens on the JVM.
+robolectric = "4.17"
+roborazzi = "1.76.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,6 +32,7 @@ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graph
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 # kotlin-test-junit, not plain kotlin-test: without the Kotlin Gradle plugin applied
@@ -39,6 +43,8 @@ kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", vers
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

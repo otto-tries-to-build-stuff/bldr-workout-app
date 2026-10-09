@@ -33,3 +33,8 @@ desktop.ini
 docs/superpowers/
 .superpowers/
 brag-output*/
+
+# Claude Code: parallel worktrees, personal settings, and the types the engine lays beside a mod
+.claude/worktrees/
+.claude/settings.local.json
+.claude/skills/*/.claude-plugin/types/

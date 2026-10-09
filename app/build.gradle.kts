@@ -38,6 +38,26 @@ android {
         compose = true
     }
 
+    testOptions {
+        unitTests {
+            // Robolectric needs the merged resources to draw real screens.
+            isIncludeAndroidResources = true
+            // Screenshots are slow, so they only run on request: `testDebugUnitTest -Pscreenshots`
+            // runs them alone, a plain test run leaves them out.
+            all { test ->
+                if (project.hasProperty("screenshots")) {
+                    test.filter.includeTestsMatching("*.screenshots.*")
+                    test.systemProperty("roborazzi.test.record", "true")
+                    // Robolectric reaches into JDK internals that newer JDKs keep closed.
+                    test.jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+                    test.outputs.upToDateWhen { false }
+                } else {
+                    test.exclude("**/screenshots/**")
+                }
+            }
+        }
+    }
+
     // The SDK pulls in Apache httpclient5/httpcore5, whose duplicate META-INF files otherwise
     // fail mergeDebugJavaResource.
     packaging {
@@ -71,4 +91,8 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
 }
