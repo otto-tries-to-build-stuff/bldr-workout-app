@@ -103,18 +103,25 @@ class ScreenshotTour(private val theme: ThemeMode) {
         tap("START")
         // The screen asks the workout service to start; Robolectric records that request but
         // doesn't run services, so start it by hand.
-        val start = shadowOf(app).nextStartedService
-        Robolectric.buildService(ExecutionService::class.java, start).create().startCommand(0, 1)
-        waitForText("Leg Swings")
-        shoot("workout-get-ready")
+        val service = Robolectric.buildService(ExecutionService::class.java, shadowOf(app).nextStartedService)
+        service.create().startCommand(0, 1)
+        try {
+            waitForText("Leg Swings")
+            shoot("workout-get-ready")
 
-        // Past the get-ready countdown into the first exercise. The service's clock ticks on a
-        // real background thread, so give it real time to notice the jump.
-        ShadowSystemClock.advanceBy(Duration.ofSeconds(15))
-        compose.waitUntil(timeoutMillis = 10_000) {
-            compose.onAllNodesWithText("First up").fetchSemanticsNodes().isEmpty()
+            // Past the get-ready countdown into the first exercise. The service's clock ticks on
+            // a real background thread, so give it real time to notice the jump.
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(15))
+            compose.waitUntil(timeoutMillis = 10_000) {
+                compose.onAllNodesWithText("First up").fetchSemanticsNodes().isEmpty()
+            }
+            shoot("workout-timer")
+        } finally {
+            // The workout's state outlives the service, so end it or the next theme's run
+            // finds this workout already going.
+            ExecutionService.stop(app)
+            service.withIntent(shadowOf(app).nextStartedService).startCommand(0, 2)
         }
-        shoot("workout-timer")
     }
 
     private fun launch(welcomeSeen: Boolean) {
