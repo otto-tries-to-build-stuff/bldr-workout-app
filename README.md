@@ -9,6 +9,15 @@ drafts a workout from a goal you describe, using your own Anthropic API key.
 
 Everything is stored on your phone. There are no accounts, no ads, no analytics and no backend.
 
+## Download
+
+**[Download the latest BLDR.apk](https://github.com/otto-tries-to-build-stuff/bldr-workout-app/releases/latest/download/BLDR.apk)**
+(Android 8.0 or later) · [all releases](https://github.com/otto-tries-to-build-stuff/bldr-workout-app/releases)
+
+Open the file on your phone to install it. Android will ask you to allow installs from your
+browser or file app. BLDR isn't on the Play Store, so Google Play Protect may warn that it
+doesn't recognise the app: tap **More details**, then **Install anyway**.
+
 ## Why I built this
 
 I'd been building HIIT workouts with Claude as small web pages, but a web page only keeps its
