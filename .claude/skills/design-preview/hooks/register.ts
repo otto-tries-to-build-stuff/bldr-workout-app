@@ -33,10 +33,12 @@ async function git($: EngineInterface, args: string[], cwd?: string) {
   return { ok: ran.exitCode === 0, out: ran.stdout.trim() }
 }
 
-/** The main checkout's folder: the parent of the repository's shared .git folder. */
-async function mainRoot($: EngineInterface): Promise<string | undefined> {
-  const { ok, out } = await git($, ['rev-parse', '--path-format=absolute', '--git-common-dir'])
-  return ok ? norm(out).replace(/\/\.git$/, '') : undefined
+/** The main checkout's folder: the parent of the repository's shared .git folder. Looked up once. */
+let mainRootLookup: Promise<string | undefined> | undefined
+function mainRoot($: EngineInterface): Promise<string | undefined> {
+  mainRootLookup ??= git($, ['rev-parse', '--path-format=absolute', '--git-common-dir'])
+    .then(({ ok, out }) => (ok ? norm(out).replace(/\/\.git$/, '') : undefined))
+  return mainRootLookup
 }
 
 /** The folder a shell command runs git in: its `cd` or `git -C`, else the session's. */
@@ -60,8 +62,7 @@ async function localBranches($: EngineInterface, cwd: string): Promise<Map<strin
 }
 
 /** The branches a command would carry into main, or none when it leaves main alone. */
-async function incomingBranches($: EngineInterface, command: string, cwd: string): Promise<string[]> {
-  const branches = await localBranches($, cwd)
+async function incomingBranches($: EngineInterface, command: string, cwd: string, branches: Map<string, string>): Promise<string[]> {
   const named = [...branches.keys()].filter(b => b !== MAIN && new RegExp(`(^|[\\s:/'"])${b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[\\s:'"])`).test(command))
   const { out: current } = await git($, ['rev-parse', '--abbrev-ref', 'HEAD'], cwd)
 
@@ -104,7 +105,7 @@ export const register: Register = on => {
       const approvals = ((await $.store.get(APPROVALS)) ?? {}) as Approvals
       const heads = await localBranches($, cwd)
 
-      for (const branch of await incomingBranches($, command, cwd)) {
+      for (const branch of await incomingBranches($, command, cwd, heads)) {
         const files = await designChanges($, branch, cwd)
         if (files.length === 0 || approvals[branch] === heads.get(branch)) continue
         const changed = approvals[branch] === undefined ? 'has not been approved' : 'changed after it was approved'

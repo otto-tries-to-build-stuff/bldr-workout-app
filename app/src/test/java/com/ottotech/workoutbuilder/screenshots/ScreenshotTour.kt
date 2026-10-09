@@ -1,7 +1,6 @@
 package com.ottotech.workoutbuilder.screenshots
 
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -137,9 +136,6 @@ class ScreenshotTour(private val theme: ThemeMode) {
 
     private fun exists(text: String) = compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
 
-    private fun node(text: String): SemanticsNodeInteraction =
-        compose.onAllNodesWithText(text, substring = true).onFirst()
-
     private fun tap(text: String) {
         // Give the screen a moment to load; if the item still isn't there, it's further down a
         // list that only composes what's on screen, so scroll the list to it.
@@ -148,7 +144,7 @@ class ScreenshotTour(private val theme: ThemeMode) {
             compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText(text, substring = true))
         }
         waitForText(text)
-        node(text).performClick()
+        compose.onAllNodesWithText(text, substring = true).onFirst().performClick()
         compose.waitForIdle()
     }
 
