@@ -45,13 +45,14 @@ fun TimerRing(
     } else {
         Modifier
     }
+    val colors = ExecutionColors
     Box(modifier.size(Dimens.ringSize).then(tappable), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(Dimens.ringSize)) {
             val stroke = Dimens.ringStroke.toPx()
             val inset = stroke / 2f
             val arcSize = Size(size.width - stroke, size.height - stroke)
             drawArc(
-                color = ExecutionColors.ringTrack,
+                color = colors.ringTrack,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -60,7 +61,7 @@ fun TimerRing(
                 style = Stroke(width = stroke, cap = StrokeCap.Round),
             )
             drawArc(
-                color = ExecutionColors.ringProgress,
+                color = colors.ringProgress,
                 startAngle = -90f,
                 sweepAngle = 360f * progress.coerceIn(0f, 1f),
                 useCenter = false,
@@ -77,13 +78,13 @@ fun TimerRing(
             BasicText(
                 centreTop,
                 style = AppType.timerDigits,
-                color = { ExecutionColors.onBackground },
+                color = { colors.onBackground },
                 maxLines = 1,
                 // 2 sp steps: this re-measures every second, and finer steps buy nothing visible.
                 autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = AppType.timerDigits.fontSize, stepSize = 2.sp),
                 modifier = Modifier.widthIn(max = Dimens.ringSize - Dimens.ringStroke * 2 - 24.dp),
             )
-            Text(centreBottom, style = AppType.timerCaption, color = ExecutionColors.textMuted)
+            Text(centreBottom, style = AppType.timerCaption, color = colors.textMuted)
         }
     }
 }

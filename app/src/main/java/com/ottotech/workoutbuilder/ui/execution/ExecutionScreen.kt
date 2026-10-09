@@ -470,7 +470,7 @@ private fun ControlButton(text: String, filled: Boolean, onClick: () -> Unit, mo
     }
 }
 
-/** "Quit this workout?" confirmation, in the execution screen's always-dark palette. */
+/** "Quit this workout?" confirmation, in the execution screen's palette. */
 @Composable
 private fun DiscardWorkoutDialog(onKeepGoing: () -> Unit, onQuit: () -> Unit) {
     ConfirmDialog(

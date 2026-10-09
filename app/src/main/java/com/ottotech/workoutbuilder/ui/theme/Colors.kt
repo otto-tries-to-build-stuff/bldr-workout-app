@@ -1,6 +1,8 @@
 package com.ottotech.workoutbuilder.ui.theme
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
@@ -66,18 +68,47 @@ val DarkColors = AppColors(
 )
 
 /**
- * The workout execution screen is always dark, in both themes — it is a focus mode.
- * Spec §5.
+ * The workout execution screen's colours. Originally always dark (spec §5, "focus mode");
+ * since 2026-10 it follows the app theme like every other screen, so Light is white.
  */
-object ExecutionColors {
-    val background = Color(0xFF0B0B0D)
-    val card = Color(0xFF18181C)
-    val border = Color(0x24FFFFFF)
-    val borderStrong = Color(0x33FFFFFF)
-    val ringTrack = Color(0x1FFFFFFF)
-    val ringProgress = Color(0xFFFFFFFF)
-    val onBackground = Color(0xFFFFFFFF)
-    val textMuted = Color(0xFF9A9A9A)
-}
+@Immutable
+data class ExecutionPalette(
+    val background: Color,
+    val card: Color,
+    val border: Color,
+    val borderStrong: Color,
+    val ringTrack: Color,
+    val ringProgress: Color,
+    val onBackground: Color,
+    val textMuted: Color,
+)
+
+val LightExecutionColors = ExecutionPalette(
+    background = Color(0xFFFFFFFF),
+    card = Color(0xFFF1F1EF),
+    border = Color(0x21000000),
+    borderStrong = Color(0x33000000),
+    ringTrack = Color(0x1F000000),
+    ringProgress = Color(0xFF0B0B0D),
+    onBackground = Color(0xFF0A0A0A),
+    textMuted = Color(0xFF6B6B6B),     // AA on white and on the card, as LightColors.textMuted
+)
+
+val DarkExecutionColors = ExecutionPalette(
+    background = Color(0xFF0B0B0D),
+    card = Color(0xFF18181C),
+    border = Color(0x24FFFFFF),
+    borderStrong = Color(0x33FFFFFF),
+    ringTrack = Color(0x1FFFFFFF),
+    ringProgress = Color(0xFFFFFFFF),
+    onBackground = Color(0xFFFFFFFF),
+    textMuted = Color(0xFF9A9A9A),
+)
 
 val LocalAppColors = staticCompositionLocalOf { LightColors }
+
+val LocalExecutionColors = staticCompositionLocalOf { LightExecutionColors }
+
+/** The current theme's [ExecutionPalette]; reads like a plain object at call sites. */
+val ExecutionColors: ExecutionPalette
+    @Composable @ReadOnlyComposable get() = LocalExecutionColors.current

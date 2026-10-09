@@ -39,6 +39,7 @@ import com.ottotech.workoutbuilder.ui.execution.PlayGlyph
 import com.ottotech.workoutbuilder.ui.execution.TimerRing
 import com.ottotech.workoutbuilder.ui.theme.AppType
 import com.ottotech.workoutbuilder.ui.theme.Dimens
+import com.ottotech.workoutbuilder.ui.theme.DarkExecutionColors
 import com.ottotech.workoutbuilder.ui.theme.ExecutionColors
 import com.ottotech.workoutbuilder.ui.theme.LocalAppColors
 
@@ -711,7 +712,7 @@ private fun MiniOverview(startTap: Float) {
     }
 }
 
-/** The always-dark "GET READY" countdown before the first exercise. */
+/** The "GET READY" countdown before the first exercise. */
 @Composable
 private fun MiniLeadIn(count: Int) {
     Column(
@@ -728,7 +729,7 @@ private fun MiniLeadIn(count: Int) {
     }
 }
 
-/** The always-dark workout screen: a timed exercise on the ring, or a reps exercise's sets. */
+/** The workout screen: a timed exercise on the ring, or a reps exercise's sets. */
 @Composable
 internal fun MiniExecution(
     name: String,
@@ -828,20 +829,22 @@ private fun ExecutionButton(text: String, filled: Boolean, modifier: Modifier) {
 /** The screen going dark in a pocket, with the workout carrying on in its notification and voice. */
 @Composable
 internal fun MiniLockScreen(dim: Float, voice: Float, remaining: Int, exercise: String = "Skater hops") {
+    // A phone's lock screen is dark whatever the app's theme.
+    val lock = DarkExecutionColors
     Box(Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxSize().background(ExecutionColors.background.copy(alpha = 0.97f * dim)))
+        Box(Modifier.fillMaxSize().background(lock.background.copy(alpha = 0.97f * dim)))
         Column(Modifier.fillMaxWidth().padding(20.dp).padding(top = 30.dp).slideY(-(1f - dim))) {
-            Text("6:42", style = AppType.screenTitle, color = ExecutionColors.onBackground.copy(alpha = dim), modifier = Modifier.align(Alignment.CenterHorizontally))
+            Text("6:42", style = AppType.screenTitle, color = lock.onBackground.copy(alpha = dim), modifier = Modifier.align(Alignment.CenterHorizontally))
             Spacer(Modifier.height(24.dp))
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(ExecutionColors.card.copy(alpha = dim)).padding(14.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(lock.card.copy(alpha = dim)).padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BldrMark(height = 18.dp, color = ExecutionColors.onBackground.copy(alpha = dim), contentDescription = null)
+                BldrMark(height = 18.dp, color = lock.onBackground.copy(alpha = dim), contentDescription = null)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Court Speed", style = AppType.cardTitle, color = ExecutionColors.onBackground.copy(alpha = dim))
-                    Text("$exercise · ${remaining}s", style = AppType.cardMeta, color = ExecutionColors.textMuted.copy(alpha = dim))
+                    Text("Court Speed", style = AppType.cardTitle, color = lock.onBackground.copy(alpha = dim))
+                    Text("$exercise · ${remaining}s", style = AppType.cardMeta, color = lock.textMuted.copy(alpha = dim))
                 }
             }
         }
@@ -851,10 +854,10 @@ internal fun MiniLockScreen(dim: Float, voice: Float, remaining: Int, exercise: 
                     .align(Alignment.Center)
                     .padding(top = 140.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(ExecutionColors.onBackground.copy(alpha = voice))
+                    .background(lock.onBackground.copy(alpha = voice))
                     .padding(horizontal = 18.dp, vertical = 12.dp),
             ) {
-                Text("“Rest”", style = AppType.cardTitle, color = ExecutionColors.background.copy(alpha = voice))
+                Text("“Rest”", style = AppType.cardTitle, color = lock.background.copy(alpha = voice))
             }
         }
     }

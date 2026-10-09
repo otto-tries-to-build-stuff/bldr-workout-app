@@ -268,7 +268,7 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier, maxLines: Int = 1) 
  * The app's one confirmation dialog. `surface` rather than `background` for the container:
  * `background` was nearly indistinguishable from the scrim in dark mode (both ~#0B0B0D). Body
  * text stays AA on it (dark textMuted #9A9A9A on #18181C is 6.4:1, light #6B6B6B on #F1F1EF is
- * 4.7:1). Execution passes its own always-dark palette.
+ * 4.7:1). Execution passes its own palette.
  */
 @Composable
 fun ConfirmDialog(

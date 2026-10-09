@@ -37,7 +37,7 @@ fun FinishScreen(workoutName: String, onDone: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Execution is always dark: the default tint (LocalAppColors) would be near-black in Light.
+            // Tinted from the execution palette, like everything else on this screen.
             BldrMark(height = 40.dp, color = ExecutionColors.onBackground, contentDescription = null)
             Spacer(Modifier.height(8.dp))
             Text(

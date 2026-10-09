@@ -14,8 +14,10 @@ fun WorkoutTheme(
     dark: Boolean,
     content: @Composable () -> Unit,
 ) {
-    val colors = if (dark) DarkColors else LightColors
-    CompositionLocalProvider(LocalAppColors provides colors) {
+    CompositionLocalProvider(
+        LocalAppColors provides if (dark) DarkColors else LightColors,
+        LocalExecutionColors provides if (dark) DarkExecutionColors else LightExecutionColors,
+    ) {
         MaterialTheme {
             // Safety net: Text with no AppType style still renders in Space Grotesk, not Roboto.
             ProvideTextStyle(AppType.cardMeta, content)
