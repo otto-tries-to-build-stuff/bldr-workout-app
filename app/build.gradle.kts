@@ -1,3 +1,6 @@
+import com.android.build.api.artifact.SingleArtifact
+import java.util.zip.ZipFile
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -64,6 +67,37 @@ android {
         resources {
             excludes += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*", "META-INF/INDEX.LIST")
         }
+    }
+}
+
+// A build that follows an interrupted one can package the code as classes17.dex onwards with no
+// classes.dex, and phones refuse to install it. Fail the build instead of handing that APK out.
+abstract class CheckApk : DefaultTask() {
+    @get:InputFiles
+    abstract val apkFolder: DirectoryProperty
+
+    @TaskAction
+    fun check() {
+        apkFolder.get().asFile.walk().filter { it.extension == "apk" }.forEach { apk ->
+            ZipFile(apk).use { zip ->
+                if (zip.getEntry("classes.dex") == null) {
+                    throw GradleException(
+                        "${apk.name} has no classes.dex, so phones will refuse to install it. " +
+                            "Rebuild from scratch: gradlew clean assemble",
+                    )
+                }
+            }
+        }
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val name = variant.name.replaceFirstChar { it.uppercase() }
+        val check = tasks.register<CheckApk>("check${name}Apk") {
+            apkFolder.set(variant.artifacts.get(SingleArtifact.APK))
+        }
+        tasks.named { it == "assemble$name" }.configureEach { dependsOn(check) }
     }
 }
 
